@@ -8,18 +8,21 @@ use hexagon_tiles::{
     point::Point,
 };
 
+use crate::{
+    droid::{AttackRequest, TargetDirection},
+    HEX_LAYOUT,
+};
+
 #[derive(Component, Default)]
-pub struct InputTarget {
-    pub direction: Vec2,
-}
+pub struct InputTarget;
 
 fn apply_input_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut query: Query<(&mut InputTarget, &Transform)>,
+    mut query: Query<(&mut TargetDirection, &Transform, &mut AttackRequest), With<InputTarget>>,
     keyboard_input: Res<Input<KeyCode>>,
 ) {
-    for (mut input_target, transform) in query.iter_mut() {
+    for (mut input_target, transform, mut attack_request) in query.iter_mut() {
         let direction = if keyboard_input.pressed(KeyCode::A) && keyboard_input.pressed(KeyCode::W)
         {
             HEX_DIRECTIONS[4]
@@ -36,17 +39,12 @@ fn apply_input_system(
         } else {
             Hex::new(0, 0)
         };
-        let dir = LayoutTool::hex_to_pixel(
-            Layout {
-                orientation: LAYOUT_ORIENTATION_POINTY,
-                size: Point { x: 64.0, y: 64.0 },
-                origin: Point { x: 0.0, y: 0.0 },
-            },
-            direction,
-        );
+        let dir = LayoutTool::hex_to_pixel(HEX_LAYOUT, direction);
         input_target.direction = Vec2::new(dir.x as f32, dir.y as f32).normalize_or_zero();
         //* velocity = Velocity::linear(Vec2::new(dir.x as f32, dir.y as f32));
-        // info!("dir: {:?}", dir);
+        // info!("dir: {:?}", input_target.direction);
+
+        attack_request.primary_attack = keyboard_input.pressed(KeyCode::J);
     }
 }
 
