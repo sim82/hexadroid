@@ -62,6 +62,7 @@ fn droid_attack_system(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(
+        Entity,
         &Transform,
         &AttackRequest,
         &mut WeaponState,
@@ -69,6 +70,7 @@ fn droid_attack_system(
     )>,
 ) {
     for (
+        entity,
         Transform { translation, .. },
         AttackRequest { primary_attack },
         mut weapon_state,
@@ -80,14 +82,11 @@ fn droid_attack_system(
             continue;
         }
         weapon_state.reload_timeout = 1.0;
-        commands
-            .spawn()
-            .insert(Collider::ball(10.0))
-            .insert(Transform::from_translation(
-                *translation + (weapon_direction.direction * 40.0).extend(0.0),
-            ))
-            .insert(RigidBody::KinematicVelocityBased)
-            .insert(Velocity::linear(weapon_direction.direction * 400.0));
+        commands.spawn_bundle(KineticProjectileBundle::with_direction(
+            entity,
+            *translation,
+            weapon_direction.direction,
+        ));
     }
 }
 
@@ -136,6 +135,36 @@ impl DroidBundle {
     }
 }
 
+#[derive(Component)]
+pub struct Projectile {
+    pub owner: Entity,
+}
+
+#[derive(Bundle)]
+pub struct KineticProjectileBundle {
+    collider: Collider,
+    transform: Transform,
+    rigid_body: RigidBody,
+    active_events: ActiveEvents,
+    velocity: Velocity,
+    active_collision_types: ActiveCollisionTypes,
+    projectile: Projectile,
+}
+
+impl KineticProjectileBundle {
+    pub fn with_direction(owner: Entity, translation: Vec3, direction: Vec2) -> Self {
+        Self {
+            collider: Collider::ball(10.0),
+            transform: Transform::from_translation(translation + (direction * 100.0).extend(0.0)),
+            rigid_body: RigidBody::KinematicVelocityBased,
+            velocity: Velocity::linear(direction * 400.0),
+            active_events: ActiveEvents::COLLISION_EVENTS,
+            active_collision_types: ActiveCollisionTypes::default()
+                | ActiveCollisionTypes::KINEMATIC_STATIC,
+            projectile: Projectile { owner },
+        }
+    }
+}
 pub struct DroidPlugin;
 
 impl Plugin for DroidPlugin {

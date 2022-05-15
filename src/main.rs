@@ -11,25 +11,14 @@ fn main() {
         .add_system(exit_on_esc_system)
         .insert_resource(Msaa::default());
 
-    // bevy_rapier plugins
-    app.add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(32.0))
-        .add_plugin(RapierDebugRenderPlugin::default())
-        .insert_resource(RapierConfiguration {
-            gravity: Vec2::ZERO,
-            ..default()
-        });
-
-    // egui plugins
-    #[cfg(feature = "inspector")]
-    {
-        app.add_plugin(bevy_inspector_egui::WorldInspectorPlugin::new());
-    }
+    app.add_plugins(hexadroid::DefaultPlugins);
+    app.insert_resource(RapierConfiguration {
+        gravity: Vec2::ZERO,
+        ..default()
+    });
 
     app.add_startup_system(setup_camera)
         .add_startup_system(setup_geometry);
-
-    app.add_plugin(hexadroid::input::InputPlugin)
-        .add_plugin(hexadroid::droid::DroidPlugin);
 
     app.run();
 }
