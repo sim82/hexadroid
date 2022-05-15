@@ -1,4 +1,5 @@
 use bevy::{ecs::component, math::Vec3Swizzles, prelude::*};
+use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{hexagon::HEX_DIRECTIONS, layout::LayoutTool};
 
@@ -67,6 +68,7 @@ impl Line {
 fn assault_predict_system(
     mut commands: Commands,
     enemy_query: Query<(&Transform, &Velocity)>,
+    mut debug_lines: ResMut<DebugLines>,
     mut assault_query: Query<
         (
             &Transform,
@@ -124,6 +126,12 @@ fn assault_predict_system(
                 let projectile_line = Line(
                     my_translation.xy() + dir * 50.0,
                     my_translation.xy() + dir * PROJECTILE_SPEED,
+                );
+                debug_lines.line(enemy_line.0.extend(0.0), enemy_line.1.extend(0.0), 0.0);
+                debug_lines.line(
+                    projectile_line.0.extend(0.0),
+                    projectile_line.1.extend(0.0),
+                    0.0,
                 );
 
                 if let Some(intersect) = projectile_line.intersect2(enemy_line) {

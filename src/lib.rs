@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_prototype_debug_lines::DebugLinesPlugin;
 use hexagon_tiles::{
     layout::{Layout, LAYOUT_ORIENTATION_POINTY},
     point::Point,
@@ -104,6 +105,8 @@ impl PluginGroup for DefaultPlugins {
         group
             .add(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(32.0))
             .add(RapierDebugRenderPlugin::default());
+
+        group.add(DebugLinesPlugin::default());
 
         // egui plugins
         #[cfg(feature = "inspector")]
