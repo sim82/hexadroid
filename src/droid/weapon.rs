@@ -19,13 +19,15 @@ pub struct KineticProjectileBundle {
     despawn: Despawn,
 }
 
+pub const PROJECTILE_SPEED: f32 = 400.0;
+
 impl KineticProjectileBundle {
     pub fn with_direction(owner: Entity, translation: Vec3, direction: Vec2) -> Self {
         Self {
             collider: Collider::ball(10.0),
-            transform: Transform::from_translation(translation + (direction * 100.0).extend(0.0)),
+            transform: Transform::from_translation(translation + (direction * 50.0).extend(0.0)),
             rigid_body: RigidBody::Dynamic,
-            velocity: Velocity::linear(direction * 400.0),
+            velocity: Velocity::linear(direction * PROJECTILE_SPEED),
             active_events: ActiveEvents::COLLISION_EVENTS,
             active_collision_types: ActiveCollisionTypes::default()
                 | ActiveCollisionTypes::KINEMATIC_STATIC,

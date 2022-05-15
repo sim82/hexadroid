@@ -88,7 +88,7 @@ pub fn despawn_reaper_system(
 pub struct DefaultPlugin;
 impl Plugin for DefaultPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(despawn_reaper_system);
+        app.add_system_to_stage(CoreStage::PostUpdate, despawn_reaper_system);
     }
 }
 
@@ -115,6 +115,7 @@ impl PluginGroup for DefaultPlugins {
             .add(DefaultPlugin)
             .add(input::InputPlugin)
             .add(droid::DroidPlugin)
+            .add(droid::ai::AiPlugin)
             .add(collision::CollisionPlugin)
             .add(camera::CameraPlugin);
     }

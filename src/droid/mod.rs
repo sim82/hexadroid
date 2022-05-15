@@ -7,58 +7,7 @@ use crate::input::InputTarget;
 
 pub mod weapon;
 
-pub mod ai {
-    use bevy::{ecs::component, prelude::*};
-    use bevy_rapier2d::prelude::*;
-    use hexagon_tiles::{hexagon::HEX_DIRECTIONS, layout::LayoutTool};
-
-    use crate::{hex_point_to_vec2, HEX_LAYOUT};
-
-    #[derive(Component)]
-    pub struct AssaultAi {}
-    #[derive(Component)]
-    #[component(storage = "SparseSet")]
-    pub struct PrimaryEnemy {
-        pub enemy: Entity,
-    }
-
-    fn assault_predict_system(
-        enemy_query: Query<(&Transform, &Velocity)>,
-        assault_query: Query<(&Transform, &PrimaryEnemy), With<AssaultAi>>,
-    ) {
-        for (
-            Transform {
-                translation: my_translation,
-                ..
-            },
-            PrimaryEnemy { enemy },
-        ) in assault_query.iter()
-        {
-            if let Ok((
-                Transform {
-                    translation: enemy_translation,
-                    ..
-                },
-                Velocity {
-                    linvel: enemy_velocity,
-                    ..
-                },
-            )) = enemy_query.get(*enemy)
-            {
-                for dir in HEX_DIRECTIONS
-                    .iter()
-                    .map(|dir| hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, *dir)))
-                {
-                }
-            }
-        }
-    }
-
-    pub struct AiPlugin;
-    impl Plugin for AiPlugin {
-        fn build(&self, app: &mut App) {}
-    }
-}
+pub mod ai;
 
 const STOP_CUTOFF: f32 = 0.5;
 const STOP_MULTIPLIER: f32 = -5.0;
@@ -181,7 +130,7 @@ impl DroidBundle {
             velocity: Velocity::default(),
             name: Name::new(name),
             ground_friction: GroundFriction,
-            weapon_direction: default(),
+            weapon_direction: WeaponDirection { direction: Vec2::X },
             weapon_state: default(),
             external_force: default(),
             target_direction: default(),
