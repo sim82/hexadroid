@@ -4,7 +4,7 @@ use hexagon_tiles::{hexagon::HEX_DIRECTIONS, layout::LayoutTool};
 
 use crate::{droid::weapon::PROJECTILE_SPEED, hex_point_to_vec2, HEX_LAYOUT};
 
-use super::{AttackRequest, WeaponDirection};
+use super::{AttackRequest, WeaponDirection, WeaponState};
 
 #[derive(Component, Default)]
 pub struct AssaultAi {}
@@ -73,6 +73,7 @@ fn assault_predict_system(
             &PrimaryEnemy,
             &mut AttackRequest,
             &mut WeaponDirection,
+            &WeaponState,
         ),
         With<AssaultAi>,
     >,
@@ -85,8 +86,15 @@ fn assault_predict_system(
         PrimaryEnemy { enemy },
         mut attack_request,
         mut weapon_direction,
+        weapon_state,
     ) in assault_query.iter_mut()
     {
+        if weapon_state.reload_timeout > f32::EPSILON {
+            // currently reloading. cannot fire. clear previous attack request.
+            attack_request.primary_attack = false;
+            continue;
+        }
+
         if let Ok((
             Transform {
                 translation: enemy_translation,
