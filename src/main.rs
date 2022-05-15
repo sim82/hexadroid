@@ -1,6 +1,6 @@
 use bevy::{input::system::exit_on_esc_system, prelude::*};
 use bevy_rapier2d::prelude::*;
-use hexadroid::{droid::WeaponDirection, input::InputTarget, HEX_LAYOUT};
+use hexadroid::{camera::CameraTarget, droid::WeaponDirection, input::InputTarget, HEX_LAYOUT};
 use hexagon_tiles::layout::LayoutTool;
 
 fn main() {
@@ -17,14 +17,9 @@ fn main() {
         ..default()
     });
 
-    app.add_startup_system(setup_camera)
-        .add_startup_system(setup_geometry);
+    app.add_startup_system(setup_geometry);
 
     app.run();
-}
-
-fn setup_camera(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
 fn setup_geometry(mut commands: Commands) {
@@ -35,8 +30,17 @@ fn setup_geometry(mut commands: Commands) {
     //     .insert(RigidBody::Fixed);
 
     commands
-        .spawn_bundle(hexadroid::droid::DroidBundle::with_name("player"))
-        .insert(InputTarget::default());
+        .spawn_bundle(hexadroid::droid::DroidBundle::with_name(
+            Vec2::new(100.0, 100.0),
+            "player",
+        ))
+        .insert(InputTarget::default())
+        .insert(CameraTarget);
+
+    commands.spawn_bundle(hexadroid::droid::DroidBundle::with_name(
+        Vec2::new(-100.0, 100.0),
+        "r2d2",
+    ));
 
     let h = hexagon_tiles::hexagon::Hex::new(0, 0);
     let corners = LayoutTool::polygon_corners(HEX_LAYOUT, h)

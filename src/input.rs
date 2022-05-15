@@ -10,7 +10,7 @@ use hexagon_tiles::{
 
 use crate::{
     droid::{AttackRequest, TargetDirection},
-    HEX_LAYOUT,
+    hex_point_to_vec2, HEX_LAYOUT,
 };
 
 #[derive(Component, Default)]
@@ -39,8 +39,8 @@ fn apply_input_system(
         } else {
             Hex::new(0, 0)
         };
-        let dir = LayoutTool::hex_to_pixel(HEX_LAYOUT, direction);
-        input_target.direction = Vec2::new(dir.x as f32, dir.y as f32).normalize_or_zero();
+        input_target.direction =
+            hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, direction)).normalize_or_zero();
         //* velocity = Velocity::linear(Vec2::new(dir.x as f32, dir.y as f32));
         // info!("dir: {:?}", input_target.direction);
 

@@ -5,6 +5,61 @@ use bevy_rapier2d::prelude::*;
 
 use crate::input::InputTarget;
 
+pub mod weapon;
+
+pub mod ai {
+    use bevy::{ecs::component, prelude::*};
+    use bevy_rapier2d::prelude::*;
+    use hexagon_tiles::{hexagon::HEX_DIRECTIONS, layout::LayoutTool};
+
+    use crate::{hex_point_to_vec2, HEX_LAYOUT};
+
+    #[derive(Component)]
+    pub struct AssaultAi {}
+    #[derive(Component)]
+    #[component(storage = "SparseSet")]
+    pub struct PrimaryEnemy {
+        pub enemy: Entity,
+    }
+
+    fn assault_predict_system(
+        enemy_query: Query<(&Transform, &Velocity)>,
+        assault_query: Query<(&Transform, &PrimaryEnemy), With<AssaultAi>>,
+    ) {
+        for (
+            Transform {
+                translation: my_translation,
+                ..
+            },
+            PrimaryEnemy { enemy },
+        ) in assault_query.iter()
+        {
+            if let Ok((
+                Transform {
+                    translation: enemy_translation,
+                    ..
+                },
+                Velocity {
+                    linvel: enemy_velocity,
+                    ..
+                },
+            )) = enemy_query.get(*enemy)
+            {
+                for dir in HEX_DIRECTIONS
+                    .iter()
+                    .map(|dir| hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, *dir)))
+                {
+                }
+            }
+        }
+    }
+
+    pub struct AiPlugin;
+    impl Plugin for AiPlugin {
+        fn build(&self, app: &mut App) {}
+    }
+}
+
 const STOP_CUTOFF: f32 = 0.5;
 const STOP_MULTIPLIER: f32 = -5.0;
 const FORCE_MULTIPLIER: f32 = 1000.0;
@@ -82,7 +137,7 @@ fn droid_attack_system(
             continue;
         }
         weapon_state.reload_timeout = 1.0;
-        commands.spawn_bundle(KineticProjectileBundle::with_direction(
+        commands.spawn_bundle(weapon::KineticProjectileBundle::with_direction(
             entity,
             *translation,
             weapon_direction.direction,
@@ -109,10 +164,10 @@ pub struct DroidBundle {
 }
 
 impl DroidBundle {
-    pub fn with_name(name: impl Into<Cow<'static, str>>) -> Self {
+    pub fn with_name(translation: Vec2, name: impl Into<Cow<'static, str>>) -> Self {
         Self {
             collider: Collider::ball(32.0),
-            transform: Transform::from_xyz(200.0, 0.0, 0.0),
+            transform: Transform::from_xyz(translation.x, translation.y, 0.0),
             rigid_body: RigidBody::Dynamic,
             locked_axes: LockedAxes::ROTATION_LOCKED,
             friction: Friction {
@@ -131,37 +186,6 @@ impl DroidBundle {
             external_force: default(),
             target_direction: default(),
             attack_request: default(),
-        }
-    }
-}
-
-#[derive(Component)]
-pub struct Projectile {
-    pub owner: Entity,
-}
-
-#[derive(Bundle)]
-pub struct KineticProjectileBundle {
-    collider: Collider,
-    transform: Transform,
-    rigid_body: RigidBody,
-    active_events: ActiveEvents,
-    velocity: Velocity,
-    active_collision_types: ActiveCollisionTypes,
-    projectile: Projectile,
-}
-
-impl KineticProjectileBundle {
-    pub fn with_direction(owner: Entity, translation: Vec3, direction: Vec2) -> Self {
-        Self {
-            collider: Collider::ball(10.0),
-            transform: Transform::from_translation(translation + (direction * 100.0).extend(0.0)),
-            rigid_body: RigidBody::KinematicVelocityBased,
-            velocity: Velocity::linear(direction * 400.0),
-            active_events: ActiveEvents::COLLISION_EVENTS,
-            active_collision_types: ActiveCollisionTypes::default()
-                | ActiveCollisionTypes::KINEMATIC_STATIC,
-            projectile: Projectile { owner },
         }
     }
 }
