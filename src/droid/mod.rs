@@ -10,8 +10,9 @@ pub mod weapon;
 pub mod ai;
 
 const STOP_CUTOFF: f32 = 0.5;
-const STOP_MULTIPLIER: f32 = -5.0;
-const FORCE_MULTIPLIER: f32 = 1000.0;
+const STOP_MULTIPLIER: f32 = -15.0;
+const FORCE_MULTIPLIER: f32 = 4000.0;
+const IMPULSE_MULTIPLIER: f32 = 80.0;
 
 #[derive(Component)]
 pub struct GroundFriction;
@@ -50,13 +51,21 @@ fn droid_stop_system(mut query: Query<(&mut Velocity, &mut ExternalForce), With<
 }
 
 fn droid_apply_direction_system(
-    mut query: Query<(&mut ExternalForce, &TargetDirection, &mut WeaponDirection)>,
+    mut query: Query<(
+        &mut ExternalForce,
+        &mut ExternalImpulse,
+        &TargetDirection,
+        &mut WeaponDirection,
+    )>,
 ) {
-    for (mut external_force, target_direction, mut weapon_direction) in query.iter_mut() {
+    for (mut external_force, mut external_impulse, target_direction, mut weapon_direction) in
+        query.iter_mut()
+    {
         // info!("force: {}", external_force.force);
 
         if target_direction.direction.length() > f32::EPSILON {
-            external_force.force = FORCE_MULTIPLIER * target_direction.direction;
+            // external_force.force = FORCE_MULTIPLIER * target_direction.direction;
+            external_impulse.impulse = IMPULSE_MULTIPLIER * target_direction.direction;
             weapon_direction.direction = target_direction.direction;
         }
     }
@@ -99,6 +108,7 @@ pub struct DroidBundle {
     pub collider: Collider,
     pub transform: Transform,
     pub external_force: ExternalForce,
+    pub external_impulse: ExternalImpulse,
     pub rigid_body: RigidBody,
     pub locked_axes: LockedAxes,
     pub friction: Friction,
@@ -133,6 +143,7 @@ impl DroidBundle {
             weapon_direction: WeaponDirection { direction: Vec2::X },
             weapon_state: default(),
             external_force: default(),
+            external_impulse: default(),
             target_direction: default(),
             attack_request: default(),
         }

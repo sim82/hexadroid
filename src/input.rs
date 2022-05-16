@@ -16,8 +16,8 @@ use hexagon_tiles::{
 use crate::{
     droid::{AttackRequest, TargetDirection},
     hex_point_to_vec2,
-    tiles::{TilePos, TileType},
-    HEX_LAYOUT,
+    tiles::{TileCache, TilePos, TileType},
+    Despawn, HEX_LAYOUT,
 };
 
 #[derive(Component, Default)]
@@ -60,6 +60,7 @@ fn background_on_click_system(
     mouse: Res<MousePosWorld>,
     // mut pointer_pos: Local<Vec2>,
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
+    mut tile_cache: ResMut<TileCache>,
     // mut cursor_moved_events: EventReader<CursorMoved>,
     // cam_2d_query: Query<(&GlobalTransform, &Camera), With<Camera2d>>
 ) {
@@ -76,10 +77,18 @@ fn background_on_click_system(
             )
             .round();
             info!("mouse pos: {:?} -> {:?}", *mouse, hex);
-            commands
-                .spawn()
-                .insert(TileType { wall: true })
-                .insert(TilePos(hex));
+
+            let tile_pos = TilePos(hex);
+            if let Some(entity) = tile_cache.tiles.remove(&tile_pos) {
+                info!("delete");
+                commands.entity(entity).insert(Despawn::ThisFrame);
+            } else {
+                info!("spawn");
+                commands
+                    .spawn()
+                    .insert(TileType { wall: true })
+                    .insert(TilePos(hex));
+            }
         }
     }
 }

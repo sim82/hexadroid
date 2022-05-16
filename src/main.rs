@@ -4,6 +4,7 @@ use hexadroid::{
     camera::CameraTarget,
     droid::{ai::PrimaryEnemy, WeaponDirection},
     input::InputTarget,
+    tiles::{TilePos, TileType},
     HEX_LAYOUT,
 };
 use hexagon_tiles::layout::LayoutTool;
@@ -59,19 +60,24 @@ fn setup_geometry(mut commands: Commands) {
                 continue;
             }
 
-            let corners = LayoutTool::polygon_corners(HEX_LAYOUT, h)
-                .iter()
-                .map(|p| Vec2::new(p.x as f32, p.y as f32))
-                .collect();
-
             commands
                 .spawn()
-                .insert(Collider::polyline(
-                    corners,
-                    Some(vec![[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]),
-                ))
-                .insert(Transform::from_xyz(0.0, 0.0, 0.0))
-                .insert(RigidBody::Fixed);
+                .insert(TilePos(h))
+                .insert(TileType { wall: true });
+
+            // let corners = LayoutTool::polygon_corners(HEX_LAYOUT, h)
+            //     .iter()
+            //     .map(|p| Vec2::new(p.x as f32, p.y as f32))
+            //     .collect();
+
+            // commands
+            //     .spawn()
+            //     .insert(Collider::polyline(
+            //         corners,
+            //         Some(vec![[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]),
+            //     ))
+            //     .insert(Transform::from_xyz(0.0, 0.0, 0.0))
+            //     .insert(RigidBody::Fixed);
         }
     }
 }
