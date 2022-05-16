@@ -51,18 +51,27 @@ fn setup_geometry(mut commands: Commands) {
         .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
         .insert(PrimaryEnemy { enemy });
 
-    let h = hexagon_tiles::hexagon::Hex::new(0, 0);
-    let corners = LayoutTool::polygon_corners(HEX_LAYOUT, h)
-        .iter()
-        .map(|p| Vec2::new(p.x as f32, p.y as f32))
-        .collect();
+    for q in -5..=5 {
+        for r in -5..=5 {
+            let h = hexagon_tiles::hexagon::Hex::new(q, r);
 
-    commands
-        .spawn()
-        .insert(Collider::polyline(
-            corners,
-            Some(vec![[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]),
-        ))
-        .insert(Transform::from_xyz(0.0, 0.0, 0.0))
-        .insert(RigidBody::Fixed);
+            if q.abs() != 5 && r.abs() != 5 {
+                continue;
+            }
+
+            let corners = LayoutTool::polygon_corners(HEX_LAYOUT, h)
+                .iter()
+                .map(|p| Vec2::new(p.x as f32, p.y as f32))
+                .collect();
+
+            commands
+                .spawn()
+                .insert(Collider::polyline(
+                    corners,
+                    Some(vec![[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]),
+                ))
+                .insert(Transform::from_xyz(0.0, 0.0, 0.0))
+                .insert(RigidBody::Fixed);
+        }
+    }
 }

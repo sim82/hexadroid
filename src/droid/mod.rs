@@ -115,7 +115,7 @@ pub struct DroidBundle {
 impl DroidBundle {
     pub fn with_name(translation: Vec2, name: impl Into<Cow<'static, str>>) -> Self {
         Self {
-            collider: Collider::ball(32.0),
+            collider: Collider::ball(28.0),
             transform: Transform::from_xyz(translation.x, translation.y, 0.0),
             rigid_body: RigidBody::Dynamic,
             locked_axes: LockedAxes::ROTATION_LOCKED,
@@ -124,7 +124,7 @@ impl DroidBundle {
                 ..default()
             },
             restitution: Restitution {
-                coefficient: 1.0,
+                coefficient: 0.3,
                 ..default()
             },
             velocity: Velocity::default(),

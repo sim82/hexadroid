@@ -8,6 +8,7 @@ use hexagon_tiles::{
 pub mod collision;
 pub mod droid;
 pub mod input;
+pub mod tiles;
 
 pub mod camera {
     use bevy::{prelude::*, render::camera::Camera2d};
@@ -120,6 +121,7 @@ impl PluginGroup for DefaultPlugins {
             .add(droid::DroidPlugin)
             .add(droid::ai::AiPlugin)
             .add(collision::CollisionPlugin)
-            .add(camera::CameraPlugin);
+            .add(camera::CameraPlugin)
+            .add(tiles::TilesPlugin);
     }
 }
