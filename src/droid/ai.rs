@@ -136,8 +136,9 @@ fn assault_predict_system(
                     enemy_translation.xy(),
                     enemy_translation.xy() + *enemy_velocity,
                 );
+                let projectile_start_pos = my_translation.xy() + dir * 50.0;
                 let projectile_line = Line(
-                    my_translation.xy() + dir * 50.0,
+                    projectile_start_pos,
                     my_translation.xy() + dir * PROJECTILE_SPEED,
                 );
                 debug_lines.line(enemy_line.0.extend(0.0), enemy_line.1.extend(0.0), 0.0);
@@ -149,7 +150,7 @@ fn assault_predict_system(
 
                 if let Some(intersect) = projectile_line.intersect2(enemy_line) {
                     // predicted 'time to intersection'
-                    let my_d = (intersect - my_translation.xy()).length();
+                    let my_d = (intersect - projectile_start_pos).length();
                     let enemy_d = (intersect - enemy_translation.xy()).length();
 
                     let my_t = my_d / PROJECTILE_SPEED;
