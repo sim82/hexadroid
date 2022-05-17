@@ -11,7 +11,16 @@ pub mod collision;
 pub mod droid;
 pub mod input;
 pub mod tiles;
+// pub mod worm {
+//     use perlin_noise::PerlinNoise;
 
+//     #[test]
+//     fn test() {
+//         let mut perlin_noise = PerlinNoise::new();
+//         println!("{}", perlin_noise.get3d([1.0, 2.0, 3.0]));
+//     }
+// }
+pub mod debug;
 pub mod camera {
     use bevy::{prelude::*, render::camera::Camera2d};
 

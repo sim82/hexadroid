@@ -3,7 +3,7 @@ use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{hexagon::HEX_DIRECTIONS, layout::LayoutTool};
 
-use crate::{droid::weapon::PROJECTILE_SPEED, hex_point_to_vec2, HEX_LAYOUT};
+use crate::{debug::DebugLinesExt, droid::weapon::PROJECTILE_SPEED, hex_point_to_vec2, HEX_LAYOUT};
 
 use super::{AttackRequest, WeaponDirection, WeaponState};
 
@@ -147,7 +147,6 @@ fn assault_predict_system(
                     projectile_line.1.extend(0.0),
                     0.0,
                 );
-
                 if let Some(intersect) = projectile_line.intersect2(enemy_line) {
                     // predicted 'time to intersection'
                     let my_d = (intersect - projectile_start_pos).length();
@@ -155,6 +154,13 @@ fn assault_predict_system(
 
                     let my_t = my_d / PROJECTILE_SPEED;
                     let enemy_t = enemy_d / enemy_speed;
+
+                    debug_lines.cross(
+                        (projectile_start_pos
+                            + (intersect - projectile_start_pos) / my_t * enemy_t)
+                            .extend(0.0),
+                        0.0,
+                    );
 
                     // if projectile and enemy are predicted to reach intersection at roughly the
                     // same time, shoot in this direction.
