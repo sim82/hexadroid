@@ -115,9 +115,22 @@ fn assault_predict_system(
                 // enemy not moving
                 continue;
             }
-            for dir in HEX_DIRECTIONS.iter().map(|dir| {
-                hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, *dir)).normalize_or_zero()
-            }) {
+            const SQRT2_2: f32 = std::f32::consts::SQRT_2 / 2.0;
+            let directions = [
+                Vec2::new(1.0, 0.0),
+                Vec2::new(SQRT2_2, -SQRT2_2),
+                Vec2::new(0.0, -1.0),
+                Vec2::new(-SQRT2_2, -SQRT2_2),
+                Vec2::new(-1.0, 0.0),
+                Vec2::new(-SQRT2_2, SQRT2_2),
+                Vec2::new(0.0, 1.0),
+                Vec2::new(SQRT2_2, SQRT2_2),
+            ];
+            // Vec2(1.0, 2.0);
+            // for dir in HEX_DIRECTIONS.iter().map(|dir| {
+            //     hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, *dir)).normalize_or_zero()
+            // }) {
+            for dir in directions {
                 // find intersection between predicted projectile and enemy trajectories
                 let enemy_line = Line(
                     enemy_translation.xy(),

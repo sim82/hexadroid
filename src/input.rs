@@ -55,6 +55,35 @@ fn apply_input_system(
     }
 }
 
+fn apply_input_system_8dir(
+    mut query: Query<(&mut TargetDirection, &Transform, &mut AttackRequest), With<InputTarget>>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    for (mut input_target, _transform, mut attack_request) in query.iter_mut() {
+        let w = keyboard_input.pressed(KeyCode::W);
+        let a = keyboard_input.pressed(KeyCode::A);
+        let s = keyboard_input.pressed(KeyCode::S);
+        let d = keyboard_input.pressed(KeyCode::D);
+
+        let mut dir = Vec2::ZERO;
+        if w {
+            dir += Vec2::Y;
+        }
+        if s {
+            dir -= Vec2::Y;
+        }
+        if d {
+            dir += Vec2::X;
+        }
+        if a {
+            dir -= Vec2::X;
+        }
+
+        input_target.direction = dir.normalize_or_zero();
+        attack_request.primary_attack = keyboard_input.pressed(KeyCode::J);
+    }
+}
+
 fn background_on_click_system(
     mut commands: Commands,
     mouse: Res<MousePosWorld>,
@@ -97,7 +126,7 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(apply_input_system)
+        app.add_system(apply_input_system_8dir)
             .add_system(background_on_click_system)
             .add_plugin(MousePosPlugin::SingleCamera);
     }
