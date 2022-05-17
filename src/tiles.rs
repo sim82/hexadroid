@@ -2,7 +2,7 @@ use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{hexagon::HexMath, hexagon::HEX_DIRECTIONS, layout::LayoutTool};
 
-use crate::HEX_LAYOUT;
+use crate::{Despawn, HEX_LAYOUT};
 
 #[derive(Component)]
 pub struct TileType {
@@ -24,12 +24,14 @@ impl std::hash::Hash for TilePos {
 #[derive(Default)]
 pub struct TileCache {
     pub tiles: HashMap<TilePos, Entity>,
+    pub dirty: bool,
 }
 
 fn spawn_tiles_system(
     mut commands: Commands,
     mut tiles_cache: ResMut<TileCache>,
     query: Query<(Entity, &TilePos, &TileType), Added<TileType>>,
+    query_despawn: Query<(Entity, &TilePos), Added<Despawn>>,
 ) {
     for (entity, tile_pos, _) in query.iter() {
         // commands.entity(entity).inser
@@ -49,6 +51,12 @@ fn spawn_tiles_system(
             .insert(RigidBody::Fixed);
 
         tiles_cache.tiles.insert(*tile_pos, entity);
+        tiles_cache.dirty = true;
+    }
+
+    for (_entity, tile_pos) in query_despawn.iter() {
+        tiles_cache.tiles.remove(tile_pos);
+        tiles_cache.dirty = true;
     }
 }
 
@@ -64,6 +72,9 @@ fn optimize_colliders_system(
         return;
     }
     *delay = 0.5;
+    if !tile_cache.dirty {
+        return;
+    }
     for (entity, tile_pos, _) in query.iter() {
         // commands.entity(entity).inser
 
