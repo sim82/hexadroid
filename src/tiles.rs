@@ -1,4 +1,7 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{
+    prelude::*,
+    utils::{HashMap, HashSet},
+};
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{hexagon::HexMath, hexagon::HEX_DIRECTIONS, layout::LayoutTool};
 
@@ -9,7 +12,7 @@ pub struct TileType {
     pub wall: bool,
 }
 
-#[derive(Component, Eq, PartialEq, Copy, Clone)]
+#[derive(Component, Eq, PartialEq, Copy, Clone, Debug)]
 pub struct TilePos(pub hexagon_tiles::hexagon::Hex);
 
 #[allow(clippy::derive_hash_xor_eq)]
@@ -24,7 +27,7 @@ impl std::hash::Hash for TilePos {
 #[derive(Default)]
 pub struct TileCache {
     pub tiles: HashMap<TilePos, Entity>,
-    pub dirty: bool,
+    pub dirty_set: HashSet<TilePos>,
 }
 
 fn spawn_tiles_system(
@@ -51,12 +54,13 @@ fn spawn_tiles_system(
             .insert(RigidBody::Fixed);
 
         tiles_cache.tiles.insert(*tile_pos, entity);
-        tiles_cache.dirty = true;
+        tiles_cache.dirty_set.insert(*tile_pos);
     }
 
     for (_entity, tile_pos) in query_despawn.iter() {
+        info!("despawn: {:?}", tile_pos);
+        tiles_cache.dirty_set.insert(*tile_pos);
         tiles_cache.tiles.remove(tile_pos);
-        tiles_cache.dirty = true;
     }
 }
 
@@ -64,7 +68,7 @@ fn optimize_colliders_system(
     mut commands: Commands,
     time: Res<Time>,
     mut delay: Local<f32>,
-    tile_cache: ResMut<TileCache>,
+    mut tile_cache: ResMut<TileCache>,
     query: Query<(Entity, &TilePos, &TileType)>,
 ) {
     if *delay > 0.0 {
@@ -72,9 +76,11 @@ fn optimize_colliders_system(
         return;
     }
     *delay = 0.5;
-    if !tile_cache.dirty {
+    if tile_cache.dirty_set.is_empty() {
         return;
     }
+
+    info!("dirty: {:?}", tile_cache.dirty_set);
     for (entity, tile_pos, _) in query.iter() {
         // commands.entity(entity).inser
 
@@ -83,11 +89,21 @@ fn optimize_colliders_system(
             .map(|p| Vec2::new(p.x as f32, p.y as f32))
             .collect();
 
-        let mut indices = Vec::new();
-        for (i, dir) in HEX_DIRECTIONS.iter().enumerate() {
-            let neighbor = dir.add(tile_pos.0);
+        let neighbors = [tile_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b));
 
-            if !tile_cache.tiles.contains_key(&TilePos(neighbor)) {
+        if !(tile_cache.dirty_set.contains(tile_pos)
+            || neighbors
+                .iter()
+                .any(|n| tile_cache.dirty_set.contains(&TilePos(*n))))
+        {
+            continue;
+        }
+
+        info!("dirty: {:?}", tile_pos);
+
+        let mut indices = Vec::new();
+        for (i, neighbor) in neighbors.iter().enumerate() {
+            if !tile_cache.tiles.contains_key(&TilePos(*neighbor)) {
                 indices.push([i as u32, (i as u32 + 1) % 6]);
             }
         }
@@ -104,13 +120,14 @@ fn optimize_colliders_system(
 
         // tiles_cache.tiles.insert(*tile_pos, entity);
     }
+    tile_cache.dirty_set.clear();
 }
 
 pub struct TilesPlugin;
 impl Plugin for TilesPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TileCache>()
-            .add_system(spawn_tiles_system)
+            .add_system_to_stage(CoreStage::PostUpdate, spawn_tiles_system)
             .add_system(optimize_colliders_system);
     }
 }

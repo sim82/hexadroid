@@ -1,3 +1,5 @@
+#![feature(array_zip)]
+
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use hexagon_tiles::{
