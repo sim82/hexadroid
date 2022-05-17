@@ -13,6 +13,7 @@ const STOP_CUTOFF: f32 = 0.5;
 const STOP_MULTIPLIER: f32 = -15.0;
 const FORCE_MULTIPLIER: f32 = 4000.0;
 const IMPULSE_MULTIPLIER: f32 = 80.0;
+const RELOAD_TIMEOUT: f32 = 0.5;
 
 #[derive(Component)]
 pub struct GroundFriction;
@@ -94,7 +95,7 @@ fn droid_attack_system(
         if !primary_attack || weapon_state.reload_timeout > f32::EPSILON {
             continue;
         }
-        weapon_state.reload_timeout = 1.0;
+        weapon_state.reload_timeout = RELOAD_TIMEOUT;
         commands.spawn_bundle(weapon::KineticProjectileBundle::with_direction(
             entity,
             *translation,
