@@ -1,9 +1,10 @@
-use bevy::{input::system::exit_on_esc_system, prelude::*};
+use bevy::{input::system::exit_on_esc_system, prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::prelude::*;
 use hexadroid::{
     camera::CameraTarget,
     droid::{ai::PrimaryEnemy, WeaponDirection},
     input::InputTarget,
+    render::MyMaterial,
     tiles::{TilePos, TileType},
     HEX_LAYOUT,
 };
@@ -23,7 +24,8 @@ fn main() {
         ..default()
     });
 
-    app.add_startup_system(setup_geometry);
+    app.add_startup_system(setup_geometry)
+        .add_startup_system(setup_linedraw_test);
 
     app.run();
 }
@@ -80,4 +82,20 @@ fn setup_geometry(mut commands: Commands) {
             //     .insert(RigidBody::Fixed);
         }
     }
+}
+
+fn setup_linedraw_test(
+    mut commands: Commands,
+    mut mesh_assets: ResMut<Assets<Mesh>>,
+    mut my_material_assets: ResMut<Assets<MyMaterial>>,
+) {
+    commands
+        .spawn_bundle(MaterialMesh2dBundle {
+            mesh: mesh_assets
+                .add(Mesh::from(shape::Quad::new(Vec2::new(100.0, 100.0))))
+                .into(),
+            material: my_material_assets.add(MyMaterial {}),
+            ..default()
+        })
+        .insert(Name::new("quad"));
 }
