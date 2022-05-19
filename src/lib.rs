@@ -97,6 +97,7 @@ impl PluginGroup for DefaultPlugins {
             .add(collision::CollisionPlugin)
             .add(camera::CameraPlugin)
             .add(tiles::TilesPlugin)
-            .add(render::RenderPlugin);
+            .add(render::RenderPlugin)
+            .add(render::pipeline::RenderShapePlugin);
     }
 }

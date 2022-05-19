@@ -8,8 +8,17 @@ struct VertexOutput {
 #endif
 };
 
+struct MyMaterial {
+    alpha: f32;
+    color: vec4<f32>;
+};
+
+[[group(1), binding(0)]]
+var<uniform> uniform_data: MyMaterial;
+
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
-    var output_color = vec4<f32>(input.uv, 0.0, 1.0);
+    var output_color = vec4<f32>(input.uv, 0.0, uniform_data.alpha);
+    output_color = output_color * uniform_data.color;
     return output_color;
 }

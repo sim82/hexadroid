@@ -94,8 +94,12 @@ fn setup_linedraw_test(
             mesh: mesh_assets
                 .add(Mesh::from(shape::Quad::new(Vec2::new(100.0, 100.0))))
                 .into(),
-            material: my_material_assets.add(MyMaterial {}),
+            material: my_material_assets.add(MyMaterial {
+                alpha: 0.5,
+                color: Color::RED,
+            }),
             ..default()
         })
-        .insert(Name::new("quad"));
+        .insert(Name::new("quad"))
+        .insert(hexadroid::render::pipeline::Shape);
 }
