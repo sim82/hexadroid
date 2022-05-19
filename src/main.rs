@@ -1,4 +1,5 @@
 use bevy::{input::system::exit_on_esc_system, prelude::*, sprite::MaterialMesh2dBundle};
+use bevy_prototype_lyon::{prelude::*, shapes};
 use bevy_rapier2d::prelude::*;
 use hexadroid::{
     camera::CameraTarget,
@@ -25,7 +26,8 @@ fn main() {
     });
 
     app.add_startup_system(setup_geometry)
-        .add_startup_system(setup_linedraw_test);
+        .add_startup_system(setup_linedraw_test)
+        .add_startup_system(setup_lyon_test);
 
     app.run();
 }
@@ -37,6 +39,21 @@ fn setup_geometry(mut commands: Commands) {
     //     .insert(Transform::from_xyz(0.0, 0.0, 0.0))
     //     .insert(RigidBody::Fixed);
 
+    let shape = shapes::RegularPolygon {
+        sides: 6,
+        feature: shapes::RegularPolygonFeature::Radius(32.0),
+        ..shapes::RegularPolygon::default()
+    };
+
+    let bundle = GeometryBuilder::build_as(
+        &shape,
+        DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
+        // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
+        // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
+        // },
+        Transform::default(),
+    );
+
     let enemy = commands
         .spawn_bundle(hexadroid::droid::DroidBundle::with_name(
             Vec2::new(100.0, 100.0),
@@ -44,6 +61,7 @@ fn setup_geometry(mut commands: Commands) {
         ))
         .insert(InputTarget::default())
         .insert(CameraTarget)
+        .insert_bundle(bundle)
         .id();
 
     commands
@@ -102,4 +120,21 @@ fn setup_linedraw_test(
         })
         .insert(Name::new("quad"))
         .insert(hexadroid::render::pipeline::Shape);
+}
+
+fn setup_lyon_test(mut commands: Commands) {
+    let shape = shapes::RegularPolygon {
+        sides: 6,
+        feature: shapes::RegularPolygonFeature::Radius(200.0),
+        ..shapes::RegularPolygon::default()
+    };
+
+    commands.spawn_bundle(GeometryBuilder::build_as(
+        &shape,
+        DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
+        // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
+        // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
+        // },
+        Transform::default(),
+    ));
 }

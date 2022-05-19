@@ -18,4 +18,5 @@ bevy-inspector-egui = { version = "0.11", optional = true }
 bevy_prototype_debug_lines = "0.7"
 bevy_mouse_tracking_plugin = "0.2"
 hexagon_tiles = "0.1"
+bevy_prototype_lyon = "0.5"
 # perlin_noise = "1"

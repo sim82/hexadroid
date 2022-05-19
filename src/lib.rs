@@ -2,6 +2,7 @@
 
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
+use bevy_prototype_lyon::plugin::ShapePlugin;
 use hexagon_tiles::{
     layout::{Layout, LAYOUT_ORIENTATION_POINTY},
     point::Point,
@@ -98,6 +99,7 @@ impl PluginGroup for DefaultPlugins {
             .add(camera::CameraPlugin)
             .add(tiles::TilesPlugin)
             .add(render::RenderPlugin)
-            .add(render::pipeline::RenderShapePlugin);
+            // .add(render::pipeline::RenderShapePlugin)
+            .add(ShapePlugin);
     }
 }
