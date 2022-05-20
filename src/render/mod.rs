@@ -15,7 +15,7 @@ use bevy::{
     sprite::{Material2d, Material2dPipeline, Material2dPlugin},
 };
 
-pub mod pipeline;
+// pub mod pipeline;
 
 #[derive(Clone, TypeUuid)]
 #[uuid = "2f58e6f2-9680-4311-ab7b-80b948d6ba18"]

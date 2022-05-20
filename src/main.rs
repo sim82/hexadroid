@@ -1,5 +1,8 @@
 use bevy::{input::system::exit_on_esc_system, prelude::*, sprite::MaterialMesh2dBundle};
-use bevy_prototype_lyon::{prelude::*, shapes};
+use bevy_prototype_lyon::{
+    prelude::{tess::FillTessellator, *},
+    shapes,
+};
 use bevy_rapier2d::prelude::*;
 use hexadroid::{
     camera::CameraTarget,
@@ -118,8 +121,7 @@ fn setup_linedraw_test(
             }),
             ..default()
         })
-        .insert(Name::new("quad"))
-        .insert(hexadroid::render::pipeline::Shape);
+        .insert(Name::new("quad"));
 }
 
 fn setup_lyon_test(mut commands: Commands) {
