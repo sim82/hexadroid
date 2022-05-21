@@ -73,21 +73,45 @@ fn spawn_tiles_system(
 #[derive(Component)]
 struct BoundaryMarker;
 
-#[derive(Default)]
-struct DedupEdges {
-    points: Vec<Vec2>,
-    edges: Vec<(usize, usize)>,
+pub mod util {
+    use bevy::prelude::*;
+    #[derive(Default)]
+    pub struct DedupEdges {
+        pub points: Vec<Vec2>,
+        pub edges: Vec<(usize, usize)>,
+    }
+
+    impl DedupEdges {
+        const THRESHOLD: f32 = 1.0;
+
+        pub fn get_or_insert_point(&mut self, p: Vec2) -> usize {
+            for (i, r) in self.points.iter().enumerate() {
+                if (p - *r).length() <= Self::THRESHOLD {
+                    return i;
+                }
+            }
+            self.points.push(p);
+            self.points.len() - 1
+        }
+        pub fn get_point_by_index(&self, i: usize) -> Vec2 {
+            self.points[i]
+        }
+        pub fn add_edge(&mut self, a: Vec2, b: Vec2) {
+            let e = (self.get_or_insert_point(a), self.get_or_insert_point(b));
+            self.edges.push(e);
+        }
+        pub fn get_edge_p0(&self, edge: usize) -> Vec2 {
+            let (p0, _) = self.edges[edge];
+            self.points[p0]
+        }
+    }
 }
-
-impl DedupEdges {}
-
 fn optimize_colliders_system(
     mut commands: Commands,
     time: Res<Time>,
     mut delay: Local<f32>,
     mut tile_cache: ResMut<TileCache>,
     query: Query<(Entity, &TilePos, &TileType)>,
-    mut debug_lines: ResMut<DebugLines>,
     boundary_query: Query<Entity, With<BoundaryMarker>>,
 ) {
     if *delay > 0.0 {
@@ -100,8 +124,7 @@ fn optimize_colliders_system(
     }
 
     info!("dirty: {:?}", tile_cache.dirty_set);
-
-    let mut edges = Vec::new();
+    let mut dedup_edges = util::DedupEdges::default();
 
     for (entity, tile_pos, _) in query.iter() {
         let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, tile_pos.0));
@@ -113,11 +136,14 @@ fn optimize_colliders_system(
 
         let neighbors = [tile_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b));
 
+        let mut indices = Vec::new();
+
         for (i, neighbor) in neighbors.iter().enumerate() {
             if !tile_cache.tiles.contains_key(&TilePos(*neighbor)) {
                 let v1 = i;
                 let v2 = (i + 1) % 6;
-                edges.push((center + corners[v1], center + corners[v2]));
+                dedup_edges.add_edge(center + corners[v1], center + corners[v2]);
+                indices.push([v1 as u32, v2 as u32]);
             }
         }
 
@@ -131,78 +157,60 @@ fn optimize_colliders_system(
 
         info!("dirty: {:?}", tile_pos);
 
-        let mut indices = Vec::new();
-        for (i, neighbor) in neighbors.iter().enumerate() {
-            if !tile_cache.tiles.contains_key(&TilePos(*neighbor)) {
-                let v1 = i;
-                let v2 = (i + 1) % 6;
-                indices.push([v1 as u32, v2 as u32]);
-            }
-        }
-
         commands
             .entity(entity)
             .insert(Collider::polyline(corners, Some(indices)))
             .insert(RigidBody::Fixed)
             .insert(Transform::from_translation(center.extend(0.0)));
     }
-    // info!("edges: {:?}", edges);
-    let mut num_pairs = 0;
-    let shape = shapes::Circle {
-        radius: 1.0,
-        ..default()
-    };
 
     let mut edge_pairs = HashMap::new();
-    for (i, e) in edges.iter().enumerate() {
-        for (j, f) in edges.iter().enumerate() {
-            // if j <= i {
-            //     continue;
-            // }
-            // const THRESHOLD: f32 = std::f32::EPSILON;
-            const THRESHOLD: f32 = 1.0;
-            if (e.0 - f.1).length() <= THRESHOLD {
-                info!("pair {:?} {:?} -> {} {}", e, f, i, j);
-                debug_lines.cross(e.0.extend(0.0), 10.0);
+    for (i, (e0, _)) in dedup_edges.edges.iter().enumerate() {
+        for (j, (_, f1)) in dedup_edges.edges.iter().enumerate() {
+            if e0 == f1 {
+                trace!("pair: {} {}", i, j);
                 edge_pairs.insert(i, j);
             }
         }
     }
-    info!("num pairs: {}", edge_pairs.len());
 
-    let mut edges_left = (0..edges.len()).collect::<HashSet<_>>();
+    info!("num pairs: {}", edge_pairs.len());
 
     for entity in boundary_query.iter() {
         commands.entity(entity).despawn();
     }
 
+    // trace all connected edge loops to generate polygons for rendering
+    let mut edges_left = (0..dedup_edges.edges.len()).collect::<HashSet<_>>();
     while !edges_left.is_empty() {
         let start_edge = *edges_left.iter().next().unwrap();
 
         let mut edge = start_edge;
-        let mut x = 0;
 
         let mut points = Vec::new();
         loop {
-            if x >= 100 {
+            trace!("edge: {}", edge);
+            let was_removed = edges_left.remove(&edge);
+            if !was_removed {
+                // this can only mean that an edge was reached twice while tracing the loop.
+                // should not be possible in our case since edges of a loop cannot cross etc.
+                error!("edge not in edges_left set.");
                 break;
             }
-            x += 1;
-            info!("edge: {}", edge);
-            edges_left.remove(&edge);
-            points.push(edges[edge].0);
-
+            // points.push(edges[edge].0);
+            points.push(dedup_edges.get_edge_p0(edge));
             if let Some(next) = edge_pairs.get(&edge) {
                 edge = *next;
             } else {
-                info!("failed");
+                // no neighboring edge found. should not be possible if all edges are loops.
+                error!("loop not closed");
                 break;
             }
             if edge == start_edge {
+                // reached start of loop. all is well.
                 break;
             }
         }
-
         let lyon_polygon = shapes::Polygon {
             closed: true,
             points: points.clone(),
