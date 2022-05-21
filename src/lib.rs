@@ -35,6 +35,23 @@ pub fn hex_point_to_vec2(point: Point) -> Vec2 {
     Vec2::new(point.x as f32, point.y as f32)
 }
 
+pub const COLORS_L: f32 = 0.75;
+
+pub const COLORS: [Color; 12] = [
+    Color::hsl(0.0, 1.0, COLORS_L),
+    Color::hsl(30.0, 1.0, COLORS_L),
+    Color::hsl(60.0, 1.0, COLORS_L),
+    Color::hsl(90.0, 1.0, COLORS_L),
+    Color::hsl(120.0, 1.0, COLORS_L),
+    Color::hsl(150.0, 1.0, COLORS_L),
+    Color::hsl(180.0, 1.0, COLORS_L),
+    Color::hsl(210.0, 1.0, COLORS_L),
+    Color::hsl(240.0, 1.0, COLORS_L),
+    Color::hsl(270.0, 1.0, COLORS_L),
+    Color::hsl(300.0, 1.0, COLORS_L),
+    Color::hsl(330.0, 1.0, COLORS_L),
+];
+
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub enum Despawn {

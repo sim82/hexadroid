@@ -11,7 +11,7 @@ use hexagon_tiles::{
     layout::LayoutTool,
 };
 
-use crate::{debug::DebugLinesExt, hex_point_to_vec2, Despawn, HEX_LAYOUT};
+use crate::{debug::DebugLinesExt, hex_point_to_vec2, Despawn, COLORS, HEX_LAYOUT};
 
 #[derive(Component)]
 pub struct TileType {
@@ -34,6 +34,7 @@ impl std::hash::Hash for TilePos {
 pub struct TileCache {
     pub tiles: HashMap<TilePos, Entity>,
     pub dirty_set: HashSet<TilePos>,
+    pub dirty_entity_set: HashSet<Entity>,
 }
 
 fn spawn_tiles_system(
@@ -61,24 +62,43 @@ fn spawn_tiles_system(
 
         tiles_cache.tiles.insert(*tile_pos, entity);
         tiles_cache.dirty_set.insert(*tile_pos);
+
+        tiles_cache.dirty_entity_set.insert(entity);
     }
 
-    for (_entity, tile_pos) in query_despawn.iter() {
+    for (entity, tile_pos) in query_despawn.iter() {
         info!("despawn: {:?}", tile_pos);
         tiles_cache.dirty_set.insert(*tile_pos);
         tiles_cache.tiles.remove(tile_pos);
+        tiles_cache.dirty_entity_set.insert(entity);
     }
+
+    let mut dirty_neighbors = HashSet::new();
+    let mut dirty_neighbor_entities = HashSet::new();
+    for dirty in tiles_cache.dirty_set.iter() {
+        for n in [dirty.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b)) {
+            let pos = TilePos(n);
+            if let Some(ne) = tiles_cache.tiles.get(&pos) {
+                dirty_neighbors.insert(pos);
+                dirty_neighbor_entities.insert(*ne);
+            }
+        }
+    }
+    tiles_cache.dirty_entity_set.extend(dirty_neighbor_entities);
+    tiles_cache.dirty_set.extend(dirty_neighbors);
 }
 
-#[derive(Component)]
-struct BoundaryMarker;
+#[derive(Component, Default)]
+struct BoundaryMarker {
+    tiles: HashSet<Entity>,
+}
 
 pub mod util {
     use bevy::prelude::*;
     #[derive(Default)]
     pub struct DedupEdges {
         pub points: Vec<Vec2>,
-        pub edges: Vec<(usize, usize)>,
+        pub edges: Vec<(usize, usize, Entity)>,
     }
 
     impl DedupEdges {
@@ -96,12 +116,16 @@ pub mod util {
         pub fn get_point_by_index(&self, i: usize) -> Vec2 {
             self.points[i]
         }
-        pub fn add_edge(&mut self, a: Vec2, b: Vec2) {
-            let e = (self.get_or_insert_point(a), self.get_or_insert_point(b));
+        pub fn add_edge(&mut self, a: Vec2, b: Vec2, owner: Entity) {
+            let e = (
+                self.get_or_insert_point(a),
+                self.get_or_insert_point(b),
+                owner,
+            );
             self.edges.push(e);
         }
         pub fn get_edge_p0(&self, edge: usize) -> Vec2 {
-            let (p0, _) = self.edges[edge];
+            let (p0, _, _) = self.edges[edge];
             self.points[p0]
         }
     }
@@ -112,7 +136,8 @@ fn optimize_colliders_system(
     mut delay: Local<f32>,
     mut tile_cache: ResMut<TileCache>,
     query: Query<(Entity, &TilePos, &TileType)>,
-    boundary_query: Query<Entity, With<BoundaryMarker>>,
+    boundary_query: Query<(Entity, &BoundaryMarker)>,
+    mut color_count: Local<usize>,
 ) {
     if *delay > 0.0 {
         *delay -= time.delta_seconds();
@@ -142,7 +167,7 @@ fn optimize_colliders_system(
             if !tile_cache.tiles.contains_key(&TilePos(*neighbor)) {
                 let v1 = i;
                 let v2 = (i + 1) % 6;
-                dedup_edges.add_edge(center + corners[v1], center + corners[v2]);
+                dedup_edges.add_edge(center + corners[v1], center + corners[v2], entity);
                 indices.push([v1 as u32, v2 as u32]);
             }
         }
@@ -165,8 +190,8 @@ fn optimize_colliders_system(
     }
 
     let mut edge_pairs = HashMap::new();
-    for (i, (e0, _)) in dedup_edges.edges.iter().enumerate() {
-        for (j, (_, f1)) in dedup_edges.edges.iter().enumerate() {
+    for (i, (e0, _, _)) in dedup_edges.edges.iter().enumerate() {
+        for (j, (_, f1, _)) in dedup_edges.edges.iter().enumerate() {
             if e0 == f1 {
                 trace!("pair: {} {}", i, j);
                 edge_pairs.insert(i, j);
@@ -175,18 +200,23 @@ fn optimize_colliders_system(
     }
 
     info!("num pairs: {}", edge_pairs.len());
+    info!("dirty: {:?}", tile_cache.dirty_entity_set);
+    for (entity, boundary) in boundary_query.iter() {
+        info!("test: {:?}", boundary.tiles);
 
-    for entity in boundary_query.iter() {
-        commands.entity(entity).despawn();
+        if !boundary.tiles.is_disjoint(&tile_cache.dirty_entity_set) {
+            commands.entity(entity).despawn();
+            info!("despawn: {:?}", boundary.tiles);
+        }
     }
 
     // trace all connected edge loops to generate polygons for rendering
     let mut edges_left = (0..dedup_edges.edges.len()).collect::<HashSet<_>>();
+
     while !edges_left.is_empty() {
+        let mut tiles = HashSet::new();
         let start_edge = *edges_left.iter().next().unwrap();
-
         let mut edge = start_edge;
-
         let mut points = Vec::new();
         loop {
             trace!("edge: {}", edge);
@@ -198,7 +228,10 @@ fn optimize_colliders_system(
                 break;
             }
             // points.push(edges[edge].0);
-            points.push(dedup_edges.get_edge_p0(edge));
+            let (p0, _, tile_entity) = dedup_edges.edges[edge];
+            points.push(dedup_edges.points[p0]);
+            tiles.insert(tile_entity);
+            // points.push(dedup_edges.get_edge_p0(edge));
             if let Some(next) = edge_pairs.get(&edge) {
                 edge = *next;
             } else {
@@ -219,12 +252,14 @@ fn optimize_colliders_system(
         commands
             .spawn_bundle(GeometryBuilder::build_as(
                 &lyon_polygon,
-                DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
+                DrawMode::Stroke(StrokeMode::new(COLORS[*color_count % COLORS.len()], 10.0)),
                 default(),
             ))
-            .insert(BoundaryMarker);
+            .insert(BoundaryMarker { tiles });
     }
+    *color_count += 1;
     tile_cache.dirty_set.clear();
+    tile_cache.dirty_entity_set.clear();
 }
 
 pub struct TilesPlugin;
