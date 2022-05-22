@@ -161,6 +161,14 @@ fn optimize_colliders_system(
 
         let neighbors = [tile_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b));
 
+        if !(tile_cache.dirty_set.contains(tile_pos)
+            || neighbors
+                .iter()
+                .any(|n| tile_cache.dirty_set.contains(&TilePos(*n))))
+        {
+            continue;
+        }
+
         let mut indices = Vec::new();
 
         for (i, neighbor) in neighbors.iter().enumerate() {
@@ -170,14 +178,6 @@ fn optimize_colliders_system(
                 dedup_edges.add_edge(center + corners[v1], center + corners[v2], entity);
                 indices.push([v1 as u32, v2 as u32]);
             }
-        }
-
-        if !(tile_cache.dirty_set.contains(tile_pos)
-            || neighbors
-                .iter()
-                .any(|n| tile_cache.dirty_set.contains(&TilePos(*n))))
-        {
-            continue;
         }
 
         info!("dirty: {:?}", tile_pos);
@@ -229,7 +229,7 @@ fn optimize_colliders_system(
             }
             // points.push(edges[edge].0);
             let (p0, _, tile_entity) = dedup_edges.edges[edge];
-            points.push(dedup_edges.points[p0]);
+            points.push(dedup_edges.points[p0] + Vec2::X * (*color_count as f32));
             tiles.insert(tile_entity);
             // points.push(dedup_edges.get_edge_p0(edge));
             if let Some(next) = edge_pairs.get(&edge) {
