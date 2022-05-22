@@ -146,14 +146,15 @@ fn optimize_colliders_system(
         return;
     }
 
-    let mut dedup_edges = util::DedupEdges::default();
-
+    // despawn outdated edge loops, i.e. those (also transitively) touched by dirty tiles
     let extended_dirty_set = despawn_dirty_edgeloops(
         std::mem::take(&mut tile_cache.dirty_set),
         boundary_query,
         &mut commands,
     );
 
+    // spawn collider components (directly onto tile entities) and collect deduplicated edge set in [`dedup_edges`]
+    let mut dedup_edges = util::DedupEdges::default();
     for entity in extended_dirty_set.iter() {
         // note: dirty set also contains entity ids of already despawned tiles, so we need to check this explicitly
         if let Ok(tile_pos) = query.get(*entity) {
@@ -172,6 +173,7 @@ fn optimize_colliders_system(
 
             let mut indices = Vec::new();
 
+            // spawn colliders and collect edges only for solid -> free boundaries
             for (i, neighbor) in neighbors.iter().enumerate() {
                 if !tile_cache.tiles.contains_key(&TilePos(*neighbor)) {
                     let v1 = i;
@@ -191,72 +193,7 @@ fn optimize_colliders_system(
         }
     }
 
-    let mut edge_pairs = HashMap::new();
-    for (i, (e0, _, _)) in dedup_edges.edges.iter().enumerate() {
-        for (j, (_, f1, _)) in dedup_edges.edges.iter().enumerate() {
-            if e0 == f1 {
-                trace!("pair: {} {}", i, j);
-                edge_pairs.insert(i, j);
-            }
-        }
-    }
-    info!("num pairs: {}", edge_pairs.len());
-
-    // trace all connected edge loops to generate polygons for rendering
-    let mut edges_left = (0..dedup_edges.edges.len()).collect::<HashSet<_>>();
-
-    while !edges_left.is_empty() {
-        let mut tiles = HashSet::new();
-        let start_edge = *edges_left.iter().next().unwrap();
-        let mut edge = start_edge;
-        let mut points = Vec::new();
-
-        loop {
-            trace!("edge: {}", edge);
-            let was_removed = edges_left.remove(&edge);
-            if !was_removed {
-                // this can only mean that an edge was reached twice while tracing the loop.
-                // should not be possible in our case since edges of a loop cannot cross etc.
-                error!("edge not in edges_left set.");
-                break;
-            }
-            // points.push(edges[edge].0);
-            let (p0, _, tile_entity) = dedup_edges.edges[edge];
-            let edge_p0 = dedup_edges.points[p0];
-            let offs = if false {
-                Vec2::X * (*color_count as f32)
-            } else {
-                default()
-            };
-            points.push(edge_p0 + offs);
-            tiles.insert(tile_entity);
-            // points.push(dedup_edges.get_edge_p0(edge));
-            if let Some(next) = edge_pairs.get(&edge) {
-                edge = *next;
-            } else {
-                // no neighboring edge found. should not be possible if all edges are loops.
-                error!("loop not closed");
-                break;
-            }
-
-            if edge == start_edge {
-                // reached start of loop. all is well.
-                break;
-            }
-        }
-        let lyon_polygon = shapes::Polygon {
-            closed: true,
-            points: points.clone(),
-        };
-
-        commands
-            .spawn_bundle(GeometryBuilder::build_as(
-                &lyon_polygon,
-                DrawMode::Stroke(StrokeMode::new(COLORS[*color_count % COLORS.len()], 10.0)),
-                default(),
-            ))
-            .insert(BoundaryMarker { tiles });
-    }
+    spawn_edgeloops(dedup_edges, *color_count, commands);
     *color_count += 1;
 }
 
@@ -296,6 +233,73 @@ fn despawn_dirty_edgeloops(
     }
     info!("new dirty: {:?} {}", dirty_set, loops);
     dirty_set
+}
+
+fn spawn_edgeloops(dedup_edges: util::DedupEdges, color_count: usize, mut commands: Commands) {
+    let mut edge_pairs = HashMap::new();
+    for (i, (e0, _, _)) in dedup_edges.edges.iter().enumerate() {
+        for (j, (_, f1, _)) in dedup_edges.edges.iter().enumerate() {
+            if e0 == f1 {
+                trace!("pair: {} {}", i, j);
+                edge_pairs.insert(i, j);
+            }
+        }
+    }
+    info!("num pairs: {}", edge_pairs.len());
+    // trace all connected edge loops to generate polygons for rendering
+    let mut edges_left = (0..dedup_edges.edges.len()).collect::<HashSet<_>>();
+    while !edges_left.is_empty() {
+        let mut tiles = HashSet::new();
+        let start_edge = *edges_left.iter().next().unwrap();
+        let mut edge = start_edge;
+        let mut points = Vec::new();
+
+        loop {
+            trace!("edge: {}", edge);
+            let was_removed = edges_left.remove(&edge);
+            if !was_removed {
+                // this can only mean that an edge was reached twice while tracing the loop.
+                // should not be possible in our case since edges of a loop cannot cross etc.
+                error!("edge not in edges_left set.");
+                break;
+            }
+            // points.push(edges[edge].0);
+            let (p0, _, tile_entity) = dedup_edges.edges[edge];
+            let edge_p0 = dedup_edges.points[p0];
+            let offs = if false {
+                Vec2::X * (color_count as f32)
+            } else {
+                default()
+            };
+            points.push(edge_p0 + offs);
+            tiles.insert(tile_entity);
+            // points.push(dedup_edges.get_edge_p0(edge));
+            if let Some(next) = edge_pairs.get(&edge) {
+                edge = *next;
+            } else {
+                // no neighboring edge found. should not be possible if all edges are loops.
+                error!("loop not closed");
+                break;
+            }
+
+            if edge == start_edge {
+                // reached start of loop. all is well.
+                break;
+            }
+        }
+        let lyon_polygon = shapes::Polygon {
+            closed: true,
+            points: points.clone(),
+        };
+
+        commands
+            .spawn_bundle(GeometryBuilder::build_as(
+                &lyon_polygon,
+                DrawMode::Stroke(StrokeMode::new(COLORS[color_count % COLORS.len()], 10.0)),
+                default(),
+            ))
+            .insert(BoundaryMarker { tiles });
+    }
 }
 
 pub struct TilesPlugin;
