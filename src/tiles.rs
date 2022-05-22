@@ -130,7 +130,7 @@ fn optimize_colliders_system(
     time: Res<Time>,
     mut delay: Local<f32>,
     mut tile_cache: ResMut<TileCache>,
-    query: Query<(Entity, &TilePos, &TileType)>,
+    query: Query<&TilePos>,
     boundary_query: Query<(Entity, &BoundaryMarker)>,
     mut color_count: Local<usize>,
 ) {
@@ -167,7 +167,7 @@ fn optimize_colliders_system(
 
     for entity in extended_dirty_set.iter() {
         // note: dirty set also contains entity ids of already despawned tiles, so we need to check this explicitly
-        if let Ok((_, tile_pos, _)) = query.get(*entity) {
+        if let Ok(tile_pos) = query.get(*entity) {
             let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, tile_pos.0));
 
             let corners: Vec<Vec2> = LayoutTool::polygon_corners(HEX_LAYOUT, Hex::new(0, 0))
@@ -217,8 +217,6 @@ fn optimize_colliders_system(
         let start_edge = *edges_left.iter().next().unwrap();
         let mut edge = start_edge;
         let mut points = Vec::new();
-        // let mut min = Vec2::new(std::f32::MAX, std::f32::MAX);
-        // let mut max = Vec2::new(std::f32::MIN, std::f32::MIN);
 
         loop {
             trace!("edge: {}", edge);
@@ -242,16 +240,6 @@ fn optimize_colliders_system(
                 error!("loop not closed");
                 break;
             }
-
-            // min = min.min(edge_p0);
-            // max = max.max(edge_p0);
-
-            // let c = max - min;
-            // const MAX_C: f32 = 300.0;
-            // if c.x > MAX_C || c.y > MAX_C {
-            //     info!("stop bounds");
-            //     break;
-            // }
 
             if edge == start_edge {
                 // reached start of loop. all is well.
