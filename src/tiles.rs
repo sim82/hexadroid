@@ -179,43 +179,48 @@ fn optimize_colliders_system(
 
     info!("new dirty: {:?}", dirty_entities);
 
-    for (ref entity, tile_pos, _) in query.iter() {
-        let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, tile_pos.0));
+    // for (ref entity, tile_pos, _) in query.iter() {
+    for entity in dirty_entities.iter() {
+        // let (_, tile_pos, _) = query.get(*entity).unwrap();
 
-        let corners: Vec<Vec2> = LayoutTool::polygon_corners(HEX_LAYOUT, Hex::new(0, 0))
-            .iter()
-            .map(|p| Vec2::new(p.x as f32, p.y as f32))
-            .collect();
+        if let Ok((_, tile_pos, _)) = query.get(*entity) {
+            let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, tile_pos.0));
 
-        let neighbors = [tile_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b));
+            let corners: Vec<Vec2> = LayoutTool::polygon_corners(HEX_LAYOUT, Hex::new(0, 0))
+                .iter()
+                .map(|p| Vec2::new(p.x as f32, p.y as f32))
+                .collect();
 
-        if !(
-            dirty_entities.contains(entity)
-            // || neighbors
-            //     .iter()
-            //     .any(|n| tile_cache.dirty_set.contains(&TilePos(*n)))
-        ) {
-            continue;
-        }
+            let neighbors = [tile_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b));
 
-        let mut indices = Vec::new();
-
-        for (i, neighbor) in neighbors.iter().enumerate() {
-            if !tile_cache.tiles.contains_key(&TilePos(*neighbor)) {
-                let v1 = i;
-                let v2 = (i + 1) % 6;
-                dedup_edges.add_edge(center + corners[v1], center + corners[v2], *entity);
-                indices.push([v1 as u32, v2 as u32]);
+            if !(
+                dirty_entities.contains(entity)
+                // || neighbors
+                //     .iter()
+                //     .any(|n| tile_cache.dirty_set.contains(&TilePos(*n)))
+            ) {
+                continue;
             }
+
+            let mut indices = Vec::new();
+
+            for (i, neighbor) in neighbors.iter().enumerate() {
+                if !tile_cache.tiles.contains_key(&TilePos(*neighbor)) {
+                    let v1 = i;
+                    let v2 = (i + 1) % 6;
+                    dedup_edges.add_edge(center + corners[v1], center + corners[v2], *entity);
+                    indices.push([v1 as u32, v2 as u32]);
+                }
+            }
+
+            info!("dirty: {:?}", tile_pos);
+
+            commands
+                .entity(*entity)
+                .insert(Collider::polyline(corners, Some(indices)))
+                .insert(RigidBody::Fixed)
+                .insert(Transform::from_translation(center.extend(0.0)));
         }
-
-        info!("dirty: {:?}", tile_pos);
-
-        commands
-            .entity(*entity)
-            .insert(Collider::polyline(corners, Some(indices)))
-            .insert(RigidBody::Fixed)
-            .insert(Transform::from_translation(center.extend(0.0)));
     }
 
     let mut edge_pairs = HashMap::new();
