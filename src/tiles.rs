@@ -33,8 +33,7 @@ impl std::hash::Hash for TilePos {
 #[derive(Default)]
 pub struct TileCache {
     pub tiles: HashMap<TilePos, Entity>,
-    pub dirty_set: HashSet<TilePos>,
-    pub dirty_entity_set: HashSet<Entity>,
+    pub dirty_set: HashSet<Entity>,
 }
 
 fn spawn_tiles_system(
@@ -62,38 +61,26 @@ fn spawn_tiles_system(
             .insert(RigidBody::Fixed);
 
         tiles_cache.tiles.insert(*tile_pos, entity);
-        dirty_add.push((entity, *tile_pos));
-        // tiles_cache.dirty_set.insert(*tile_pos);
-        // tiles_cache.dirty_entity_set.insert(entity);
+        dirty_add.push((entity, *tile_pos, true));
     }
 
     for (entity, tile_pos) in query_despawn.iter() {
         info!("despawn: {:?}", tile_pos);
-        tiles_cache.dirty_set.insert(*tile_pos);
-        // tiles_cache.tiles.remove(tile_pos);
-        // tiles_cache.dirty_entity_set.insert(entity);
-        dirty_add.push((entity, *tile_pos));
+        dirty_add.push((entity, *tile_pos, true)); // don't add the tile itself, only its neighbors
     }
 
-    for (add_entity, add_pos) in dirty_add {
-        tiles_cache.dirty_set.insert(add_pos);
-        tiles_cache.dirty_entity_set.insert(add_entity);
-
-        for n in [add_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b)) {
+    // add the modified tiles and their neighbors to dirty_set
+    for (entity, pos, add_self) in dirty_add {
+        if add_self {
+            tiles_cache.dirty_set.insert(entity);
+        }
+        for n in [pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b)) {
             let pos = TilePos(n);
             if let Some(ne) = tiles_cache.tiles.get(&pos).cloned() {
-                tiles_cache.dirty_set.insert(pos);
-                tiles_cache.dirty_entity_set.insert(ne);
+                tiles_cache.dirty_set.insert(ne);
             }
         }
     }
-    // let mut dirty_neighbors = HashSet::new();
-    // let mut dirty_neighbor_entities = HashSet::new();
-    // for dirty in tiles_cache.dirty_set.iter() {}
-    // tiles_cache.dirty_entity_set.extend(dirty_neighbor_entities);
-    // tiles_cache.dirty_set.extend(dirty_neighbors);
-
-    // info!("spawn tiles dirty: {:?}", tiles_cache.dirty_entity_set);
 }
 
 #[derive(Component, Default)]
@@ -156,33 +143,30 @@ fn optimize_colliders_system(
         return;
     }
 
-    // info!("dirty: {:?}", tile_cache.dirty_set);
     let mut dedup_edges = util::DedupEdges::default();
 
-    // for entity in tile_cache.dirty_entity_set.iter() {
-    // let (_, tile_pos, _) = query.get(*entity).unwrap();
-    // }
+    info!("dirty: {:?}", tile_cache.dirty_set);
 
-    info!("dirty: {:?}", tile_cache.dirty_entity_set);
-    let mut dirty_entities: HashSet<Entity> = default();
+    // despawn bundary loops that are affected by dirty_set.
+    // also create extended dirty_set which includes all tiles from the despawned loops
+    //  => we need to to generate the new bundary loops.
+    let mut extended_dirty_set: HashSet<Entity> = default();
     for (entity, boundary) in boundary_query.iter() {
-        info!("test: {:?}", boundary.tiles);
+        trace!("test: {:?}", boundary.tiles);
 
-        if !boundary.tiles.is_disjoint(&tile_cache.dirty_entity_set) {
+        if !boundary.tiles.is_disjoint(&tile_cache.dirty_set) {
             commands.entity(entity).despawn();
-            info!("despawn: {:?}", boundary.tiles);
-            dirty_entities.extend(boundary.tiles.iter());
+            trace!("despawn: {:?}", boundary.tiles);
+            extended_dirty_set.extend(boundary.tiles.iter());
         }
     }
 
-    dirty_entities.extend(tile_cache.dirty_entity_set.iter());
+    extended_dirty_set.extend(tile_cache.dirty_set.drain());
 
-    info!("new dirty: {:?}", dirty_entities);
+    info!("new dirty: {:?}", extended_dirty_set);
 
-    // for (ref entity, tile_pos, _) in query.iter() {
-    for entity in dirty_entities.iter() {
-        // let (_, tile_pos, _) = query.get(*entity).unwrap();
-
+    for entity in extended_dirty_set.iter() {
+        // note: dirty set also contains entity ids of already despawned tiles, so we need to check this explicitly
         if let Ok((_, tile_pos, _)) = query.get(*entity) {
             let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, tile_pos.0));
 
@@ -192,15 +176,6 @@ fn optimize_colliders_system(
                 .collect();
 
             let neighbors = [tile_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b));
-
-            if !(
-                dirty_entities.contains(entity)
-                // || neighbors
-                //     .iter()
-                //     .any(|n| tile_cache.dirty_set.contains(&TilePos(*n)))
-            ) {
-                continue;
-            }
 
             let mut indices = Vec::new();
 
@@ -213,7 +188,7 @@ fn optimize_colliders_system(
                 }
             }
 
-            info!("dirty: {:?}", tile_pos);
+            trace!("dirty: {:?}", tile_pos);
 
             commands
                 .entity(*entity)
@@ -232,7 +207,7 @@ fn optimize_colliders_system(
             }
         }
     }
-    // info!("num pairs: {}", edge_pairs.len());
+    info!("num pairs: {}", edge_pairs.len());
 
     // trace all connected edge loops to generate polygons for rendering
     let mut edges_left = (0..dedup_edges.edges.len()).collect::<HashSet<_>>();
@@ -242,6 +217,9 @@ fn optimize_colliders_system(
         let start_edge = *edges_left.iter().next().unwrap();
         let mut edge = start_edge;
         let mut points = Vec::new();
+        // let mut min = Vec2::new(std::f32::MAX, std::f32::MAX);
+        // let mut max = Vec2::new(std::f32::MIN, std::f32::MIN);
+
         loop {
             trace!("edge: {}", edge);
             let was_removed = edges_left.remove(&edge);
@@ -253,7 +231,8 @@ fn optimize_colliders_system(
             }
             // points.push(edges[edge].0);
             let (p0, _, tile_entity) = dedup_edges.edges[edge];
-            points.push(dedup_edges.points[p0] + Vec2::X * (*color_count as f32));
+            let edge_p0 = dedup_edges.points[p0];
+            points.push(edge_p0 /*+ Vec2::X * (*color_count as f32)*/);
             tiles.insert(tile_entity);
             // points.push(dedup_edges.get_edge_p0(edge));
             if let Some(next) = edge_pairs.get(&edge) {
@@ -263,6 +242,17 @@ fn optimize_colliders_system(
                 error!("loop not closed");
                 break;
             }
+
+            // min = min.min(edge_p0);
+            // max = max.max(edge_p0);
+
+            // let c = max - min;
+            // const MAX_C: f32 = 300.0;
+            // if c.x > MAX_C || c.y > MAX_C {
+            //     info!("stop bounds");
+            //     break;
+            // }
+
             if edge == start_edge {
                 // reached start of loop. all is well.
                 break;
@@ -282,8 +272,6 @@ fn optimize_colliders_system(
             .insert(BoundaryMarker { tiles });
     }
     *color_count += 1;
-    tile_cache.dirty_set.clear();
-    tile_cache.dirty_entity_set.clear();
 }
 
 pub struct TilesPlugin;
