@@ -139,7 +139,7 @@ fn optimize_colliders_system(
         *delay -= time.delta_seconds();
         return;
     }
-    *delay = 0.5;
+    *delay = 0.1;
     if tile_cache.dirty_set.is_empty() {
         return;
     }
@@ -151,20 +151,34 @@ fn optimize_colliders_system(
     // despawn bundary loops that are affected by dirty_set.
     // also create extended dirty_set which includes all tiles from the despawned loops
     //  => we need to to generate the new bundary loops.
-    let mut extended_dirty_set: HashSet<Entity> = default();
-    for (entity, boundary) in boundary_query.iter() {
-        trace!("test: {:?}", boundary.tiles);
+    // this algorithm uses multiple passes since the dirty set from one loop can influence new loops
+    // that were not touched by the initial dirty set etc.
+    let mut extended_dirty_set = std::mem::take(&mut tile_cache.dirty_set);
+    let mut removed_boundaries = HashSet::new();
+    let mut loops = 0;
+    loop {
+        let mut extend: HashSet<Entity> = default();
+        for (entity, boundary) in boundary_query.iter() {
+            trace!("test: {:?} {:?}", boundary.tiles, removed_boundaries);
 
-        if !boundary.tiles.is_disjoint(&tile_cache.dirty_set) {
-            commands.entity(entity).despawn();
-            trace!("despawn: {:?}", boundary.tiles);
-            extended_dirty_set.extend(boundary.tiles.iter());
+            if !removed_boundaries.contains(&entity)
+                && !boundary.tiles.is_disjoint(&extended_dirty_set)
+            {
+                commands.entity(entity).despawn();
+                trace!("despawn: {:?}", boundary.tiles);
+                // extended_dirty_set.extend(boundary.tiles.iter());
+                extend.extend(boundary.tiles.iter());
+                removed_boundaries.insert(entity);
+            }
         }
+        let stop = extend.is_empty();
+        extended_dirty_set.extend(extend.drain());
+        if stop {
+            break;
+        }
+        loops += 1;
     }
-
-    extended_dirty_set.extend(tile_cache.dirty_set.drain());
-
-    info!("new dirty: {:?}", extended_dirty_set);
+    info!("new dirty: {:?} {}", extended_dirty_set, loops);
 
     for entity in extended_dirty_set.iter() {
         // note: dirty set also contains entity ids of already despawned tiles, so we need to check this explicitly
