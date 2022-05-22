@@ -43,6 +43,7 @@ fn spawn_tiles_system(
     query: Query<(Entity, &TilePos, &TileType), Added<TileType>>,
     query_despawn: Query<(Entity, &TilePos), Added<Despawn>>,
 ) {
+    let mut dirty_add = Vec::new();
     for (entity, tile_pos, _) in query.iter() {
         // commands.entity(entity).inser
 
@@ -61,31 +62,38 @@ fn spawn_tiles_system(
             .insert(RigidBody::Fixed);
 
         tiles_cache.tiles.insert(*tile_pos, entity);
-        tiles_cache.dirty_set.insert(*tile_pos);
-
-        tiles_cache.dirty_entity_set.insert(entity);
+        dirty_add.push((entity, *tile_pos));
+        // tiles_cache.dirty_set.insert(*tile_pos);
+        // tiles_cache.dirty_entity_set.insert(entity);
     }
 
     for (entity, tile_pos) in query_despawn.iter() {
         info!("despawn: {:?}", tile_pos);
         tiles_cache.dirty_set.insert(*tile_pos);
-        tiles_cache.tiles.remove(tile_pos);
-        tiles_cache.dirty_entity_set.insert(entity);
+        // tiles_cache.tiles.remove(tile_pos);
+        // tiles_cache.dirty_entity_set.insert(entity);
+        dirty_add.push((entity, *tile_pos));
     }
 
-    let mut dirty_neighbors = HashSet::new();
-    let mut dirty_neighbor_entities = HashSet::new();
-    for dirty in tiles_cache.dirty_set.iter() {
-        for n in [dirty.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b)) {
+    for (add_entity, add_pos) in dirty_add {
+        tiles_cache.dirty_set.insert(add_pos);
+        tiles_cache.dirty_entity_set.insert(add_entity);
+
+        for n in [add_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b)) {
             let pos = TilePos(n);
-            if let Some(ne) = tiles_cache.tiles.get(&pos) {
-                dirty_neighbors.insert(pos);
-                dirty_neighbor_entities.insert(*ne);
+            if let Some(ne) = tiles_cache.tiles.get(&pos).cloned() {
+                tiles_cache.dirty_set.insert(pos);
+                tiles_cache.dirty_entity_set.insert(ne);
             }
         }
     }
-    tiles_cache.dirty_entity_set.extend(dirty_neighbor_entities);
-    tiles_cache.dirty_set.extend(dirty_neighbors);
+    // let mut dirty_neighbors = HashSet::new();
+    // let mut dirty_neighbor_entities = HashSet::new();
+    // for dirty in tiles_cache.dirty_set.iter() {}
+    // tiles_cache.dirty_entity_set.extend(dirty_neighbor_entities);
+    // tiles_cache.dirty_set.extend(dirty_neighbors);
+
+    // info!("spawn tiles dirty: {:?}", tiles_cache.dirty_entity_set);
 }
 
 #[derive(Component, Default)]
@@ -148,10 +156,30 @@ fn optimize_colliders_system(
         return;
     }
 
-    info!("dirty: {:?}", tile_cache.dirty_set);
+    // info!("dirty: {:?}", tile_cache.dirty_set);
     let mut dedup_edges = util::DedupEdges::default();
 
-    for (entity, tile_pos, _) in query.iter() {
+    // for entity in tile_cache.dirty_entity_set.iter() {
+    // let (_, tile_pos, _) = query.get(*entity).unwrap();
+    // }
+
+    info!("dirty: {:?}", tile_cache.dirty_entity_set);
+    let mut dirty_entities: HashSet<Entity> = default();
+    for (entity, boundary) in boundary_query.iter() {
+        info!("test: {:?}", boundary.tiles);
+
+        if !boundary.tiles.is_disjoint(&tile_cache.dirty_entity_set) {
+            commands.entity(entity).despawn();
+            info!("despawn: {:?}", boundary.tiles);
+            dirty_entities.extend(boundary.tiles.iter());
+        }
+    }
+
+    dirty_entities.extend(tile_cache.dirty_entity_set.iter());
+
+    info!("new dirty: {:?}", dirty_entities);
+
+    for (ref entity, tile_pos, _) in query.iter() {
         let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, tile_pos.0));
 
         let corners: Vec<Vec2> = LayoutTool::polygon_corners(HEX_LAYOUT, Hex::new(0, 0))
@@ -161,11 +189,12 @@ fn optimize_colliders_system(
 
         let neighbors = [tile_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b));
 
-        if !(tile_cache.dirty_set.contains(tile_pos)
-            || neighbors
-                .iter()
-                .any(|n| tile_cache.dirty_set.contains(&TilePos(*n))))
-        {
+        if !(
+            dirty_entities.contains(entity)
+            // || neighbors
+            //     .iter()
+            //     .any(|n| tile_cache.dirty_set.contains(&TilePos(*n)))
+        ) {
             continue;
         }
 
@@ -175,7 +204,7 @@ fn optimize_colliders_system(
             if !tile_cache.tiles.contains_key(&TilePos(*neighbor)) {
                 let v1 = i;
                 let v2 = (i + 1) % 6;
-                dedup_edges.add_edge(center + corners[v1], center + corners[v2], entity);
+                dedup_edges.add_edge(center + corners[v1], center + corners[v2], *entity);
                 indices.push([v1 as u32, v2 as u32]);
             }
         }
@@ -183,7 +212,7 @@ fn optimize_colliders_system(
         info!("dirty: {:?}", tile_pos);
 
         commands
-            .entity(entity)
+            .entity(*entity)
             .insert(Collider::polyline(corners, Some(indices)))
             .insert(RigidBody::Fixed)
             .insert(Transform::from_translation(center.extend(0.0)));
@@ -198,17 +227,7 @@ fn optimize_colliders_system(
             }
         }
     }
-
-    info!("num pairs: {}", edge_pairs.len());
-    info!("dirty: {:?}", tile_cache.dirty_entity_set);
-    for (entity, boundary) in boundary_query.iter() {
-        info!("test: {:?}", boundary.tiles);
-
-        if !boundary.tiles.is_disjoint(&tile_cache.dirty_entity_set) {
-            commands.entity(entity).despawn();
-            info!("despawn: {:?}", boundary.tiles);
-        }
-    }
+    // info!("num pairs: {}", edge_pairs.len());
 
     // trace all connected edge loops to generate polygons for rendering
     let mut edges_left = (0..dedup_edges.edges.len()).collect::<HashSet<_>>();
