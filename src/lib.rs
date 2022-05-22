@@ -86,7 +86,17 @@ impl Plugin for DefaultPlugin {
     }
 }
 
-pub struct DefaultPlugins;
+#[derive(Default)]
+pub struct DefaultPlugins {
+    debug_draw: bool,
+}
+
+impl DefaultPlugins {
+    pub fn with_debug_draw(mut self, b: bool) -> Self {
+        self.debug_draw = b;
+        self
+    }
+}
 
 impl PluginGroup for DefaultPlugins {
     fn build(&mut self, group: &mut bevy::app::PluginGroupBuilder) {
@@ -95,11 +105,12 @@ impl PluginGroup for DefaultPlugins {
         group.add(DefaultPlugin);
 
         // bevy_rapier plugins
-        group
-            .add(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(32.0))
-            .add(RapierDebugRenderPlugin::default());
+        group.add(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(32.0));
 
-        group.add(DebugLinesPlugin::default());
+        if self.debug_draw {
+            group.add(RapierDebugRenderPlugin::default());
+            group.add(DebugLinesPlugin::default());
+        }
 
         // egui plugins
         #[cfg(feature = "inspector")]

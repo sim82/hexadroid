@@ -4,6 +4,7 @@ use bevy_prototype_lyon::{
     shapes,
 };
 use bevy_rapier2d::prelude::*;
+use clap::Parser;
 use hexadroid::{
     camera::CameraTarget,
     droid::{ai::PrimaryEnemy, WeaponDirection},
@@ -14,28 +15,42 @@ use hexadroid::{
 };
 use hexagon_tiles::layout::LayoutTool;
 
-fn main() {
-    let mut app = App::new();
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// Name of the person to greet
+    #[clap(short, long)]
+    debug_draw: bool,
 
+    #[clap(short, long)]
+    empty: bool,
+}
+
+fn main() {
+    let args = Args::parse();
+
+    let mut app = App::new();
     // bevy plugins
     app.add_plugins(DefaultPlugins)
         .add_system(exit_on_esc_system)
         .insert_resource(Msaa::default());
 
-    app.add_plugins(hexadroid::DefaultPlugins);
+    app.add_plugins(hexadroid::DefaultPlugins::default().with_debug_draw(args.debug_draw));
     app.insert_resource(RapierConfiguration {
         gravity: Vec2::ZERO,
         ..default()
     });
 
     app.add_startup_system(setup_geometry)
-        .add_startup_system(setup_linedraw_test)
-        .add_startup_system(setup_lyon_test);
+        // .add_startup_system(setup_linedraw_test)
+        // .add_startup_system(setup_lyon_test)
+        ;
+    app.insert_resource(args);
 
     app.run();
 }
 
-fn setup_geometry(mut commands: Commands) {
+fn setup_geometry(mut commands: Commands, args: Res<Args>) {
     // commands
     //     .spawn()
     //     .insert(Collider::cuboid(100.0, 100.0))
@@ -48,34 +63,38 @@ fn setup_geometry(mut commands: Commands) {
         ..shapes::RegularPolygon::default()
     };
 
-    let bundle = GeometryBuilder::build_as(
+    let my_shape_builder = GeometryBuilder::build_as(
         &shape,
         DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
         // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
         // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
         // },
-        Transform::default(),
+        Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
     );
 
     let enemy = commands
-        .spawn_bundle(hexadroid::droid::DroidBundle::with_name(
-            Vec2::new(100.0, 100.0),
-            "player",
-        ))
+        .spawn_bundle(hexadroid::droid::DroidBundle::with_name("player"))
         .insert(InputTarget::default())
         .insert(CameraTarget)
-        .insert_bundle(bundle)
+        .insert_bundle(my_shape_builder)
         .id();
 
-    commands
-        .spawn_bundle(hexadroid::droid::DroidBundle::with_name(
-            Vec2::new(-100.0, 100.0),
-            "r2d2",
-        ))
-        .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
-        .insert(PrimaryEnemy { enemy });
+    let enemy_shape_builder = GeometryBuilder::build_as(
+        &shape,
+        DrawMode::Stroke(StrokeMode::new(Color::RED, 10.0)),
+        // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
+        // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
+        // },
+        Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
+    );
 
-    if false {
+    commands
+        .spawn_bundle(hexadroid::droid::DroidBundle::with_name("r2d2"))
+        .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
+        .insert(PrimaryEnemy { enemy })
+        .insert_bundle(enemy_shape_builder);
+
+    if !args.empty {
         for q in -5..=5 {
             for r in -5..=5 {
                 let h = hexagon_tiles::hexagon::Hex::new(q, r);
@@ -88,20 +107,6 @@ fn setup_geometry(mut commands: Commands) {
                     .spawn()
                     .insert(TilePos(h))
                     .insert(TileType { wall: true });
-
-                // let corners = LayoutTool::polygon_corners(HEX_LAYOUT, h)
-                //     .iter()
-                //     .map(|p| Vec2::new(p.x as f32, p.y as f32))
-                //     .collect();
-
-                // commands
-                //     .spawn()
-                //     .insert(Collider::polyline(
-                //         corners,
-                //         Some(vec![[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]),
-                //     ))
-                //     .insert(Transform::from_xyz(0.0, 0.0, 0.0))
-                //     .insert(RigidBody::Fixed);
             }
         }
     }

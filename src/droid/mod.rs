@@ -5,6 +5,8 @@ use bevy_rapier2d::prelude::*;
 
 use crate::input::InputTarget;
 
+use self::weapon::kinetic_projectile_shape_bundle;
+
 pub mod weapon;
 
 pub mod ai;
@@ -96,18 +98,23 @@ fn droid_attack_system(
             continue;
         }
         weapon_state.reload_timeout = RELOAD_TIMEOUT;
-        commands.spawn_bundle(weapon::KineticProjectileBundle::with_direction(
-            entity,
-            *translation,
-            weapon_direction.direction,
-        ));
+        commands
+            .spawn_bundle(weapon::KineticProjectileBundle::with_direction(
+                entity,
+                // *translation,
+                weapon_direction.direction,
+            ))
+            .insert_bundle(kinetic_projectile_shape_bundle(
+                *translation,
+                weapon_direction.direction,
+            ));
     }
 }
 
 #[derive(Bundle)]
 pub struct DroidBundle {
     pub collider: Collider,
-    pub transform: Transform,
+    // pub transform: Transform,
     pub external_force: ExternalForce,
     pub external_impulse: ExternalImpulse,
     pub rigid_body: RigidBody,
@@ -124,10 +131,10 @@ pub struct DroidBundle {
 }
 
 impl DroidBundle {
-    pub fn with_name(translation: Vec2, name: impl Into<Cow<'static, str>>) -> Self {
+    pub fn with_name(/*translation: Vec2, */ name: impl Into<Cow<'static, str>>) -> Self {
         Self {
             collider: Collider::ball(28.0),
-            transform: Transform::from_xyz(translation.x, translation.y, 0.0),
+            // transform: Transform::from_xyz(translation.x, translation.y, 0.0),
             rigid_body: RigidBody::Dynamic,
             locked_axes: LockedAxes::ROTATION_LOCKED,
             friction: Friction {

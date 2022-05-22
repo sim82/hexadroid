@@ -68,7 +68,7 @@ impl Line {
 fn assault_predict_system(
     mut commands: Commands,
     enemy_query: Query<(&Transform, &Velocity)>,
-    mut debug_lines: ResMut<DebugLines>,
+    mut debug_lines: Option<ResMut<DebugLines>>,
     mut assault_query: Query<
         (
             &Transform,
@@ -141,12 +141,15 @@ fn assault_predict_system(
                     projectile_start_pos,
                     my_translation.xy() + dir * PROJECTILE_SPEED,
                 );
-                debug_lines.line(enemy_line.0.extend(0.0), enemy_line.1.extend(0.0), 0.0);
-                debug_lines.line(
-                    projectile_line.0.extend(0.0),
-                    projectile_line.1.extend(0.0),
-                    0.0,
-                );
+
+                if let Some(debug_lines) = debug_lines.as_mut() {
+                    debug_lines.line(enemy_line.0.extend(0.0), enemy_line.1.extend(0.0), 0.0);
+                    debug_lines.line(
+                        projectile_line.0.extend(0.0),
+                        projectile_line.1.extend(0.0),
+                        0.0,
+                    );
+                }
                 if let Some(intersect) = projectile_line.intersect2(enemy_line) {
                     // predicted 'time to intersection'
                     let my_d = (intersect - projectile_start_pos).length();
@@ -155,13 +158,14 @@ fn assault_predict_system(
                     let my_t = my_d / PROJECTILE_SPEED;
                     let enemy_t = enemy_d / enemy_speed;
 
-                    debug_lines.cross(
-                        (projectile_start_pos
-                            + (intersect - projectile_start_pos) / my_t * enemy_t)
-                            .extend(0.0),
-                        0.0,
-                    );
-
+                    if let Some(debug_lines) = debug_lines.as_mut() {
+                        debug_lines.cross(
+                            (projectile_start_pos
+                                + (intersect - projectile_start_pos) / my_t * enemy_t)
+                                .extend(0.0),
+                            0.0,
+                        );
+                    }
                     // if projectile and enemy are predicted to reach intersection at roughly the
                     // same time, shoot in this direction.
                     const MAX_DELTA: f32 = 0.1;

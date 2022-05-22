@@ -133,6 +133,7 @@ fn optimize_colliders_system(
     query: Query<&TilePos>,
     boundary_query: Query<(Entity, &BoundaryMarker)>,
     mut color_count: Local<usize>,
+    mut debug_lines: Option<ResMut<DebugLines>>,
 ) {
     if *delay > 0.0 {
         *delay -= time.delta_seconds();
@@ -169,6 +170,10 @@ fn optimize_colliders_system(
         // note: dirty set also contains entity ids of already despawned tiles, so we need to check this explicitly
         if let Ok(tile_pos) = query.get(*entity) {
             let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, tile_pos.0));
+
+            if let Some(debug_lines) = debug_lines.as_mut() {
+                debug_lines.cross(center.extend(0.0), 5.0);
+            }
 
             let corners: Vec<Vec2> = LayoutTool::polygon_corners(HEX_LAYOUT, Hex::new(0, 0))
                 .iter()
@@ -230,7 +235,12 @@ fn optimize_colliders_system(
             // points.push(edges[edge].0);
             let (p0, _, tile_entity) = dedup_edges.edges[edge];
             let edge_p0 = dedup_edges.points[p0];
-            points.push(edge_p0 /*+ Vec2::X * (*color_count as f32)*/);
+            let offs = if false {
+                Vec2::X * (*color_count as f32)
+            } else {
+                default()
+            };
+            points.push(edge_p0 + offs);
             tiles.insert(tile_entity);
             // points.push(dedup_edges.get_edge_p0(edge));
             if let Some(next) = edge_pairs.get(&edge) {
