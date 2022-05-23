@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    utils::{HashMap, HashSet},
+    utils::{HashMap, HashSet, Instant},
 };
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_prototype_lyon::{prelude::*, shapes};
@@ -11,7 +11,21 @@ use hexagon_tiles::{
     layout::LayoutTool,
 };
 
-use crate::{debug::DebugLinesExt, hex_point_to_vec2, Despawn, COLORS, HEX_LAYOUT};
+use crate::{debug::DebugLinesExt, hex_point_to_vec2, CmdlineArgs, Despawn, COLORS, HEX_LAYOUT};
+
+pub struct TilesState {
+    pub tile_root: Entity,
+    edgeloop_root: Entity,
+}
+
+impl Default for TilesState {
+    fn default() -> Self {
+        Self {
+            tile_root: Entity::from_raw(0), // meh, not really good but better than wrapping in Option...
+            edgeloop_root: Entity::from_raw(0),
+        }
+    }
+}
 
 #[derive(Component)]
 pub struct TileType {
@@ -36,6 +50,38 @@ pub struct TileCache {
     pub dirty_set: HashSet<Entity>,
 }
 
+fn setup_system(
+    mut commands: Commands,
+    mut tiles_state: ResMut<TilesState>,
+    args: Res<CmdlineArgs>,
+) {
+    tiles_state.tile_root = commands.spawn().insert(Name::new("tiles")).id();
+    tiles_state.edgeloop_root = commands.spawn().insert(Name::new("edge_loops")).id();
+
+    if !args.empty {
+        for q in -5..=5 {
+            for r in -5..=5 {
+                let h = hexagon_tiles::hexagon::Hex::new(q, r);
+
+                if q.abs() != 5 && r.abs() != 5 {
+                    continue;
+                }
+
+                let entity = commands
+                    .spawn()
+                    .insert(TilePos(h))
+                    .insert(TileType { wall: true })
+                    .id();
+                commands.entity(tiles_state.tile_root).add_child(entity);
+            }
+        }
+    }
+}
+
+/// spawn initial collider for new tiles and update tile_cache (and dirty_set) for
+/// spawned / despawend tiles
+/// [`tile_cache.dirty_set`] is the set of directly affected tiles, i.e. the spawned
+/// and despawned tiles and their neighbors.
 fn spawn_tiles_system(
     mut commands: Commands,
     mut tiles_cache: ResMut<TileCache>,
@@ -61,19 +107,17 @@ fn spawn_tiles_system(
             .insert(RigidBody::Fixed);
 
         tiles_cache.tiles.insert(*tile_pos, entity);
-        dirty_add.push((entity, *tile_pos, true));
+        dirty_add.push((entity, *tile_pos));
     }
 
     for (entity, tile_pos) in query_despawn.iter() {
         info!("despawn: {:?}", tile_pos);
-        dirty_add.push((entity, *tile_pos, true)); // don't add the tile itself, only its neighbors
+        dirty_add.push((entity, *tile_pos));
     }
 
     // add the modified tiles and their neighbors to dirty_set
-    for (entity, pos, add_self) in dirty_add {
-        if add_self {
-            tiles_cache.dirty_set.insert(entity);
-        }
+    for (entity, pos) in dirty_add {
+        tiles_cache.dirty_set.insert(entity);
         for n in [pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b)) {
             let pos = TilePos(n);
             if let Some(ne) = tiles_cache.tiles.get(&pos).cloned() {
@@ -136,6 +180,7 @@ fn optimize_colliders_system(
     boundary_query: Query<(Entity, &BoundaryMarker)>,
     mut color_count: Local<usize>,
     mut debug_lines: Option<ResMut<DebugLines>>,
+    tiles_state: Res<TilesState>,
 ) {
     if *delay > 0.0 {
         *delay -= time.delta_seconds();
@@ -145,6 +190,8 @@ fn optimize_colliders_system(
     if tile_cache.dirty_set.is_empty() {
         return;
     }
+
+    let start = Instant::now();
 
     // despawn outdated edge loops, i.e. those (also transitively) touched by dirty tiles
     let extended_dirty_set = despawn_dirty_edgeloops(
@@ -193,8 +240,15 @@ fn optimize_colliders_system(
         }
     }
 
-    spawn_edgeloops(dedup_edges, *color_count, commands);
+    spawn_edgeloops(
+        dedup_edges,
+        *color_count,
+        commands,
+        tiles_state.edgeloop_root,
+    );
     *color_count += 1;
+
+    info!("update: {:?}", start.elapsed());
 }
 
 /// despawn bundary loops that are affected by [`dirty_set`].
@@ -235,7 +289,12 @@ fn despawn_dirty_edgeloops(
     dirty_set
 }
 
-fn spawn_edgeloops(dedup_edges: util::DedupEdges, color_count: usize, mut commands: Commands) {
+fn spawn_edgeloops(
+    dedup_edges: util::DedupEdges,
+    color_count: usize,
+    mut commands: Commands,
+    root: Entity,
+) {
     let mut edge_pairs = HashMap::new();
     for (i, (e0, _, _)) in dedup_edges.edges.iter().enumerate() {
         for (j, (_, f1, _)) in dedup_edges.edges.iter().enumerate() {
@@ -292,13 +351,16 @@ fn spawn_edgeloops(dedup_edges: util::DedupEdges, color_count: usize, mut comman
             points: points.clone(),
         };
 
-        commands
+        let entity = commands
             .spawn_bundle(GeometryBuilder::build_as(
                 &lyon_polygon,
                 DrawMode::Stroke(StrokeMode::new(COLORS[color_count % COLORS.len()], 10.0)),
                 default(),
             ))
-            .insert(BoundaryMarker { tiles });
+            .insert(BoundaryMarker { tiles })
+            .id();
+
+        commands.entity(root).add_child(entity);
     }
 }
 
@@ -306,6 +368,8 @@ pub struct TilesPlugin;
 impl Plugin for TilesPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TileCache>()
+            .init_resource::<TilesState>()
+            .add_startup_system(setup_system)
             .add_system_to_stage(CoreStage::PostUpdate, spawn_tiles_system)
             .add_system(optimize_colliders_system);
     }

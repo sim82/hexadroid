@@ -11,23 +11,12 @@ use hexadroid::{
     input::InputTarget,
     render::MyMaterial,
     tiles::{TilePos, TileType},
-    HEX_LAYOUT,
+    CmdlineArgs, HEX_LAYOUT,
 };
 use hexagon_tiles::layout::LayoutTool;
 
-#[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
-struct Args {
-    /// Name of the person to greet
-    #[clap(short, long)]
-    debug_draw: bool,
-
-    #[clap(short, long)]
-    empty: bool,
-}
-
 fn main() {
-    let args = Args::parse();
+    let args = CmdlineArgs::parse();
 
     let mut app = App::new();
     // bevy plugins
@@ -50,7 +39,7 @@ fn main() {
     app.run();
 }
 
-fn setup_geometry(mut commands: Commands, args: Res<Args>) {
+fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
     // commands
     //     .spawn()
     //     .insert(Collider::cuboid(100.0, 100.0))
@@ -93,23 +82,6 @@ fn setup_geometry(mut commands: Commands, args: Res<Args>) {
         .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
         .insert(PrimaryEnemy { enemy })
         .insert_bundle(enemy_shape_builder);
-
-    if !args.empty {
-        for q in -5..=5 {
-            for r in -5..=5 {
-                let h = hexagon_tiles::hexagon::Hex::new(q, r);
-
-                if q.abs() != 5 && r.abs() != 5 {
-                    continue;
-                }
-
-                commands
-                    .spawn()
-                    .insert(TilePos(h))
-                    .insert(TileType { wall: true });
-            }
-        }
-    }
 }
 
 fn setup_linedraw_test(

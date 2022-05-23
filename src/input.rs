@@ -16,7 +16,7 @@ use hexagon_tiles::{
 use crate::{
     droid::{AttackRequest, TargetDirection},
     hex_point_to_vec2,
-    tiles::{TileCache, TilePos, TileType},
+    tiles::{TileCache, TilePos, TileType, TilesState},
     Despawn, HEX_LAYOUT,
 };
 
@@ -90,6 +90,7 @@ fn background_on_click_system(
     // mut pointer_pos: Local<Vec2>,
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
     mut tile_cache: ResMut<TileCache>,
+    tiles_state: Res<TilesState>,
     // mut cursor_moved_events: EventReader<CursorMoved>,
     // cam_2d_query: Query<(&GlobalTransform, &Camera), With<Camera2d>>
 ) {
@@ -113,10 +114,12 @@ fn background_on_click_system(
                 commands.entity(entity).insert(Despawn::ThisFrame);
             } else {
                 info!("spawn");
-                commands
+                let entity = commands
                     .spawn()
                     .insert(TileType { wall: true })
-                    .insert(TilePos(hex));
+                    .insert(TilePos(hex))
+                    .id();
+                commands.entity(tiles_state.tile_root).add_child(entity);
             }
         }
     }

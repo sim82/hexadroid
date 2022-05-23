@@ -3,6 +3,7 @@
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
+use clap::Parser;
 use hexagon_tiles::{
     layout::{Layout, LAYOUT_ORIENTATION_POINTY},
     point::Point,
@@ -24,6 +25,16 @@ pub mod tiles;
 pub mod camera;
 pub mod debug;
 pub mod render;
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+pub struct CmdlineArgs {
+    #[clap(short, long)]
+    pub debug_draw: bool,
+
+    #[clap(short, long)]
+    pub empty: bool,
+}
 
 pub const HEX_LAYOUT: Layout = Layout {
     orientation: LAYOUT_ORIENTATION_POINTY,
