@@ -5,7 +5,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::input::InputTarget;
 
-use self::weapon::kinetic_projectile_shape_bundle;
+use self::{ai::PrimaryEnemy, weapon::kinetic_projectile_shape_bundle};
 
 pub mod weapon;
 
@@ -54,20 +54,10 @@ fn droid_stop_system(mut query: Query<(&mut Velocity, &mut ExternalForce), With<
 }
 
 fn droid_apply_direction_system(
-    mut query: Query<(
-        &mut ExternalForce,
-        &mut ExternalImpulse,
-        &TargetDirection,
-        &mut WeaponDirection,
-    )>,
+    mut query: Query<(&mut ExternalImpulse, &TargetDirection, &mut WeaponDirection)>,
 ) {
-    for (mut external_force, mut external_impulse, target_direction, mut weapon_direction) in
-        query.iter_mut()
-    {
-        // info!("force: {}", external_force.force);
-
+    for (mut external_impulse, target_direction, mut weapon_direction) in query.iter_mut() {
         if target_direction.direction.length() > f32::EPSILON {
-            // external_force.force = FORCE_MULTIPLIER * target_direction.direction;
             external_impulse.impulse = IMPULSE_MULTIPLIER * target_direction.direction;
             weapon_direction.direction = target_direction.direction;
         }

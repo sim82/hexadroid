@@ -20,4 +20,6 @@ bevy_mouse_tracking_plugin = "0.2"
 hexagon_tiles = "0.1"
 bevy_prototype_lyon = "0.5"
 clap = { version = "3", features = ["derive"] }
+lazy_static = "1"
+rand = "0.8"
 # perlin_noise = "1"

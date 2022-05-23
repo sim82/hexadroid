@@ -1,11 +1,25 @@
+use super::{AttackRequest, TargetDirection, WeaponDirection, WeaponState};
+use crate::{debug::DebugLinesExt, droid::weapon::PROJECTILE_SPEED, hex_point_to_vec2, HEX_LAYOUT};
 use bevy::{ecs::component, math::Vec3Swizzles, prelude::*};
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{hexagon::HEX_DIRECTIONS, layout::LayoutTool};
+use lazy_static::lazy_static;
+use rand::prelude::*;
 
-use crate::{debug::DebugLinesExt, droid::weapon::PROJECTILE_SPEED, hex_point_to_vec2, HEX_LAYOUT};
-
-use super::{AttackRequest, WeaponDirection, WeaponState};
+const SQRT2_2: f32 = std::f32::consts::SQRT_2 / 2.0;
+lazy_static! {
+    static ref DIRECTIONS: [Vec2; 8] = [
+        Vec2::new(1.0, 0.0),
+        Vec2::new(SQRT2_2, -SQRT2_2),
+        Vec2::new(0.0, -1.0),
+        Vec2::new(-SQRT2_2, -SQRT2_2),
+        Vec2::new(-1.0, 0.0),
+        Vec2::new(-SQRT2_2, SQRT2_2),
+        Vec2::new(0.0, 1.0),
+        Vec2::new(SQRT2_2, SQRT2_2),
+    ];
+}
 
 #[derive(Component, Default)]
 pub struct AssaultAi {}
@@ -13,6 +27,12 @@ pub struct AssaultAi {}
 #[component(storage = "SparseSet")]
 pub struct PrimaryEnemy {
     pub enemy: Entity,
+}
+
+#[derive(Component, Default)]
+pub struct MovementState {
+    time_left: f32,
+    direction: Vec2,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -75,6 +95,7 @@ fn assault_predict_system(
             &PrimaryEnemy,
             &mut AttackRequest,
             &mut WeaponDirection,
+            &mut TargetDirection,
             &WeaponState,
         ),
         With<AssaultAi>,
@@ -88,6 +109,7 @@ fn assault_predict_system(
         PrimaryEnemy { enemy },
         mut attack_request,
         mut weapon_direction,
+        mut target_direction,
         weapon_state,
     ) in assault_query.iter_mut()
     {
@@ -115,31 +137,21 @@ fn assault_predict_system(
                 // enemy not moving
                 continue;
             }
-            const SQRT2_2: f32 = std::f32::consts::SQRT_2 / 2.0;
-            let directions = [
-                Vec2::new(1.0, 0.0),
-                Vec2::new(SQRT2_2, -SQRT2_2),
-                Vec2::new(0.0, -1.0),
-                Vec2::new(-SQRT2_2, -SQRT2_2),
-                Vec2::new(-1.0, 0.0),
-                Vec2::new(-SQRT2_2, SQRT2_2),
-                Vec2::new(0.0, 1.0),
-                Vec2::new(SQRT2_2, SQRT2_2),
-            ];
+
             // Vec2(1.0, 2.0);
             // for dir in HEX_DIRECTIONS.iter().map(|dir| {
             //     hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, *dir)).normalize_or_zero()
             // }) {
-            for dir in directions {
+            for dir in DIRECTIONS.iter() {
                 // find intersection between predicted projectile and enemy trajectories
                 let enemy_line = Line(
                     enemy_translation.xy(),
                     enemy_translation.xy() + *enemy_velocity,
                 );
-                let projectile_start_pos = my_translation.xy() + dir * 50.0;
+                let projectile_start_pos = my_translation.xy() + *dir * 50.0;
                 let projectile_line = Line(
                     projectile_start_pos,
-                    my_translation.xy() + dir * PROJECTILE_SPEED,
+                    my_translation.xy() + *dir * PROJECTILE_SPEED,
                 );
 
                 if let Some(debug_lines) = debug_lines.as_mut() {
@@ -172,7 +184,8 @@ fn assault_predict_system(
                     if (my_t - enemy_t).abs() < MAX_DELTA {
                         info!("shoot");
                         attack_request.primary_attack = true;
-                        weapon_direction.direction = dir;
+                        weapon_direction.direction = *dir;
+                        target_direction.direction = Vec2::ZERO;
                     } else {
                         attack_request.primary_attack = false;
                     }
@@ -182,16 +195,85 @@ fn assault_predict_system(
     }
 }
 
+fn movement_update_system(
+    time: Res<Time>,
+    mut query: Query<(
+        &PrimaryEnemy,
+        &mut TargetDirection,
+        &Transform,
+        &mut MovementState,
+    )>,
+    enemy_query: Query<&Transform>,
+    mut debug_lines: Option<ResMut<DebugLines>>,
+) {
+    for (
+        PrimaryEnemy { enemy },
+        mut target_direction,
+        Transform {
+            translation: my_pos,
+            ..
+        },
+        mut movement_state,
+    ) in query.iter_mut()
+    {
+        movement_state.time_left -= time.delta_seconds();
+        if movement_state.time_left > 0.0 {
+            continue;
+        }
+        movement_state.time_left = 1.0;
+
+        if let Ok(Transform {
+            translation: enemy_pos,
+            ..
+        }) = enemy_query.get(*enemy)
+        {
+            let enemy_dir = (*enemy_pos - *my_pos).xy().normalize_or_zero();
+            let mut rng = rand::thread_rng();
+            let move_sideways = rng.gen_bool(0.5);
+
+            info!("move sideways: {:?}", move_sideways);
+
+            if let Ok(dir) = DIRECTIONS.choose_weighted(&mut rng, {
+                |dir| {
+                    if move_sideways {
+                        1.0 - enemy_dir.dot(*dir).abs()
+                    } else {
+                        enemy_dir.dot(*dir) + 1.0
+                    }
+                }
+            }) {
+                target_direction.direction = *dir;
+
+                if let Some(debug_lines) = &mut debug_lines {
+                    let color = if move_sideways {
+                        Color::BLUE
+                    } else {
+                        Color::RED
+                    };
+                    debug_lines.line_colored(
+                        *my_pos,
+                        *my_pos + (dir.extend(0.0) * 16.0),
+                        1.0,
+                        color,
+                    );
+                }
+            }
+        }
+    }
+}
+
 pub struct AiPlugin;
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(assault_predict_system);
+        app.add_system(assault_predict_system)
+            .add_system(movement_update_system);
     }
 }
 
 #[derive(Bundle, Default)]
 pub struct AssaultAiBundle {
     assault_ai: AssaultAi,
+    movement_state: MovementState,
 }
 
 // impl AssaultAiBundle {
