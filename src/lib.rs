@@ -25,6 +25,7 @@ pub mod tiles;
 pub mod camera;
 pub mod debug;
 pub mod render;
+pub mod worldbuild;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -139,6 +140,7 @@ impl PluginGroup for DefaultPlugins {
             .add(tiles::TilesPlugin)
             .add(render::RenderPlugin)
             // .add(render::pipeline::RenderShapePlugin)
-            .add(ShapePlugin);
+            .add(ShapePlugin)
+            .add(worldbuild::WorldbuildPlugin);
     }
 }
