@@ -8,8 +8,8 @@ use perlin2d::PerlinNoise2D;
 
 fn init_walls_noise(mut commands: Commands, tiles_state: Res<TilesState>) {
     const SCALE: f64 = 256.0;
-    let perlin = PerlinNoise2D::new(4, 1.0, 2.5, 1.0, 2.0, (SCALE, SCALE), 0.0, 101);
-    const MAX: i32 = 10;
+    let perlin = PerlinNoise2D::new(4, 1.0, 1.5, 2.0, 2.0, (SCALE, SCALE), -0.4, 101);
+    const MAX: i32 = 20;
     const MIN: i32 = -MAX;
 
     for q in MIN..=MAX {
