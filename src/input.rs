@@ -84,6 +84,21 @@ fn apply_input_system_8dir(
     }
 }
 
+fn camera_zoom_system(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut camera_query: Query<&mut Transform, With<Camera2d>>,
+) {
+    for mut transform in camera_query.iter_mut() {
+        if keyboard_input.pressed(KeyCode::I) && transform.scale.x > 0.5 {
+            transform.scale /= 1.05
+        } else if keyboard_input.pressed(KeyCode::P) && transform.scale.x < 10.0 {
+            transform.scale *= 1.05
+        } else if keyboard_input.pressed(KeyCode::O) {
+            transform.scale = Vec3::ONE
+        }
+    }
+}
+
 fn background_on_click_system(
     mut commands: Commands,
     mouse: Res<MousePosWorld>,
@@ -131,6 +146,7 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(apply_input_system_8dir)
             .add_system(background_on_click_system)
+            .add_system(camera_zoom_system)
             .add_plugin(MousePosPlugin::SingleCamera);
     }
 }
