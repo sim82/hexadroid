@@ -118,6 +118,7 @@ pub struct DroidBundle {
     pub weapon_state: WeaponState,
     pub target_direction: TargetDirection,
     pub attack_request: AttackRequest,
+    pub damping: Damping,
 }
 
 impl DroidBundle {
@@ -144,6 +145,10 @@ impl DroidBundle {
             external_impulse: default(),
             target_direction: default(),
             attack_request: default(),
+            damping: Damping {
+                linear_damping: 5.0,
+                ..default()
+            },
         }
     }
 }
@@ -151,8 +156,9 @@ pub struct DroidPlugin;
 
 impl Plugin for DroidPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(droid_stop_system)
-            .add_system(droid_apply_direction_system.after(droid_stop_system))
+        app
+            // .add_system(droid_stop_system)
+            .add_system(droid_apply_direction_system) //.after(droid_stop_system))
             .add_system(droid_attack_system);
     }
 }
