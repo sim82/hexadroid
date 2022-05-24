@@ -25,7 +25,7 @@ pub const PROJECTILE_SPEED: f32 = 400.0;
 impl KineticProjectileBundle {
     pub fn with_direction(owner: Entity, /*translation: Vec3, */ direction: Vec2) -> Self {
         Self {
-            collider: Collider::ball(10.0),
+            collider: Collider::ball(20.0),
             rigid_body: RigidBody::Dynamic,
             velocity: Velocity::linear(direction * PROJECTILE_SPEED),
             active_events: ActiveEvents::COLLISION_EVENTS,

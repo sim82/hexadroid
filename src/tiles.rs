@@ -236,7 +236,11 @@ fn optimize_colliders_system(
                 .entity(*entity)
                 .insert(Collider::polyline(corners, Some(indices)))
                 .insert(RigidBody::Fixed)
-                .insert(Transform::from_translation(center.extend(0.0)));
+                .insert(Transform::from_translation(center.extend(0.0)))
+                .insert(Restitution {
+                    coefficient: 1.0,
+                    ..default()
+                });
         }
     }
 
