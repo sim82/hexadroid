@@ -1919,6 +1919,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_egui",
  "bevy_mouse_tracking_plugin",
  "bevy_prototype_debug_lines",
  "bevy_prototype_lyon",

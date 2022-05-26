@@ -5,6 +5,7 @@ use crate::{
     vec2_to_hex_point, Despawn, HEX_LAYOUT,
 };
 use bevy::{math::Vec3Swizzles, prelude::*};
+use bevy_egui::{egui, EguiContext};
 use hexagon_tiles::hexagon::{Hex, HexMath, HexRound};
 use perlin2d::PerlinNoise2D;
 
@@ -18,10 +19,12 @@ pub struct WorldState {
     center: Hex,
 
     perlin: PerlinNoise2D,
+
+    rebuild_all: bool,
 }
 
 const PERLIN_SCALE: f64 = 256.0;
-const INITIAL_SIZE: i32 = 2;
+const INITIAL_SIZE: i32 = 20;
 
 impl Default for WorldState {
     fn default() -> Self {
@@ -41,6 +44,7 @@ impl Default for WorldState {
                 -0.4,
                 101,
             ),
+            rebuild_all: false,
         }
     }
 }
@@ -66,7 +70,10 @@ fn update_walls_noise(
         }
     }
 
-    if world_state.max_target == world_state.max && world_state.min_target == world_state.min {
+    if !world_state.rebuild_all
+        && world_state.max_target == world_state.max
+        && world_state.min_target == world_state.min
+    {
         return;
     }
 
@@ -82,7 +89,7 @@ fn update_walls_noise(
         let q = pos.0.q();
         let r = pos.0.r();
 
-        if !valid_range_q.contains(&q) || !valid_range_r.contains(&r) {
+        if world_state.rebuild_all || !valid_range_q.contains(&q) || !valid_range_r.contains(&r) {
             commands.entity(*entity).insert(Despawn::ThisFrame);
         }
     }
@@ -94,7 +101,7 @@ fn update_walls_noise(
             //     && r <= world_state.max
             //     && q >= world_state.min
             //     && q <= world_state.max
-            if old_range_q.contains(&q) && old_range_r.contains(&r) {
+            if !world_state.rebuild_all && old_range_q.contains(&q) && old_range_r.contains(&r) {
                 continue;
             }
             let h = hexagon_tiles::hexagon::Hex::new(q, r);
@@ -125,12 +132,48 @@ fn update_walls_noise(
     // }
     world_state.min = world_state.min_target;
     world_state.max = world_state.max_target;
+    world_state.rebuild_all = false;
 }
+
+fn worldbuid_egui_ui_system(
+    mut egui_context: ResMut<EguiContext>,
+    mut world_state: ResMut<WorldState>,
+) {
+    let mut amplitude = world_state.perlin.get_amplitude();
+    let mut bias = world_state.perlin.get_bias();
+    let mut frequency = world_state.perlin.get_frequency();
+    let mut lacunarity = world_state.perlin.get_lacunarity();
+    let mut octaves = world_state.perlin.get_octaves();
+    let mut persistence = world_state.perlin.get_persistence();
+    let mut scale = world_state.perlin.get_scale();
+
+    egui::Window::new("path").show(egui_context.ctx_mut(), |ui| {
+        ui.add(egui::Slider::new(&mut amplitude, 0.5..=2.0));
+        ui.add(egui::Slider::new(&mut bias, -1.0..=1.0));
+        ui.add(egui::Slider::new(&mut frequency, 0.0..=10.0));
+        ui.add(egui::Slider::new(&mut lacunarity, 0.0..=10.0));
+        ui.add(egui::Slider::new(&mut octaves, 1..=8));
+        ui.add(egui::Slider::new(&mut persistence, 0.0..=10.0));
+        ui.add(egui::Slider::new(&mut scale.0, 64.0..=1024.0));
+        ui.add(egui::Slider::new(&mut scale.1, 64.0..=1024.0));
+        world_state.rebuild_all = ui.button("rebuild").clicked();
+    });
+
+    world_state.perlin.set_amplitude(amplitude);
+    world_state.perlin.set_bias(bias);
+    world_state.perlin.set_frequency(frequency);
+    world_state.perlin.set_lacunarity(lacunarity);
+    world_state.perlin.set_octaves(octaves);
+    world_state.perlin.set_persistence(persistence);
+    world_state.perlin.set_scale(scale);
+}
+
 pub struct WorldbuildPlugin;
 
 impl Plugin for WorldbuildPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<WorldState>()
-            .add_system(update_walls_noise);
+            .add_system(update_walls_noise)
+            .add_system(worldbuid_egui_ui_system);
     }
 }

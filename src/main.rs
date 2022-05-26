@@ -36,6 +36,14 @@ fn main() {
         ..default()
     });
 
+    // egui plugins
+    #[cfg(feature = "inspector")]
+    {
+        if args.world_inspector {
+            app.add_plugin(bevy_inspector_egui::WorldInspectorPlugin::new());
+        }
+    }
+
     app.add_startup_system(setup_geometry)
         // .add_startup_system(setup_linedraw_test)
         // .add_startup_system(setup_lyon_test)

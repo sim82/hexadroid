@@ -1,6 +1,7 @@
 #![feature(array_zip)]
 
 use bevy::prelude::*;
+use bevy_egui::EguiPlugin;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
 use clap::Parser;
@@ -38,6 +39,9 @@ pub struct CmdlineArgs {
 
     #[clap(short, long)]
     pub gravity: bool,
+
+    #[clap(short, long)]
+    pub world_inspector: bool,
 }
 
 pub const HEX_LAYOUT: Layout = Layout {
@@ -134,12 +138,6 @@ impl PluginGroup for DefaultPlugins {
             group.add(DebugLinesPlugin::default());
         }
 
-        // egui plugins
-        #[cfg(feature = "inspector")]
-        {
-            group.add(bevy_inspector_egui::WorldInspectorPlugin::new());
-        }
-
         group
             .add(DefaultPlugin)
             .add(input::InputPlugin)
@@ -151,6 +149,7 @@ impl PluginGroup for DefaultPlugins {
             .add(render::RenderPlugin)
             // .add(render::pipeline::RenderShapePlugin)
             .add(ShapePlugin)
-            .add(worldbuild::WorldbuildPlugin);
+            .add(worldbuild::WorldbuildPlugin)
+            .add(EguiPlugin);
     }
 }
