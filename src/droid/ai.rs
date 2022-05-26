@@ -1,5 +1,8 @@
 use super::{AttackRequest, TargetDirection, WeaponDirection, WeaponState};
-use crate::{debug::DebugLinesExt, droid::weapon::PROJECTILE_SPEED, hex_point_to_vec2, HEX_LAYOUT};
+use crate::{
+    debug::DebugLinesExt, droid::weapon::PROJECTILE_SPEED, hex_point_to_vec2, CmdlineArgs,
+    HEX_LAYOUT,
+};
 use bevy::{ecs::component, math::Vec3Swizzles, prelude::*};
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier2d::prelude::*;
@@ -205,7 +208,11 @@ fn movement_update_system(
     )>,
     enemy_query: Query<&Transform>,
     mut debug_lines: Option<ResMut<DebugLines>>,
+    args: Res<CmdlineArgs>,
 ) {
+    if args.gravity {
+        return;
+    }
     for (
         PrimaryEnemy { enemy },
         mut target_direction,
@@ -266,8 +273,7 @@ pub struct AiPlugin;
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(assault_predict_system)
-            // .add_system(movement_update_system)
-            ;
+            .add_system(movement_update_system);
     }
 }
 
