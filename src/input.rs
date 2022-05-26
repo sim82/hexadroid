@@ -132,7 +132,7 @@ fn world_debug_input_system(
 ) {
     // info!("scale: {:?}", rapier_config);
 
-    const INCREMENT: i32 = 1;
+    const INCREMENT: i32 = 5;
     if keyboard_input.just_pressed(KeyCode::Y) {
         if world_state.max_target > 1 {
             world_state.max_target -= INCREMENT;

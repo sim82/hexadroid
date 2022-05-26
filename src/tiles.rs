@@ -111,8 +111,9 @@ fn spawn_tiles_system(
     }
 
     for (entity, tile_pos) in query_despawn.iter() {
-        info!("despawn: {:?}", tile_pos);
+        trace!("despawn: {:?}", tile_pos);
         dirty_add.push((entity, *tile_pos));
+        tiles_cache.tiles.remove(tile_pos);
     }
 
     // add the modified tiles and their neighbors to dirty_set
@@ -266,7 +267,7 @@ fn despawn_dirty_edgeloops(
     boundary_query: Query<(Entity, &BoundaryMarker)>,
     commands: &mut Commands,
 ) -> bevy::utils::hashbrown::HashSet<Entity> {
-    info!("dirty: {:?}", dirty_set);
+    trace!("dirty: {:?}", dirty_set);
     let mut removed_boundaries = HashSet::new();
     let mut loops = 0;
     loop {
@@ -289,7 +290,7 @@ fn despawn_dirty_edgeloops(
         }
         loops += 1;
     }
-    info!("new dirty: {:?} {}", dirty_set, loops);
+    trace!("new dirty: {:?} {}", dirty_set, loops);
     dirty_set
 }
 

@@ -50,6 +50,13 @@ pub fn hex_point_to_vec2(point: Point) -> Vec2 {
     Vec2::new(point.x as f32, point.y as f32)
 }
 
+pub fn vec2_to_hex_point(v: Vec2) -> Point {
+    Point {
+        x: v.x.into(),
+        y: v.y.into(),
+    }
+}
+
 pub const COLORS_L: f32 = 0.75;
 
 pub const COLORS: [Color; 12] = [
@@ -88,7 +95,7 @@ pub fn despawn_reaper_system(
             }
         };
         if despawn {
-            info!("despawn {:?}", entity);
+            trace!("despawn {:?}", entity);
             commands.entity(entity).despawn_recursive();
         }
     }
@@ -97,7 +104,7 @@ pub fn despawn_reaper_system(
 pub struct DefaultPlugin;
 impl Plugin for DefaultPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(CoreStage::PostUpdate, despawn_reaper_system);
+        app.add_system_to_stage(CoreStage::Last, despawn_reaper_system);
     }
 }
 
