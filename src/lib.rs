@@ -35,6 +35,9 @@ pub struct CmdlineArgs {
 
     #[clap(short, long)]
     pub empty: bool,
+
+    #[clap(short, long)]
+    pub gravity: bool,
 }
 
 pub const HEX_LAYOUT: Layout = Layout {

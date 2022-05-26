@@ -134,7 +134,7 @@ fn world_debug_input_system(
 
     const INCREMENT: i32 = 1;
     if keyboard_input.just_pressed(KeyCode::Y) {
-        if world_state.max_target > 5 {
+        if world_state.max_target > 1 {
             world_state.max_target -= INCREMENT;
             world_state.min_target += INCREMENT;
         }

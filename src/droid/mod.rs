@@ -14,7 +14,7 @@ pub mod ai;
 const STOP_CUTOFF: f32 = 0.5;
 const STOP_MULTIPLIER: f32 = -15.0;
 const FORCE_MULTIPLIER: f32 = 4000.0;
-const IMPULSE_MULTIPLIER: f32 = 80.0;
+const IMPULSE_MULTIPLIER: f32 = 8.0;
 const RELOAD_TIMEOUT: f32 = 0.5;
 
 #[derive(Component)]
@@ -108,7 +108,7 @@ pub struct DroidBundle {
     pub external_force: ExternalForce,
     pub external_impulse: ExternalImpulse,
     pub rigid_body: RigidBody,
-    // pub locked_axes: LockedAxes,
+    pub locked_axes: LockedAxes,
     // pub friction: Friction,
     // pub restitution: Restitution,
     pub velocity: Velocity,
@@ -118,17 +118,33 @@ pub struct DroidBundle {
     pub weapon_state: WeaponState,
     pub target_direction: TargetDirection,
     pub attack_request: AttackRequest,
-    // pub damping: Damping,
+    pub damping: Damping,
     pub mass_properties: MassProperties,
 }
 
 impl DroidBundle {
-    pub fn with_name(/*translation: Vec2, */ name: impl Into<Cow<'static, str>>) -> Self {
+    pub fn new(
+        /*translation: Vec2, */ name: impl Into<Cow<'static, str>>,
+        gravity: bool,
+    ) -> Self {
+        let locked_axes;
+        let damping;
+        if gravity {
+            locked_axes = LockedAxes::default();
+            damping = Damping::default();
+        } else {
+            locked_axes = LockedAxes::ROTATION_LOCKED;
+            damping = Damping {
+                linear_damping: 5.0,
+                ..default()
+            };
+        }
+
         Self {
             collider: Collider::ball(28.0),
             // transform: Transform::from_xyz(translation.x, translation.y, 0.0),
             rigid_body: RigidBody::Dynamic,
-            // locked_axes: LockedAxes::ROTATION_LOCKED,
+            locked_axes,
             // friction: Friction {
             //     coefficient: 0.5,
             //     ..default()
@@ -146,10 +162,7 @@ impl DroidBundle {
             external_impulse: default(),
             target_direction: default(),
             attack_request: default(),
-            // damping: Damping {
-            //     linear_damping: 5.0,
-            //     ..default()
-            // },
+            damping,
             mass_properties: MassProperties {
                 mass: 1000.0,
                 ..default()

@@ -17,14 +17,15 @@ pub struct WorldState {
 }
 
 const PERLIN_SCALE: f64 = 256.0;
+const INITIAL_SIZE: i32 = 20;
 
 impl Default for WorldState {
     fn default() -> Self {
         Self {
             min: 0,
             max: 0,
-            min_target: -4,
-            max_target: 4,
+            min_target: -INITIAL_SIZE,
+            max_target: INITIAL_SIZE,
             perlin: PerlinNoise2D::new(
                 4,
                 1.0,

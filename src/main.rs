@@ -25,8 +25,14 @@ fn main() {
         .insert_resource(Msaa::default());
 
     app.add_plugins(hexadroid::DefaultPlugins::default().with_debug_draw(args.debug_draw));
+
+    let gravity = if args.gravity {
+        Vec2::Y * -9.81 * 50.0
+    } else {
+        Vec2::ZERO
+    };
     app.insert_resource(RapierConfiguration {
-        gravity: Vec2::Y * -9.81 * 50.0,
+        gravity,
         ..default()
     });
 
@@ -62,7 +68,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
     );
 
     let enemy = commands
-        .spawn_bundle(hexadroid::droid::DroidBundle::with_name("player"))
+        .spawn_bundle(hexadroid::droid::DroidBundle::new("player", args.gravity))
         .insert(InputTarget::default())
         .insert(CameraTarget)
         .insert_bundle(my_shape_builder)
@@ -78,7 +84,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
     );
 
     commands
-        .spawn_bundle(hexadroid::droid::DroidBundle::with_name("r2d2"))
+        .spawn_bundle(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
         .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
         .insert(PrimaryEnemy { enemy })
         .insert_bundle(enemy_shape_builder);
