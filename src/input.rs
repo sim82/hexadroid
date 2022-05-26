@@ -11,7 +11,7 @@ use bevy::{
 use bevy_mouse_tracking_plugin::{MousePos, MousePosPlugin, MousePosWorld};
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{
-    hexagon::{Hex, HexRound, HEX_DIRECTIONS},
+    hexagon::{Hex, HexMath, HexRound, HEX_DIRECTIONS},
     layout::{Layout, LayoutTool, LAYOUT_ORIENTATION_POINTY},
     point::Point,
 };
@@ -132,16 +132,17 @@ fn world_debug_input_system(
 ) {
     // info!("scale: {:?}", rapier_config);
 
-    const INCREMENT: i32 = 5;
+    const INCREMENT_I: i32 = 1;
+    let increment = Hex::new(INCREMENT_I, INCREMENT_I);
     if keyboard_input.just_pressed(KeyCode::Y) {
-        if world_state.max_target > 1 {
-            world_state.max_target -= INCREMENT;
-            world_state.min_target += INCREMENT;
+        if world_state.max_target.q() > 1 {
+            world_state.max_target = world_state.max_target.sub(increment);
+            world_state.min_target = world_state.min_target.add(increment);
         }
     } else if keyboard_input.just_pressed(KeyCode::U) {
-        if world_state.max_target < 40 {
-            world_state.max_target += INCREMENT;
-            world_state.min_target -= INCREMENT;
+        if world_state.max_target.q() < 40 {
+            world_state.max_target = world_state.max_target.add(increment);
+            world_state.min_target = world_state.min_target.sub(increment);
         }
     } else if keyboard_input.just_pressed(KeyCode::Q) {
         if let Ok(file) = std::fs::File::create("physics.yaml") {
