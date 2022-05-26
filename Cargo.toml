@@ -13,7 +13,7 @@ inspector = ["bevy-inspector-egui"]
 [dependencies]
 # bevy = { version = "0.7" }
 bevy = { version = "0.7", features = ["dynamic"] }
-bevy_rapier2d = "0.13"
+bevy_rapier2d = { version = "0.13", features = ["serde-serialize"] }
 bevy-inspector-egui = { version = "0.11", optional = true }
 bevy_prototype_debug_lines = "0.7"
 bevy_mouse_tracking_plugin = "0.2"
@@ -24,3 +24,4 @@ lazy_static = "1"
 rand = "0.8"
 # perlin_noise = "1"
 perlin2d = "0.2"
+serde_yaml = "0.8"

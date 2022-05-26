@@ -108,17 +108,18 @@ pub struct DroidBundle {
     pub external_force: ExternalForce,
     pub external_impulse: ExternalImpulse,
     pub rigid_body: RigidBody,
-    pub locked_axes: LockedAxes,
-    pub friction: Friction,
-    pub restitution: Restitution,
+    // pub locked_axes: LockedAxes,
+    // pub friction: Friction,
+    // pub restitution: Restitution,
     pub velocity: Velocity,
     pub name: Name,
-    pub ground_friction: GroundFriction,
+    // pub ground_friction: GroundFriction,
     pub weapon_direction: WeaponDirection,
     pub weapon_state: WeaponState,
     pub target_direction: TargetDirection,
     pub attack_request: AttackRequest,
-    pub damping: Damping,
+    // pub damping: Damping,
+    pub mass_properties: MassProperties,
 }
 
 impl DroidBundle {
@@ -127,26 +128,30 @@ impl DroidBundle {
             collider: Collider::ball(28.0),
             // transform: Transform::from_xyz(translation.x, translation.y, 0.0),
             rigid_body: RigidBody::Dynamic,
-            locked_axes: LockedAxes::ROTATION_LOCKED,
-            friction: Friction {
-                coefficient: 0.5,
-                ..default()
-            },
-            restitution: Restitution {
-                coefficient: 0.3,
-                ..default()
-            },
+            // locked_axes: LockedAxes::ROTATION_LOCKED,
+            // friction: Friction {
+            //     coefficient: 0.5,
+            //     ..default()
+            // },
+            // restitution: Restitution {
+            //     coefficient: 0.3,
+            //     ..default()
+            // },
             velocity: Velocity::default(),
             name: Name::new(name),
-            ground_friction: GroundFriction,
+            // ground_friction: GroundFriction,
             weapon_direction: WeaponDirection { direction: Vec2::X },
             weapon_state: default(),
             external_force: default(),
             external_impulse: default(),
             target_direction: default(),
             attack_request: default(),
-            damping: Damping {
-                linear_damping: 5.0,
+            // damping: Damping {
+            //     linear_damping: 5.0,
+            //     ..default()
+            // },
+            mass_properties: MassProperties {
+                mass: 1000.0,
                 ..default()
             },
         }

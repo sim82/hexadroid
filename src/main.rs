@@ -26,7 +26,7 @@ fn main() {
 
     app.add_plugins(hexadroid::DefaultPlugins::default().with_debug_draw(args.debug_draw));
     app.insert_resource(RapierConfiguration {
-        gravity: Vec2::ZERO,
+        gravity: Vec2::Y * -9.81 * 50.0,
         ..default()
     });
 

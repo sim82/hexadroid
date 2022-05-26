@@ -117,7 +117,7 @@ impl PluginGroup for DefaultPlugins {
         group.add(DefaultPlugin);
 
         // bevy_rapier plugins
-        group.add(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(32.0));
+        group.add(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0));
 
         if self.debug_draw {
             group.add(RapierDebugRenderPlugin::default());

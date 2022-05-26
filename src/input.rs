@@ -1,7 +1,10 @@
+use std::io::BufWriter;
+
 use bevy_rapier2d::prelude::Velocity;
 
 use bevy::{
     input::{mouse::MouseButtonInput, ElementState},
+    math::Vec3Swizzles,
     prelude::*,
     render::camera::Camera2d,
 };
@@ -17,6 +20,7 @@ use crate::{
     droid::{AttackRequest, TargetDirection},
     hex_point_to_vec2,
     tiles::{TileCache, TilePos, TileType, TilesState},
+    worldbuild::WorldState,
     Despawn, HEX_LAYOUT,
 };
 
@@ -99,6 +103,53 @@ fn camera_zoom_system(
     }
 }
 
+fn camera_rotate_system(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut camera_query: Query<&mut Transform, With<Camera2d>>,
+    mut rapier_config: ResMut<RapierConfiguration>,
+) {
+    // info!("scale: {:?}", rapier_config);
+
+    for mut transform in camera_query.iter_mut() {
+        let angle = 3.0 * std::f32::consts::PI / 360.0;
+
+        if keyboard_input.pressed(KeyCode::K) {
+            let rot = Quat::from_rotation_z(angle);
+            transform.rotation *= rot;
+            rapier_config.gravity = rot.mul_vec3(rapier_config.gravity.extend(0.0)).xy();
+        } else if keyboard_input.pressed(KeyCode::L) {
+            let rot = Quat::from_rotation_z(-angle);
+            transform.rotation *= rot;
+            rapier_config.gravity = rot.mul_vec3(rapier_config.gravity.extend(0.0)).xy();
+        }
+    }
+}
+
+fn world_debug_input_system(
+    keyboard_input: Res<Input<KeyCode>>,
+    rapier_context: Res<RapierContext>,
+    mut world_state: ResMut<WorldState>,
+) {
+    // info!("scale: {:?}", rapier_config);
+
+    const INCREMENT: i32 = 1;
+    if keyboard_input.just_pressed(KeyCode::Y) {
+        if world_state.max_target > 5 {
+            world_state.max_target -= INCREMENT;
+            world_state.min_target += INCREMENT;
+        }
+    } else if keyboard_input.just_pressed(KeyCode::U) {
+        if world_state.max_target < 40 {
+            world_state.max_target += INCREMENT;
+            world_state.min_target -= INCREMENT;
+        }
+    } else if keyboard_input.just_pressed(KeyCode::Q) {
+        if let Ok(file) = std::fs::File::create("physics.yaml") {
+            let _ = serde_yaml::to_writer(BufWriter::new(file), &*rapier_context);
+        }
+    }
+}
+
 fn background_on_click_system(
     mut commands: Commands,
     mouse: Res<MousePosWorld>,
@@ -147,6 +198,8 @@ impl Plugin for InputPlugin {
         app.add_system(apply_input_system_8dir)
             .add_system(background_on_click_system)
             .add_system(camera_zoom_system)
+            .add_system(camera_rotate_system)
+            .add_system(world_debug_input_system)
             .add_plugin(MousePosPlugin::SingleCamera);
     }
 }

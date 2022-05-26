@@ -266,7 +266,8 @@ pub struct AiPlugin;
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(assault_predict_system)
-            .add_system(movement_update_system);
+            // .add_system(movement_update_system)
+            ;
     }
 }
 
