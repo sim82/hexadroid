@@ -6,8 +6,16 @@ use crate::{
 };
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_egui::{egui, EguiContext};
+use egui_extras::RetainedImage;
 use hexagon_tiles::hexagon::{Hex, HexMath, HexRound};
 use perlin2d::PerlinNoise2D;
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+enum RebuildState {
+    None,
+    Despawn,
+    Respawn,
+}
 
 pub struct WorldState {
     min: Hex,
@@ -20,10 +28,13 @@ pub struct WorldState {
 
     perlin: PerlinNoise2D,
 
-    rebuild_all: bool,
+    rebuild: RebuildState,
+    noise_preview: bool,
 }
 
-const PERLIN_SCALE: f64 = 256.0;
+const NOISE_SCALE: f32 = 0.1;
+
+const PERLIN_SCALE: f64 = 64.0;
 const INITIAL_SIZE: i32 = 20;
 
 impl Default for WorldState {
@@ -37,14 +48,15 @@ impl Default for WorldState {
             perlin: PerlinNoise2D::new(
                 4,
                 1.0,
-                1.5,
-                2.0,
-                2.0,
+                1.0,
+                2.4,
+                2.9,
                 (PERLIN_SCALE, PERLIN_SCALE),
-                -0.4,
+                -0.35,
                 101,
             ),
-            rebuild_all: false,
+            rebuild: RebuildState::None,
+            noise_preview: false,
         }
     }
 }
@@ -70,7 +82,7 @@ fn update_walls_noise(
         }
     }
 
-    if !world_state.rebuild_all
+    if world_state.rebuild == RebuildState::None
         && world_state.max_target == world_state.max
         && world_state.min_target == world_state.min
     {
@@ -89,7 +101,10 @@ fn update_walls_noise(
         let q = pos.0.q();
         let r = pos.0.r();
 
-        if world_state.rebuild_all || !valid_range_q.contains(&q) || !valid_range_r.contains(&r) {
+        if world_state.rebuild == RebuildState::Despawn
+            || !valid_range_q.contains(&q)
+            || !valid_range_r.contains(&r)
+        {
             commands.entity(*entity).insert(Despawn::ThisFrame);
         }
     }
@@ -101,18 +116,20 @@ fn update_walls_noise(
             //     && r <= world_state.max
             //     && q >= world_state.min
             //     && q <= world_state.max
-            if !world_state.rebuild_all && old_range_q.contains(&q) && old_range_r.contains(&r) {
+            if world_state.rebuild != RebuildState::Respawn
+                && old_range_q.contains(&q)
+                && old_range_r.contains(&r)
+            {
                 continue;
             }
             let h = hexagon_tiles::hexagon::Hex::new(q, r);
 
             let p = hexagon_tiles::layout::LayoutTool::hex_to_pixel(HEX_LAYOUT, h);
-            let p = hex_point_to_vec2(p);
-
+            let p = hex_point_to_vec2(p) * NOISE_SCALE;
             let noise = world_state.perlin.get_noise(p.x.into(), p.y.into());
             // info!("noise {} {} {} {}", q, r, p, noise);
 
-            if noise < 0.0 {
+            if noise < 0.5 {
                 continue;
             }
 
@@ -124,7 +141,10 @@ fn update_walls_noise(
             let entity = commands
                 .spawn()
                 .insert(TilePos(h))
-                .insert(TileType { wall: true })
+                .insert(TileType {
+                    wall: true,
+                    immediate_collider: false,
+                })
                 .id();
             commands.entity(tiles_state.tile_root).add_child(entity);
         }
@@ -132,12 +152,16 @@ fn update_walls_noise(
     // }
     world_state.min = world_state.min_target;
     world_state.max = world_state.max_target;
-    world_state.rebuild_all = false;
+    world_state.rebuild = match world_state.rebuild {
+        RebuildState::Despawn => RebuildState::Respawn,
+        _ => RebuildState::None,
+    };
 }
 
 fn worldbuid_egui_ui_system(
     mut egui_context: ResMut<EguiContext>,
     mut world_state: ResMut<WorldState>,
+    mut image: Local<Option<RetainedImage>>,
 ) {
     let mut amplitude = world_state.perlin.get_amplitude();
     let mut bias = world_state.perlin.get_bias();
@@ -148,15 +172,80 @@ fn worldbuid_egui_ui_system(
     let mut scale = world_state.perlin.get_scale();
 
     egui::Window::new("path").show(egui_context.ctx_mut(), |ui| {
-        ui.add(egui::Slider::new(&mut amplitude, 0.5..=2.0));
-        ui.add(egui::Slider::new(&mut bias, -1.0..=1.0));
-        ui.add(egui::Slider::new(&mut frequency, 0.0..=10.0));
-        ui.add(egui::Slider::new(&mut lacunarity, 0.0..=10.0));
-        ui.add(egui::Slider::new(&mut octaves, 1..=8));
-        ui.add(egui::Slider::new(&mut persistence, 0.0..=10.0));
-        ui.add(egui::Slider::new(&mut scale.0, 64.0..=1024.0));
-        ui.add(egui::Slider::new(&mut scale.1, 64.0..=1024.0));
-        world_state.rebuild_all = ui.button("rebuild").clicked();
+        egui::Grid::new("my_grid").num_columns(2).show(ui, |ui| {
+            ui.label("amplitude");
+            ui.add(egui::Slider::new(&mut amplitude, 0.0..=2.0));
+            ui.end_row();
+
+            ui.label("bias");
+            ui.add(egui::Slider::new(&mut bias, -1.0..=1.0));
+            ui.end_row();
+
+            ui.label("frequency");
+            ui.add(egui::Slider::new(&mut frequency, 0.0..=4.0));
+            ui.end_row();
+
+            ui.label("lacunarity");
+            ui.add(egui::Slider::new(&mut lacunarity, 0.0..=4.0));
+            ui.end_row();
+
+            ui.label("octaves");
+            ui.add(egui::Slider::new(&mut octaves, 1..=8));
+            ui.end_row();
+
+            ui.label("persistence");
+            ui.add(egui::Slider::new(&mut persistence, 0.0..=3.0));
+            ui.end_row();
+
+            ui.label("scale x");
+            ui.add(egui::Slider::new(&mut scale.0, 64.0..=1024.0));
+            ui.end_row();
+
+            ui.label("scale y");
+            ui.add(egui::Slider::new(&mut scale.1, 64.0..=1024.0));
+            ui.end_row();
+        });
+
+        if ui.button("rebuild").clicked() {
+            world_state.rebuild = RebuildState::Despawn;
+        }
+
+        ui.checkbox(&mut world_state.noise_preview, "preview");
+
+        if world_state.noise_preview {
+            const SIZE: usize = 256;
+            let mut color_image = egui::ColorImage::new([SIZE, SIZE], egui::Color32::GREEN);
+            for y in 0..SIZE {
+                for x in 0..SIZE {
+                    let p = hexagon_tiles::layout::LayoutTool::hex_to_pixel(
+                        HEX_LAYOUT,
+                        world_state.center,
+                    );
+                    let p = hex_point_to_vec2(p) * NOISE_SCALE;
+
+                    let offset_x = -((SIZE / 2) as f64) + p.x as f64;
+                    let offset_y = -((SIZE / 2) as f64) + p.y as f64;
+
+                    let noise = world_state
+                        .perlin
+                        .get_noise((x as f64) + offset_x, (y as f64) + offset_y)
+                        .clamp(0.0, 1.0);
+                    color_image.pixels[x + (SIZE - y - 1) * SIZE] =
+                        egui::Color32::from_gray((noise * 255.0) as u8);
+                }
+            }
+
+            let retained_image =
+                egui_extras::RetainedImage::from_color_image("noise_preview", color_image);
+            *image = Some(retained_image);
+        }
+
+        if let Some(image) = &*image {
+            ui.add(egui::Image::new(
+                image.texture_id(ui.ctx()),
+                image.size_vec2(),
+            ));
+        }
     });
 
     world_state.perlin.set_amplitude(amplitude);

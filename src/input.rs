@@ -183,7 +183,10 @@ fn background_on_click_system(
                 info!("spawn");
                 let entity = commands
                     .spawn()
-                    .insert(TileType { wall: true })
+                    .insert(TileType {
+                        wall: true,
+                        immediate_collider: true,
+                    })
                     .insert(TilePos(hex))
                     .id();
                 commands.entity(tiles_state.tile_root).add_child(entity);

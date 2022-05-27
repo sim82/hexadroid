@@ -1504,6 +1504,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui_extras"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "877bfcce06463cdbcfd7f4efd57608b1384d6d9ae03b33e503fbba1d1a899a52"
+dependencies = [
+ "egui",
+]
+
+[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1925,6 +1934,7 @@ dependencies = [
  "bevy_prototype_lyon",
  "bevy_rapier2d",
  "clap",
+ "egui_extras",
  "hexagon_tiles",
  "lazy_static",
  "perlin2d",

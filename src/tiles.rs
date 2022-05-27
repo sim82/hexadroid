@@ -30,6 +30,11 @@ impl Default for TilesState {
 #[derive(Component)]
 pub struct TileType {
     pub wall: bool,
+    // immediate_collider: spawn tile with temporary collider. Useful e.g. when tiles
+    // next to the player are toggled (so collision already works correctly before edge loops are updated).
+    // Not necessary (but can cause performace problems) for growing the world boundaries.
+    // Actually not really belongs to the TileType, so maybe move to extra marker component.
+    pub immediate_collider: bool,
 }
 
 #[derive(Component, Eq, PartialEq, Copy, Clone, Debug)]
@@ -70,7 +75,10 @@ fn setup_system(
                 let entity = commands
                     .spawn()
                     .insert(TilePos(h))
-                    .insert(TileType { wall: true })
+                    .insert(TileType {
+                        wall: true,
+                        immediate_collider: false,
+                    })
                     .id();
                 commands.entity(tiles_state.tile_root).add_child(entity);
             }
@@ -89,22 +97,25 @@ fn spawn_tiles_system(
     query_despawn: Query<(Entity, &TilePos), Added<Despawn>>,
 ) {
     let mut dirty_add = Vec::new();
-    for (entity, tile_pos, _) in query.iter() {
+    for (entity, tile_pos, tile_type) in query.iter() {
         // commands.entity(entity).inser
-
-        let corners = LayoutTool::polygon_corners(HEX_LAYOUT, tile_pos.0)
-            .iter()
-            .map(|p| Vec2::new(p.x as f32, p.y as f32))
-            .collect();
 
         commands
             .entity(entity)
-            .insert(Collider::polyline(
-                corners,
-                Some(vec![[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]),
-            ))
             .insert(Transform::from_xyz(0.0, 0.0, 0.0))
             .insert(RigidBody::Fixed);
+
+        if tile_type.immediate_collider {
+            let corners = LayoutTool::polygon_corners(HEX_LAYOUT, tile_pos.0)
+                .iter()
+                .map(|p| Vec2::new(p.x as f32, p.y as f32))
+                .collect();
+
+            commands.entity(entity).insert(Collider::polyline(
+                corners,
+                Some(vec![[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]),
+            ));
+        }
 
         tiles_cache.tiles.insert(*tile_pos, entity);
         dirty_add.push((entity, *tile_pos));

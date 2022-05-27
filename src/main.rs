@@ -1,4 +1,7 @@
-use bevy::{input::system::exit_on_esc_system, prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{
+    diagnostic::DiagnosticsPlugin, input::system::exit_on_esc_system, prelude::*,
+    sprite::MaterialMesh2dBundle,
+};
 use bevy_prototype_lyon::{
     prelude::{tess::FillTessellator, *},
     shapes,
@@ -21,6 +24,7 @@ fn main() {
     let mut app = App::new();
     // bevy plugins
     app.add_plugins(DefaultPlugins)
+        .add_plugin(DiagnosticsPlugin)
         .add_system(exit_on_esc_system)
         .insert_resource(Msaa::default());
 
@@ -82,20 +86,22 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
         .insert_bundle(my_shape_builder)
         .id();
 
-    let enemy_shape_builder = GeometryBuilder::build_as(
-        &shape,
-        DrawMode::Stroke(StrokeMode::new(Color::RED, 10.0)),
-        // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
-        // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
-        // },
-        Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
-    );
+    if !args.no_droid {
+        let enemy_shape_builder = GeometryBuilder::build_as(
+            &shape,
+            DrawMode::Stroke(StrokeMode::new(Color::RED, 10.0)),
+            // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
+            // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
+            // },
+            Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
+        );
 
-    commands
-        .spawn_bundle(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
-        .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
-        .insert(PrimaryEnemy { enemy })
-        .insert_bundle(enemy_shape_builder);
+        commands
+            .spawn_bundle(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
+            .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
+            .insert(PrimaryEnemy { enemy })
+            .insert_bundle(enemy_shape_builder);
+    }
 }
 
 fn setup_linedraw_test(

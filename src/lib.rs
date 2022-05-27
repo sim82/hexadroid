@@ -42,6 +42,9 @@ pub struct CmdlineArgs {
 
     #[clap(short, long)]
     pub world_inspector: bool,
+
+    #[clap(short, long)]
+    pub no_droid: bool,
 }
 
 pub const HEX_LAYOUT: Layout = Layout {
