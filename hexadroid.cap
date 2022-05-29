@@ -11,7 +11,7 @@
                 "variable": "CARGO_MANIFEST_DIR"
             }
         ],
-        "executable": "/home/sim/src/hexadroid/target/debug/hexadroid",
+        "executable": "/home/sim/src/hexadroid/target/release/hexadroid",
         "inject": false,
         "numQueuedFrames": 0,
         "options": {
