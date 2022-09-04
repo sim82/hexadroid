@@ -1,4 +1,5 @@
 use std::io::BufWriter;
+use std::io::Write;
 
 use bevy_rapier2d::prelude::Velocity;
 
@@ -20,6 +21,7 @@ use crate::{
     droid::{AttackRequest, TargetDirection},
     hex_point_to_vec2,
     tiles::{TileCache, TilePos, TileType, TilesState},
+    waypoint,
     worldbuild::WorldState,
     Despawn, HEX_LAYOUT,
 };
@@ -151,6 +153,10 @@ fn world_debug_input_system(
     }
 }
 
+pub enum ClickMode {
+    TileAddRemove,
+    WaypointSample,
+}
 fn background_on_click_system(
     mut commands: Commands,
     mouse: Res<MousePosWorld>,
@@ -158,8 +164,7 @@ fn background_on_click_system(
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
     mut tile_cache: ResMut<TileCache>,
     tiles_state: Res<TilesState>,
-    // mut cursor_moved_events: EventReader<CursorMoved>,
-    // cam_2d_query: Query<(&GlobalTransform, &Camera), With<Camera2d>>
+    mut waypoints_gui_state: ResMut<waypoint::GuiState>, // FIXME: make click_handler mode specific.
 ) {
     for button_event in mouse_button_input_events.iter() {
         if button_event.button == MouseButton::Left && button_event.state == ElementState::Released
@@ -176,20 +181,52 @@ fn background_on_click_system(
             info!("mouse pos: {:?} -> {:?}", *mouse, hex);
 
             let tile_pos = TilePos(hex);
-            if let Some(entity) = tile_cache.tiles.remove(&tile_pos) {
-                info!("delete");
-                commands.entity(entity).insert(Despawn::ThisFrame);
-            } else {
-                info!("spawn");
-                let entity = commands
-                    .spawn()
-                    .insert(TileType {
-                        wall: true,
-                        immediate_collider: true,
-                    })
-                    .insert(TilePos(hex))
-                    .id();
-                commands.entity(tiles_state.tile_root).add_child(entity);
+            let click_mode = ClickMode::WaypointSample;
+
+            match click_mode {
+                ClickMode::TileAddRemove => {
+                    if let Some(entity) = tile_cache.tiles.remove(&tile_pos) {
+                        info!("delete");
+                        commands.entity(entity).insert(Despawn::ThisFrame);
+                    } else {
+                        info!("spawn");
+                        let entity = commands
+                            .spawn()
+                            .insert(TileType {
+                                wall: true,
+                                immediate_collider: true,
+                            })
+                            .insert(TilePos(hex))
+                            .id();
+                        commands.entity(tiles_state.tile_root).add_child(entity);
+                    }
+                }
+                ClickMode::WaypointSample => {
+                    let pattern = [tile_pos.0; 6]
+                        .zip(HEX_DIRECTIONS)
+                        .map(|(a, b)| TilePos(a.add(b)))
+                        .map(|p| tile_cache.tiles.contains_key(&p));
+
+                    // add or remove (NOTE: is there a better pattern for this?)
+                    let is_new = waypoints_gui_state.rules2.insert(pattern);
+                    if !is_new {
+                        waypoints_gui_state.rules2.remove(&pattern);
+                    }
+
+                    let mut pattern_sorted = waypoints_gui_state
+                        .rules2
+                        .iter()
+                        .cloned()
+                        .collect::<Vec<_>>();
+                    pattern_sorted.sort();
+                    let mut f = std::fs::File::create("pattern.txt").unwrap();
+                    for p in pattern_sorted {
+                        let p = p.map(|b| if b { 1 } else { 0 });
+                        let _ = writeln!(f, "{}{}{}{}{}{}", p[0], p[1], p[2], p[3], p[4], p[5]);
+                    }
+
+                    waypoints_gui_state.update = true;
+                }
             }
         }
     }

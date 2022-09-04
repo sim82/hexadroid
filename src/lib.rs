@@ -28,6 +28,8 @@ pub mod debug;
 pub mod render;
 pub mod worldbuild;
 
+pub mod waypoint;
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 pub struct CmdlineArgs {
@@ -153,6 +155,7 @@ impl PluginGroup for DefaultPlugins {
             // .add(render::pipeline::RenderShapePlugin)
             .add(ShapePlugin)
             .add(worldbuild::WorldbuildPlugin)
+            .add(waypoint::WaypointPlugin)
             .add(EguiPlugin);
     }
 }
