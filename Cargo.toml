@@ -12,18 +12,18 @@ inspector = ["bevy-inspector-egui"]
 
 [dependencies]
 # bevy = { version = "0.7" }
-bevy = { version = "0.7", features = ["dynamic"] }
-bevy_rapier2d = { version = "0.13", features = ["serde-serialize"] }
-bevy-inspector-egui = { version = "0.11", optional = true }
-bevy_prototype_debug_lines = "0.7"
-bevy_mouse_tracking_plugin = "0.2"
-bevy_egui = "0.14"
+bevy = { version = "0.8", features = ["dynamic"] }
+bevy_rapier2d = { version = "0.16", features = ["serde-serialize"] }
+bevy-inspector-egui = { version = "0.12", optional = true }
+bevy_prototype_debug_lines = "0.8"
+bevy_mouse_tracking_plugin = "0.3"
+bevy_egui = "0.16"
 hexagon_tiles = "0.1"
-bevy_prototype_lyon = "0.5"
-egui_extras = "0.18"
+bevy_prototype_lyon = "0.6"
+egui_extras = "0.19"
 clap = { version = "3", features = ["derive"] }
 lazy_static = "1"
 rand = "0.8"
 # perlin_noise = "1"
 perlin2d = "0.2"
-serde_yaml = "0.8"
+serde_yaml = "0.9"

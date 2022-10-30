@@ -119,7 +119,7 @@ pub struct DroidBundle {
     pub target_direction: TargetDirection,
     pub attack_request: AttackRequest,
     pub damping: Damping,
-    pub mass_properties: MassProperties,
+    pub mass_properties: AdditionalMassProperties,
 }
 
 impl DroidBundle {
@@ -163,10 +163,7 @@ impl DroidBundle {
             target_direction: default(),
             attack_request: default(),
             damping,
-            mass_properties: MassProperties {
-                mass: 1000.0,
-                ..default()
-            },
+            mass_properties: AdditionalMassProperties::Mass(1000.0),
         }
     }
 }

@@ -1,5 +1,7 @@
 use bevy::{
-    diagnostic::DiagnosticsPlugin, input::system::exit_on_esc_system, prelude::*,
+    diagnostic::DiagnosticsPlugin,
+    //  input::system::exit_on_esc_system,
+    prelude::*,
     sprite::MaterialMesh2dBundle,
 };
 use bevy_prototype_lyon::{
@@ -12,9 +14,10 @@ use hexadroid::{
     camera::CameraTarget,
     droid::{ai::PrimaryEnemy, WeaponDirection},
     input::InputTarget,
-    render::MyMaterial,
+    // render::MyMaterial,
     tiles::{TilePos, TileType},
-    CmdlineArgs, HEX_LAYOUT,
+    CmdlineArgs,
+    HEX_LAYOUT,
 };
 use hexagon_tiles::layout::LayoutTool;
 
@@ -25,7 +28,7 @@ fn main() {
     // bevy plugins
     app.add_plugins(DefaultPlugins)
         .add_plugin(DiagnosticsPlugin)
-        .add_system(exit_on_esc_system)
+        // .add_system(exit_on_esc_system)
         .insert_resource(Msaa::default());
 
     app.add_plugins(hexadroid::DefaultPlugins::default().with_debug_draw(args.debug_draw));
@@ -104,24 +107,24 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
     }
 }
 
-fn setup_linedraw_test(
-    mut commands: Commands,
-    mut mesh_assets: ResMut<Assets<Mesh>>,
-    mut my_material_assets: ResMut<Assets<MyMaterial>>,
-) {
-    commands
-        .spawn_bundle(MaterialMesh2dBundle {
-            mesh: mesh_assets
-                .add(Mesh::from(shape::Quad::new(Vec2::new(100.0, 100.0))))
-                .into(),
-            material: my_material_assets.add(MyMaterial {
-                alpha: 0.5,
-                color: Color::RED,
-            }),
-            ..default()
-        })
-        .insert(Name::new("quad"));
-}
+// fn setup_linedraw_test(
+//     mut commands: Commands,
+//     mut mesh_assets: ResMut<Assets<Mesh>>,
+//     mut my_material_assets: ResMut<Assets<MyMaterial>>,
+// ) {
+//     commands
+//         .spawn_bundle(MaterialMesh2dBundle {
+//             mesh: mesh_assets
+//                 .add(Mesh::from(shape::Quad::new(Vec2::new(100.0, 100.0))))
+//                 .into(),
+//             material: my_material_assets.add(MyMaterial {
+//                 alpha: 0.5,
+//                 color: Color::RED,
+//             }),
+//             ..default()
+//         })
+//         .insert(Name::new("quad"));
+// }
 
 fn setup_lyon_test(mut commands: Commands) {
     let shape = shapes::RegularPolygon {

@@ -1,14 +1,10 @@
 use std::io::BufWriter;
 use std::io::Write;
 
+use bevy::input::ButtonState;
 use bevy_rapier2d::prelude::Velocity;
 
-use bevy::{
-    input::{mouse::MouseButtonInput, ElementState},
-    math::Vec3Swizzles,
-    prelude::*,
-    render::camera::Camera2d,
-};
+use bevy::{input::mouse::MouseButtonInput, math::Vec3Swizzles, prelude::*};
 use bevy_mouse_tracking_plugin::{MousePos, MousePosPlugin, MousePosWorld};
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{
@@ -167,8 +163,7 @@ fn background_on_click_system(
     mut waypoints_gui_state: ResMut<waypoint::GuiState>, // FIXME: make click_handler mode specific.
 ) {
     for button_event in mouse_button_input_events.iter() {
-        if button_event.button == MouseButton::Left && button_event.state == ElementState::Released
-        {
+        if button_event.button == MouseButton::Left && button_event.state == ButtonState::Released {
             // info!("click: {:?}", pointer_pos);
             let hex = LayoutTool::pixel_to_hex(
                 HEX_LAYOUT,

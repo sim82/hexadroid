@@ -5,10 +5,9 @@ use bevy::{
     render::{
         render_asset::RenderAsset,
         render_resource::{
-            std140::{AsStd140, Std140},
-            BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayoutDescriptor,
+            AsBindGroup, BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayoutDescriptor,
             BindGroupLayoutEntry, BindingType, BufferBindingType, BufferInitDescriptor, BufferSize,
-            BufferUsages, ShaderStages,
+            BufferUsages, ShaderRef, ShaderStages,
         },
         renderer::RenderDevice,
     },
@@ -17,13 +16,13 @@ use bevy::{
 
 // pub mod pipeline;
 
-#[derive(Clone, TypeUuid)]
+#[derive(AsBindGroup, Clone, TypeUuid)]
 #[uuid = "2f58e6f2-9680-4311-ab7b-80b948d6ba18"]
 pub struct MyMaterial {
     pub alpha: f32,
     pub color: Color,
 }
-#[derive(AsStd140, Clone)]
+#[derive(Clone)]
 struct MyMaterialUniformData {
     alpha: f32,
     color: Vec4,
@@ -33,32 +32,33 @@ pub struct MyMaterialGpu {
     bind_group: BindGroup,
 }
 impl Material2d for MyMaterial {
-    fn bind_group(material: &MyMaterialGpu) -> &bevy::render::render_resource::BindGroup {
-        &material.bind_group
-    }
+    // fn bind_group(material: &MyMaterialGpu) -> &bevy::render::render_resource::BindGroup {
+    //     &material.bind_group
+    // }
 
-    fn bind_group_layout(
-        render_device: &bevy::render::renderer::RenderDevice,
-    ) -> bevy::render::render_resource::BindGroupLayout {
-        render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: None,
-            entries: &[BindGroupLayoutEntry {
-                binding: 0,
-                visibility: ShaderStages::FRAGMENT,
-                ty: BindingType::Buffer {
-                    ty: BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: BufferSize::new(
-                        MyMaterialUniformData::std140_size_static() as u64
-                    ),
-                },
-                count: None,
-            }],
-        })
-    }
-    fn fragment_shader(asset_server: &AssetServer) -> Option<Handle<Shader>> {
-        asset_server.watch_for_changes().unwrap();
-        Some(asset_server.load("my_material.wgsl"))
+    // fn bind_group_layout(
+    //     render_device: &bevy::render::renderer::RenderDevice,
+    // ) -> bevy::render::render_resource::BindGroupLayout {
+    //     render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+    //         label: None,
+    //         entries: &[BindGroupLayoutEntry {
+    //             binding: 0,
+    //             visibility: ShaderStages::FRAGMENT,
+    //             ty: BindingType::Buffer {
+    //                 ty: BufferBindingType::Uniform,
+    //                 has_dynamic_offset: false,
+    //                 min_binding_size: BufferSize::new(
+    //                     MyMaterialUniformData::std140_size_static() as u64
+    //                 ),
+    //             },
+    //             count: None,
+    //         }],
+    //     })
+    // }
+    fn fragment_shader() -> ShaderRef {
+        // asset_server.watch_for_changes().unwrap();
+        // Some(asset_server.load("my_material.wgsl"))
+        "shape.wgsl".into()
     }
 }
 

@@ -25,7 +25,7 @@ pub mod tiles;
 // }
 pub mod camera;
 pub mod debug;
-pub mod render;
+// pub mod render;
 pub mod worldbuild;
 
 pub mod waypoint;
@@ -151,7 +151,7 @@ impl PluginGroup for DefaultPlugins {
             .add(collision::CollisionPlugin)
             .add(camera::CameraPlugin)
             .add(tiles::TilesPlugin)
-            .add(render::RenderPlugin)
+            // .add(render::RenderPlugin)
             // .add(render::pipeline::RenderShapePlugin)
             .add(ShapePlugin)
             .add(worldbuild::WorldbuildPlugin)
