@@ -144,7 +144,6 @@ impl PluginGroup for DefaultPlugins {
         }
 
         group
-            .add(DefaultPlugin)
             .add(input::InputPlugin)
             .add(droid::DroidPlugin)
             .add(droid::ai::AiPlugin)
