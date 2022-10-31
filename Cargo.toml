@@ -24,6 +24,7 @@ rand = "0.8"
 # perlin_noise = "1"
 perlin2d = "0.2"
 serde_yaml = "0.9"
+big-brain = "0.14"
 
 [profile.dev.package."*"]
 opt-level = 3

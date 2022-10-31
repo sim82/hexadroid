@@ -12,7 +12,10 @@ use bevy_rapier2d::prelude::*;
 use clap::Parser;
 use hexadroid::{
     camera::CameraTarget,
-    droid::{ai::PrimaryEnemy, WeaponDirection},
+    droid::{
+        ai::{new_shooting_droid_ai, PredictedHit, PrimaryEnemy},
+        WeaponDirection,
+    },
     exit_on_esc_system,
     input::InputTarget,
     // render::MyMaterial,
@@ -104,9 +107,11 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
         commands
             .spawn_bundle(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
             .insert_bundle(SpatialBundle::default())
-            .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
+            // .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
+            .insert(PredictedHit::default())
             .insert(PrimaryEnemy { enemy })
-            .insert_bundle(enemy_shape_builder);
+            .insert_bundle(enemy_shape_builder)
+            .insert(new_shooting_droid_ai());
     }
 }
 
