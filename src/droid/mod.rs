@@ -164,7 +164,7 @@ impl DroidBundle {
             target_direction: default(),
             attack_request: default(),
             damping,
-            mass_properties: ColliderMassProperties::Mass(1.0),
+            mass_properties: ColliderMassProperties::Density(1.0),
         }
     }
 }
