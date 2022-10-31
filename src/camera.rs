@@ -1,10 +1,10 @@
-use bevy::{prelude::*, render::camera::Camera2d};
+use bevy::{prelude::*, render::camera::Camera};
 
 #[derive(Component)]
 pub struct CameraTarget;
 
 fn setup_camera_system(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(Camera2dBundle::default());
 }
 
 fn track_camera_system(

@@ -1,15 +1,12 @@
 use std::io::BufWriter;
 use std::io::Write;
 
+use bevy::input::ButtonState;
+use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_rapier2d::prelude::Velocity;
 
-use bevy::{
-    input::{mouse::MouseButtonInput, ElementState},
-    math::Vec3Swizzles,
-    prelude::*,
-    render::camera::Camera2d,
-};
-use bevy_mouse_tracking_plugin::{MousePos, MousePosPlugin, MousePosWorld};
+use bevy::{input::mouse::MouseButtonInput, math::Vec3Swizzles, prelude::*};
+use bevy_mouse_tracking_plugin::prelude::*;
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{
     hexagon::{Hex, HexMath, HexRound, HEX_DIRECTIONS},
@@ -21,9 +18,7 @@ use crate::{
     droid::{AttackRequest, TargetDirection},
     hex_point_to_vec2,
     tiles::{TileCache, TilePos, TileType, TilesState},
-    waypoint,
-    worldbuild::WorldState,
-    Despawn, HEX_LAYOUT,
+    waypoint, Despawn, HEX_LAYOUT,
 };
 
 #[derive(Component, Default)]
@@ -127,32 +122,6 @@ fn camera_rotate_system(
     }
 }
 
-fn world_debug_input_system(
-    keyboard_input: Res<Input<KeyCode>>,
-    rapier_context: Res<RapierContext>,
-    mut world_state: ResMut<WorldState>,
-) {
-    // info!("scale: {:?}", rapier_config);
-
-    const INCREMENT_I: i32 = 1;
-    let increment = Hex::new(INCREMENT_I, INCREMENT_I);
-    if keyboard_input.just_pressed(KeyCode::Y) {
-        if world_state.max_target.q() > 1 {
-            world_state.max_target = world_state.max_target.sub(increment);
-            world_state.min_target = world_state.min_target.add(increment);
-        }
-    } else if keyboard_input.just_pressed(KeyCode::U) {
-        if world_state.max_target.q() < 40 {
-            world_state.max_target = world_state.max_target.add(increment);
-            world_state.min_target = world_state.min_target.sub(increment);
-        }
-    } else if keyboard_input.just_pressed(KeyCode::Q) {
-        if let Ok(file) = std::fs::File::create("physics.yaml") {
-            let _ = serde_yaml::to_writer(BufWriter::new(file), &*rapier_context);
-        }
-    }
-}
-
 pub enum ClickMode {
     TileAddRemove,
     WaypointSample,
@@ -167,8 +136,7 @@ fn background_on_click_system(
     mut waypoints_gui_state: ResMut<waypoint::GuiState>, // FIXME: make click_handler mode specific.
 ) {
     for button_event in mouse_button_input_events.iter() {
-        if button_event.button == MouseButton::Left && button_event.state == ElementState::Released
-        {
+        if button_event.button == MouseButton::Left && button_event.state == ButtonState::Released {
             // info!("click: {:?}", pointer_pos);
             let hex = LayoutTool::pixel_to_hex(
                 HEX_LAYOUT,
@@ -191,7 +159,7 @@ fn background_on_click_system(
                     } else {
                         info!("spawn");
                         let entity = commands
-                            .spawn()
+                            .spawn_bundle(SpatialBundle::default())
                             .insert(TileType {
                                 wall: true,
                                 immediate_collider: true,
@@ -240,7 +208,6 @@ impl Plugin for InputPlugin {
             .add_system(background_on_click_system)
             .add_system(camera_zoom_system)
             .add_system(camera_rotate_system)
-            .add_system(world_debug_input_system)
-            .add_plugin(MousePosPlugin::SingleCamera);
+            .add_plugin(MousePosPlugin);
     }
 }

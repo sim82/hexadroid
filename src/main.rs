@@ -1,5 +1,7 @@
 use bevy::{
-    diagnostic::DiagnosticsPlugin, input::system::exit_on_esc_system, prelude::*,
+    diagnostic::DiagnosticsPlugin,
+    //  input::system::exit_on_esc_system,
+    prelude::*,
     sprite::MaterialMesh2dBundle,
 };
 use bevy_prototype_lyon::{
@@ -10,11 +12,16 @@ use bevy_rapier2d::prelude::*;
 use clap::Parser;
 use hexadroid::{
     camera::CameraTarget,
-    droid::{ai::PrimaryEnemy, WeaponDirection},
+    droid::{
+        ai::{new_shooting_droid_ai, PredictedHit, PrimaryEnemy},
+        WeaponDirection,
+    },
+    exit_on_esc_system,
     input::InputTarget,
-    render::MyMaterial,
+    // render::MyMaterial,
     tiles::{TilePos, TileType},
-    CmdlineArgs, HEX_LAYOUT,
+    CmdlineArgs,
+    HEX_LAYOUT,
 };
 use hexagon_tiles::layout::LayoutTool;
 
@@ -81,6 +88,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
 
     let enemy = commands
         .spawn_bundle(hexadroid::droid::DroidBundle::new("player", args.gravity))
+        .insert_bundle(SpatialBundle::default())
         .insert(InputTarget::default())
         .insert(CameraTarget)
         .insert_bundle(my_shape_builder)
@@ -98,30 +106,33 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
 
         commands
             .spawn_bundle(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
-            .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
+            .insert_bundle(SpatialBundle::default())
+            // .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
+            .insert(PredictedHit::default())
             .insert(PrimaryEnemy { enemy })
-            .insert_bundle(enemy_shape_builder);
+            .insert_bundle(enemy_shape_builder)
+            .insert(new_shooting_droid_ai());
     }
 }
 
-fn setup_linedraw_test(
-    mut commands: Commands,
-    mut mesh_assets: ResMut<Assets<Mesh>>,
-    mut my_material_assets: ResMut<Assets<MyMaterial>>,
-) {
-    commands
-        .spawn_bundle(MaterialMesh2dBundle {
-            mesh: mesh_assets
-                .add(Mesh::from(shape::Quad::new(Vec2::new(100.0, 100.0))))
-                .into(),
-            material: my_material_assets.add(MyMaterial {
-                alpha: 0.5,
-                color: Color::RED,
-            }),
-            ..default()
-        })
-        .insert(Name::new("quad"));
-}
+// fn setup_linedraw_test(
+//     mut commands: Commands,
+//     mut mesh_assets: ResMut<Assets<Mesh>>,
+//     mut my_material_assets: ResMut<Assets<MyMaterial>>,
+// ) {
+//     commands
+//         .spawn_bundle(MaterialMesh2dBundle {
+//             mesh: mesh_assets
+//                 .add(Mesh::from(shape::Quad::new(Vec2::new(100.0, 100.0))))
+//                 .into(),
+//             material: my_material_assets.add(MyMaterial {
+//                 alpha: 0.5,
+//                 color: Color::RED,
+//             }),
+//             ..default()
+//         })
+//         .insert(Name::new("quad"));
+// }
 
 fn setup_lyon_test(mut commands: Commands) {
     let shape = shapes::RegularPolygon {

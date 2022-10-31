@@ -1,6 +1,6 @@
 #![feature(array_zip)]
 
-use bevy::prelude::*;
+use bevy::{app::AppExit, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
@@ -25,7 +25,7 @@ pub mod tiles;
 // }
 pub mod camera;
 pub mod debug;
-pub mod render;
+// pub mod render;
 pub mod worldbuild;
 
 pub mod waypoint;
@@ -144,18 +144,26 @@ impl PluginGroup for DefaultPlugins {
         }
 
         group
-            .add(DefaultPlugin)
             .add(input::InputPlugin)
             .add(droid::DroidPlugin)
             .add(droid::ai::AiPlugin)
             .add(collision::CollisionPlugin)
             .add(camera::CameraPlugin)
             .add(tiles::TilesPlugin)
-            .add(render::RenderPlugin)
+            // .add(render::RenderPlugin)
             // .add(render::pipeline::RenderShapePlugin)
             .add(ShapePlugin)
-            .add(worldbuild::WorldbuildPlugin)
+            // .add(worldbuild::WorldbuildPlugin)
             .add(waypoint::WaypointPlugin)
             .add(EguiPlugin);
+    }
+}
+
+pub fn exit_on_esc_system(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut app_exit_events: EventWriter<AppExit>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        app_exit_events.send_default();
     }
 }

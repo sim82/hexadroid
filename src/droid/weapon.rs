@@ -20,7 +20,7 @@ pub struct KineticProjectileBundle {
     despawn: Despawn,
 }
 
-pub const PROJECTILE_SPEED: f32 = 400.0;
+pub const PROJECTILE_SPEED: f32 = 800.0;
 
 impl KineticProjectileBundle {
     pub fn with_direction(owner: Entity, /*translation: Vec3, */ direction: Vec2) -> Self {

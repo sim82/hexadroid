@@ -119,7 +119,7 @@ pub struct DroidBundle {
     pub target_direction: TargetDirection,
     pub attack_request: AttackRequest,
     pub damping: Damping,
-    pub mass_properties: MassProperties,
+    pub mass_properties: ColliderMassProperties,
 }
 
 impl DroidBundle {
@@ -142,6 +142,7 @@ impl DroidBundle {
 
         Self {
             collider: Collider::ball(28.0),
+
             // transform: Transform::from_xyz(translation.x, translation.y, 0.0),
             rigid_body: RigidBody::Dynamic,
             locked_axes,
@@ -163,10 +164,7 @@ impl DroidBundle {
             target_direction: default(),
             attack_request: default(),
             damping,
-            mass_properties: MassProperties {
-                mass: 1000.0,
-                ..default()
-            },
+            mass_properties: ColliderMassProperties::Density(1.0),
         }
     }
 }
