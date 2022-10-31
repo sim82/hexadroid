@@ -60,7 +60,10 @@ fn setup_system(
     mut tiles_state: ResMut<TilesState>,
     args: Res<CmdlineArgs>,
 ) {
-    tiles_state.tile_root = commands.spawn().insert(Name::new("tiles")).id();
+    tiles_state.tile_root = commands
+        .spawn_bundle(SpatialBundle::default())
+        .insert(Name::new("tiles"))
+        .id();
     tiles_state.edgeloop_root = commands
         .spawn_bundle(SpatialBundle::default())
         .insert(Name::new("edge_loops"))
@@ -76,7 +79,7 @@ fn setup_system(
                 }
 
                 let entity = commands
-                    .spawn()
+                    .spawn_bundle(SpatialBundle::default())
                     .insert(TilePos(h))
                     .insert(TileType {
                         wall: true,

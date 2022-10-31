@@ -139,14 +139,14 @@ fn update_walls_noise(
             // }
 
             let entity = commands
-                .spawn()
+                .spawn_bundle(SpatialBundle::default())
                 .insert(TilePos(h))
                 .insert(TileType {
                     wall: true,
                     immediate_collider: false,
                 })
                 .id();
-            commands.entity(tiles_state.tile_root).add_child(entity);
+            // commands.entity(tiles_state.tile_root).add_child(entity);
         }
     }
     // }
