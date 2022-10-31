@@ -2,10 +2,11 @@ use std::io::BufWriter;
 use std::io::Write;
 
 use bevy::input::ButtonState;
+use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_rapier2d::prelude::Velocity;
 
 use bevy::{input::mouse::MouseButtonInput, math::Vec3Swizzles, prelude::*};
-use bevy_mouse_tracking_plugin::{MousePos, MousePosPlugin, MousePosWorld};
+use bevy_mouse_tracking_plugin::prelude::*;
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{
     hexagon::{Hex, HexMath, HexRound, HEX_DIRECTIONS},
@@ -236,6 +237,6 @@ impl Plugin for InputPlugin {
             .add_system(camera_zoom_system)
             .add_system(camera_rotate_system)
             .add_system(world_debug_input_system)
-            .add_plugin(MousePosPlugin::SingleCamera);
+            .add_plugin(MousePosPlugin);
     }
 }

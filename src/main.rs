@@ -13,6 +13,7 @@ use clap::Parser;
 use hexadroid::{
     camera::CameraTarget,
     droid::{ai::PrimaryEnemy, WeaponDirection},
+    exit_on_esc_system,
     input::InputTarget,
     // render::MyMaterial,
     tiles::{TilePos, TileType},
@@ -28,7 +29,7 @@ fn main() {
     // bevy plugins
     app.add_plugins(DefaultPlugins)
         .add_plugin(DiagnosticsPlugin)
-        // .add_system(exit_on_esc_system)
+        .add_system(exit_on_esc_system)
         .insert_resource(Msaa::default());
 
     app.add_plugins(hexadroid::DefaultPlugins::default().with_debug_draw(args.debug_draw));
@@ -84,6 +85,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
 
     let enemy = commands
         .spawn_bundle(hexadroid::droid::DroidBundle::new("player", args.gravity))
+        .insert_bundle(SpatialBundle::default())
         .insert(InputTarget::default())
         .insert(CameraTarget)
         .insert_bundle(my_shape_builder)
@@ -101,6 +103,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
 
         commands
             .spawn_bundle(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
+            .insert_bundle(SpatialBundle::default())
             .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
             .insert(PrimaryEnemy { enemy })
             .insert_bundle(enemy_shape_builder);

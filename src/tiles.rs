@@ -61,7 +61,10 @@ fn setup_system(
     args: Res<CmdlineArgs>,
 ) {
     tiles_state.tile_root = commands.spawn().insert(Name::new("tiles")).id();
-    tiles_state.edgeloop_root = commands.spawn().insert(Name::new("edge_loops")).id();
+    tiles_state.edgeloop_root = commands
+        .spawn_bundle(SpatialBundle::default())
+        .insert(Name::new("edge_loops"))
+        .id();
 
     if !args.empty {
         for q in -5..=5 {
@@ -366,13 +369,13 @@ fn spawn_edgeloops(
             closed: true,
             points: points.clone(),
         };
-
         let entity = commands
             .spawn_bundle(GeometryBuilder::build_as(
                 &lyon_polygon,
                 DrawMode::Stroke(StrokeMode::new(COLORS[color_count % COLORS.len()], 10.0)),
                 default(),
             ))
+            .insert_bundle(SpatialBundle::default())
             .insert(BoundaryMarker { tiles })
             .id();
 

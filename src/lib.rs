@@ -1,6 +1,6 @@
 #![feature(array_zip)]
 
-use bevy::prelude::*;
+use bevy::{app::AppExit, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
@@ -156,5 +156,14 @@ impl PluginGroup for DefaultPlugins {
             .add(worldbuild::WorldbuildPlugin)
             .add(waypoint::WaypointPlugin)
             .add(EguiPlugin);
+    }
+}
+
+pub fn exit_on_esc_system(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut app_exit_events: EventWriter<AppExit>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        app_exit_events.send_default();
     }
 }
