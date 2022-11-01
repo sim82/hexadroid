@@ -30,6 +30,13 @@ pub mod worldbuild;
 
 pub mod waypoint;
 
+pub mod collision_groups {
+    use bevy_rapier2d::prelude::Group;
+
+    pub const DROIDS: Group = Group::GROUP_1;
+    pub const PROJECTILES: Group = Group::GROUP_2;
+}
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 pub struct CmdlineArgs {

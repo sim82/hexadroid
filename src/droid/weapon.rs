@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*, shapes};
 use bevy_rapier2d::prelude::*;
 
-use crate::Despawn;
+use crate::{collision_groups, Despawn};
 #[derive(Component)]
 pub struct Projectile {
     pub owner: Entity,
@@ -11,6 +11,7 @@ pub struct Projectile {
 #[derive(Bundle)]
 pub struct KineticProjectileBundle {
     collider: Collider,
+    collision_groups: CollisionGroups,
     // transform: Transform,
     rigid_body: RigidBody,
     active_events: ActiveEvents,
@@ -26,6 +27,10 @@ impl KineticProjectileBundle {
     pub fn with_direction(owner: Entity, /*translation: Vec3, */ direction: Vec2) -> Self {
         Self {
             collider: Collider::ball(20.0),
+            collision_groups: CollisionGroups::new(
+                collision_groups::PROJECTILES,
+                collision_groups::DROIDS,
+            ),
             rigid_body: RigidBody::Dynamic,
             velocity: Velocity::linear(direction * PROJECTILE_SPEED),
             active_events: ActiveEvents::COLLISION_EVENTS,

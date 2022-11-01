@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::input::InputTarget;
+use crate::{collision_groups, input::InputTarget};
 
 use self::{ai::PrimaryEnemy, weapon::kinetic_projectile_shape_bundle};
 
@@ -104,6 +104,7 @@ fn droid_attack_system(
 #[derive(Bundle)]
 pub struct DroidBundle {
     pub collider: Collider,
+    pub collision_groups: CollisionGroups,
     // pub transform: Transform,
     pub external_force: ExternalForce,
     pub external_impulse: ExternalImpulse,
@@ -142,7 +143,10 @@ impl DroidBundle {
 
         Self {
             collider: Collider::ball(28.0),
-
+            collision_groups: CollisionGroups::new(
+                collision_groups::DROIDS,
+                collision_groups::DROIDS | collision_groups::PROJECTILES,
+            ),
             // transform: Transform::from_xyz(translation.x, translation.y, 0.0),
             rigid_body: RigidBody::Dynamic,
             locked_axes,
