@@ -13,15 +13,15 @@ impl DebugLinesExt for DebugLines {
 
         let mut start = p + c0;
         let mut end = p - c0;
-        let zoff = 5.0;
-        start.z = zoff;
-        end.z = zoff;
+        // let zoff = 5.0;
+        // start.z = zoff;
+        // end.z = zoff;
         self.line(start, end, duration);
 
         let mut start = p + c1;
         let mut end = p - c1;
-        start.z = zoff;
-        end.z = zoff;
+        // start.z = zoff;
+        // end.z = zoff;
         self.line(start, end, duration);
     }
 }

@@ -15,7 +15,7 @@ const STOP_CUTOFF: f32 = 0.5;
 const STOP_MULTIPLIER: f32 = -15.0;
 const FORCE_MULTIPLIER: f32 = 4000.0;
 const IMPULSE_MULTIPLIER: f32 = 8.0;
-const RELOAD_TIMEOUT: f32 = 0.5;
+const RELOAD_TIMEOUT: f32 = 1.0;
 
 #[derive(Component)]
 pub struct GroundFriction;

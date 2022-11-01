@@ -1,0 +1,9 @@
+/target
+physics.yaml
+pattern.txt
+<<<<<<< HEAD
+tree.txt
+=======
+tree.txt
+.cargo/
+>>>>>>> bigbrain

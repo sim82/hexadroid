@@ -2039,6 +2039,7 @@ dependencies = [
  "egui_extras",
  "hexagon_tiles",
  "lazy_static",
+ "parry2d",
  "perlin2d",
  "rand",
  "serde_yaml",

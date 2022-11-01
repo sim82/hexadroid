@@ -13,7 +13,7 @@ use clap::Parser;
 use hexadroid::{
     camera::CameraTarget,
     droid::{
-        ai::{new_shooting_droid_ai, PredictedHit, PrimaryEnemy},
+        ai::{new_shooting_droid_ai, EnemyEvaluation, PredictedHit, PrimaryEnemy},
         WeaponDirection,
     },
     exit_on_esc_system,
@@ -109,6 +109,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             .insert_bundle(SpatialBundle::default())
             // .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
             .insert(PredictedHit::default())
+            .insert(EnemyEvaluation::default())
             .insert(PrimaryEnemy { enemy })
             .insert_bundle(enemy_shape_builder)
             .insert(new_shooting_droid_ai());
