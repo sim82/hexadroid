@@ -1,41 +1,27 @@
-use self::{actions::ShootAction, scorers::EnemyHitScore};
-
-use super::{weapon::Projectile, AttackRequest, TargetDirection, WeaponDirection, WeaponState};
-use crate::{
-    debug::DebugLinesExt, droid::weapon::PROJECTILE_SPEED, hex_point_to_vec2, CmdlineArgs,
-    HEX_LAYOUT,
-};
+use super::{weapon::Projectile, WeaponState};
+use crate::droid::weapon::PROJECTILE_SPEED;
 use bevy::{
-    ecs::component,
     math::{Vec2Swizzles, Vec3Swizzles},
     prelude::*,
     time::FixedTimestep,
 };
-use bevy_prototype_debug_lines::DebugLines;
-use bevy_rapier2d::{prelude::*, rapier::prelude::Segment};
+use bevy_rapier2d::prelude::*;
 use big_brain::prelude::*;
-use hexagon_tiles::{hexagon::HEX_DIRECTIONS, layout::LayoutTool};
 use lazy_static::lazy_static;
 use parry2d::{
-    query::{self, NonlinearRigidMotion},
+    query::{self},
     shape::Ball,
 };
-use rand::prelude::*;
 
 pub mod scorers {
-    use bevy::{math::Vec3Swizzles, prelude::*};
-    use bevy_prototype_debug_lines::DebugLines;
-    use bevy_rapier2d::prelude::Velocity;
+    use bevy::prelude::*;
+
     use big_brain::{
         evaluators::{Evaluator, LinearEvaluator},
         prelude::*,
     };
 
-    use crate::{debug::DebugLinesExt, droid::weapon::PROJECTILE_SPEED};
-
-    use super::{
-        EnemyEvaluation, IncomingProjectile, Line, PredictedHit, PrimaryEnemy, DIRECTIONS,
-    };
+    use super::{EnemyEvaluation, IncomingProjectile, PredictedHit};
 
     #[derive(Component, Debug, Clone)]
     pub struct EnemyHitScore;
@@ -94,22 +80,18 @@ pub mod scorers {
 
 pub mod actions {
 
-    use std::f32::consts::E;
-
-    use bevy::{math::Vec3Swizzles, prelude::*, utils::FloatOrd};
-    use big_brain::prelude::*;
-    use rand::{seq::SliceRandom, thread_rng, Rng};
-
+    use super::{EnemyEvaluation, IncomingProjectile, PredictedHit};
     use crate::droid::{ai::DIRECTIONS, AttackRequest, TargetDirection, WeaponDirection};
+    use bevy::{prelude::*, utils::FloatOrd};
+    use big_brain::prelude::*;
+    use rand::{thread_rng, Rng};
 
-    use super::{EnemyEvaluation, IncomingProjectile, PredictedHit, PrimaryEnemy};
     #[derive(Component, Debug, Clone)]
     pub struct ShootAction;
 
     pub fn shoot_action_system(
         mut query: Query<(&Actor, &mut ActionState), With<ShootAction>>,
         mut attack_query: Query<(&mut AttackRequest, &mut WeaponDirection, &PredictedHit)>,
-        droid_query: Query<&Transform>,
     ) {
         for (Actor(actor), mut state) in &mut query {
             // info!("shoot action {:?}", state);
@@ -149,7 +131,7 @@ pub mod actions {
             // info!("idle action {:?}", state);
             match *state {
                 ActionState::Requested => {
-                    if let Ok((mut attack_request, mut weapon_direction)) =
+                    if let Ok((mut attack_request, mut _weapon_direction)) =
                         attack_query.get_mut(*actor)
                     {
                         // weapon_direction.direction = DIRECTIONS[0];
@@ -230,7 +212,7 @@ pub mod actions {
             info!("evade projectile action {:?}", state);
             match *state {
                 ActionState::Requested => {
-                    if let Ok(mut target_direction) = direction_query.get_mut(*actor) {
+                    if let Ok(_target_direction) = direction_query.get_mut(*actor) {
                         if let Ok(incoming_projectile) = incoming_query.get(*actor) {
                             let mut rng = thread_rng();
                             if let Some(dir) = DIRECTIONS.iter().min_by_key(|dir| {
@@ -299,51 +281,51 @@ pub struct PrimaryEnemy {
     pub enemy: Entity,
 }
 
-#[derive(Component, Default)]
-pub struct MovementState {
-    time_left: f32,
-    direction: Vec2,
-}
+// #[derive(Component, Default)]
+// pub struct MovementState {
+//     time_left: f32,
+//     direction: Vec2,
+// }
 
-#[derive(Copy, Clone, Debug)]
-struct Line(Vec2, Vec2);
+// #[derive(Copy, Clone, Debug)]
+// struct Line(Vec2, Vec2);
 
-impl Line {
-    #[allow(unused)]
-    // explicit line-line intersection. Keep for reference
-    pub fn intersect_explicit(self, other: Self) -> Option<Vec2> {
-        // pub fn lines_intersect_2d( p0 : Vec2, p1: Vec2, Vector2 const& p2, Vector2 const& p3, Vector2* i const = 0) {
-        let Line(p0, p1) = self;
-        let Line(p2, p3) = other;
-        let s1 = p1 - p0;
-        let s2 = p3 - p2;
+// impl Line {
+//     #[allow(unused)]
+//     // explicit line-line intersection. Keep for reference
+//     pub fn intersect_explicit(self, other: Self) -> Option<Vec2> {
+//         // pub fn lines_intersect_2d( p0 : Vec2, p1: Vec2, Vector2 const& p2, Vector2 const& p3, Vector2* i const = 0) {
+//         let Line(p0, p1) = self;
+//         let Line(p2, p3) = other;
+//         let s1 = p1 - p0;
+//         let s2 = p3 - p2;
 
-        let u = p0 - p2;
+//         let u = p0 - p2;
 
-        let ip = 1f32 / (-s2.x * s1.y + s1.x * s2.y);
+//         let ip = 1f32 / (-s2.x * s1.y + s1.x * s2.y);
 
-        let s = (-s1.y * u.x + s1.x * u.y) * ip;
-        let t = (s2.x * u.y - s2.y * u.x) * ip;
+//         let s = (-s1.y * u.x + s1.x * u.y) * ip;
+//         let t = (s2.x * u.y - s2.y * u.x) * ip;
 
-        if (0.0..=1.0).contains(&s) && (0.0..=1.0).contains(&t) {
-            Some(p0 + (s1 * t))
-        } else {
-            None
-        }
-    }
+//         if (0.0..=1.0).contains(&s) && (0.0..=1.0).contains(&t) {
+//             Some(p0 + (s1 * t))
+//         } else {
+//             None
+//         }
+//     }
 
-    pub fn intersect(self, other: Self) -> Option<Vec2> {
-        let self_seg = Segment::new(self.0.into(), self.1.into());
-        let other_seg = Segment::new(other.0.into(), other.1.into());
-        if let Ok(Some(contact)) =
-            query::contact(&default(), &self_seg, &default(), &other_seg, 0.0)
-        {
-            Some(contact.point1.into())
-        } else {
-            None
-        }
-    }
-}
+//     pub fn intersect(self, other: Self) -> Option<Vec2> {
+//         let self_seg = Segment::new(self.0.into(), self.1.into());
+//         let other_seg = Segment::new(other.0.into(), other.1.into());
+//         if let Ok(Some(contact)) =
+//             query::contact(&default(), &self_seg, &default(), &other_seg, 0.0)
+//         {
+//             Some(contact.point1.into())
+//         } else {
+//             None
+//         }
+//     }
+// }
 
 #[derive(Component, Default)]
 pub struct EnemyEvaluation {
@@ -370,9 +352,9 @@ fn enemy_evaluation_system(
 #[derive(Component, Default)]
 #[component(storage = "SparseSet")]
 pub struct IncomingProjectile {
-    pos: Vec2,
-    velocity: Vec2,
-    toi: f32,
+    pub pos: Vec2,
+    pub velocity: Vec2,
+    pub toi: f32,
 }
 
 fn incomping_projectile_evaluation_system(
@@ -437,97 +419,9 @@ impl Default for PredictedHit {
     }
 }
 
-fn assault_predict_system_explicit(
-    enemy_query: Query<(&Transform, &Velocity)>,
-    mut debug_lines: Option<ResMut<DebugLines>>,
-    mut assault_query: Query<(&Transform, &PrimaryEnemy, &mut PredictedHit, &WeaponState)>,
-) {
-    for (
-        Transform {
-            translation: my_translation,
-            ..
-        },
-        PrimaryEnemy { enemy },
-        mut predicted_hit,
-        weapon_state,
-    ) in assault_query.iter_mut()
-    {
-        if let Ok((
-            Transform {
-                translation: enemy_translation,
-                ..
-            },
-            Velocity {
-                linvel: enemy_velocity,
-                ..
-            },
-        )) = enemy_query.get(*enemy)
-        {
-            let enemy_speed = enemy_velocity.length();
-
-            if enemy_speed <= f32::EPSILON || weapon_state.reload_timeout > f32::EPSILON {
-                // enemy not moving
-                predicted_hit.dt = f32::INFINITY;
-                continue;
-            }
-
-            let mut best_dt = f32::INFINITY;
-
-            for dir in DIRECTIONS.iter() {
-                // find intersection between predicted projectile and enemy trajectories
-                let enemy_line = Line(
-                    enemy_translation.xy(),
-                    enemy_translation.xy() + *enemy_velocity,
-                );
-                let projectile_start_pos = my_translation.xy() + *dir * 50.0;
-                let projectile_line = Line(
-                    projectile_start_pos,
-                    my_translation.xy() + *dir * PROJECTILE_SPEED,
-                );
-
-                if let Some(debug_lines) = debug_lines.as_mut() {
-                    debug_lines.line(enemy_line.0.extend(0.0), enemy_line.1.extend(0.0), 0.0);
-                    debug_lines.line(
-                        projectile_line.0.extend(0.0),
-                        projectile_line.1.extend(0.0),
-                        0.0,
-                    );
-                }
-                if let Some(intersect) = projectile_line.intersect(enemy_line) {
-                    // predicted 'time to intersection'
-                    let my_d = (intersect - projectile_start_pos).length();
-                    let enemy_d = (intersect - enemy_translation.xy()).length();
-
-                    let my_t = my_d / PROJECTILE_SPEED;
-                    let enemy_t = enemy_d / enemy_speed;
-
-                    let dt = (my_t - enemy_t).abs();
-
-                    if let Some(debug_lines) = debug_lines.as_mut() {
-                        info!("t: {} {}", my_t, enemy_t);
-                        let duration = if dt < 0.1 { 1.0 } else { 0.0 };
-                        debug_lines.cross(
-                            (projectile_start_pos
-                                + (intersect - projectile_start_pos) / my_t * enemy_t)
-                                .extend(0.0),
-                            duration,
-                        );
-                    }
-
-                    if dt < best_dt {
-                        predicted_hit.direction = *dir;
-                        predicted_hit.dt = dt;
-                        best_dt = dt;
-                    }
-                }
-            }
-        }
-    }
-}
-
 fn assault_predict_system(
     enemy_query: Query<(&Transform, &Velocity)>,
-    mut debug_lines: Option<ResMut<DebugLines>>,
+    // mut debug_lines: Option<ResMut<DebugLines>>,
     mut assault_query: Query<(&Transform, &PrimaryEnemy, &mut PredictedHit, &WeaponState)>,
 ) {
     for (
@@ -588,76 +482,76 @@ fn assault_predict_system(
     }
 }
 
-fn movement_update_system(
-    time: Res<Time>,
-    mut query: Query<(
-        &PrimaryEnemy,
-        &mut TargetDirection,
-        &Transform,
-        &mut MovementState,
-    )>,
-    enemy_query: Query<&Transform>,
-    mut debug_lines: Option<ResMut<DebugLines>>,
-    args: Res<CmdlineArgs>,
-) {
-    if args.gravity {
-        return;
-    }
-    for (
-        PrimaryEnemy { enemy },
-        mut target_direction,
-        Transform {
-            translation: my_pos,
-            ..
-        },
-        mut movement_state,
-    ) in query.iter_mut()
-    {
-        movement_state.time_left -= time.delta_seconds();
-        if movement_state.time_left > 0.0 {
-            continue;
-        }
-        movement_state.time_left = 1.0;
+// fn movement_update_system(
+//     time: Res<Time>,
+//     mut query: Query<(
+//         &PrimaryEnemy,
+//         &mut TargetDirection,
+//         &Transform,
+//         &mut MovementState,
+//     )>,
+//     enemy_query: Query<&Transform>,
+//     mut debug_lines: Option<ResMut<DebugLines>>,
+//     args: Res<CmdlineArgs>,
+// ) {
+//     if args.gravity {
+//         return;
+//     }
+//     for (
+//         PrimaryEnemy { enemy },
+//         mut target_direction,
+//         Transform {
+//             translation: my_pos,
+//             ..
+//         },
+//         mut movement_state,
+//     ) in query.iter_mut()
+//     {
+//         movement_state.time_left -= time.delta_seconds();
+//         if movement_state.time_left > 0.0 {
+//             continue;
+//         }
+//         movement_state.time_left = 1.0;
 
-        if let Ok(Transform {
-            translation: enemy_pos,
-            ..
-        }) = enemy_query.get(*enemy)
-        {
-            let enemy_dir = (*enemy_pos - *my_pos).xy().normalize_or_zero();
-            let mut rng = rand::thread_rng();
-            let move_sideways = rng.gen_bool(0.5);
+//         if let Ok(Transform {
+//             translation: enemy_pos,
+//             ..
+//         }) = enemy_query.get(*enemy)
+//         {
+//             let enemy_dir = (*enemy_pos - *my_pos).xy().normalize_or_zero();
+//             let mut rng = rand::thread_rng();
+//             let move_sideways = rng.gen_bool(0.5);
 
-            info!("move sideways: {:?}", move_sideways);
+//             info!("move sideways: {:?}", move_sideways);
 
-            if let Ok(dir) = DIRECTIONS.choose_weighted(&mut rng, {
-                |dir| {
-                    if move_sideways {
-                        1.0 - enemy_dir.dot(*dir).abs()
-                    } else {
-                        enemy_dir.dot(*dir) + 1.0
-                    }
-                }
-            }) {
-                target_direction.direction = *dir;
+//             if let Ok(dir) = DIRECTIONS.choose_weighted(&mut rng, {
+//                 |dir| {
+//                     if move_sideways {
+//                         1.0 - enemy_dir.dot(*dir).abs()
+//                     } else {
+//                         enemy_dir.dot(*dir) + 1.0
+//                     }
+//                 }
+//             }) {
+//                 target_direction.direction = *dir;
 
-                if let Some(debug_lines) = &mut debug_lines {
-                    let color = if move_sideways {
-                        Color::BLUE
-                    } else {
-                        Color::RED
-                    };
-                    debug_lines.line_colored(
-                        *my_pos,
-                        *my_pos + (dir.extend(0.0) * 16.0),
-                        1.0,
-                        color,
-                    );
-                }
-            }
-        }
-    }
-}
+//                 if let Some(debug_lines) = &mut debug_lines {
+//                     let color = if move_sideways {
+//                         Color::BLUE
+//                     } else {
+//                         Color::RED
+//                     };
+//                     debug_lines.line_colored(
+//                         *my_pos,
+//                         *my_pos + (dir.extend(0.0) * 16.0),
+//                         1.0,
+//                         color,
+//                     );
+//                 }
+//             }
+//         }
+//     }
+// }
 
 const LABEL: &str = "my_fixed_timestep";
 #[derive(Debug, Hash, PartialEq, Eq, Clone, StageLabel)]
@@ -677,7 +571,8 @@ impl Plugin for AiPlugin {
                 .with_system(incomping_projectile_evaluation_system),
         );
 
-        app.add_system(movement_update_system)
+        app
+            // .add_system(movement_update_system)
             .add_system(enemy_evaluation_system)
             .add_system_to_stage(BigBrainStage::Actions, actions::shoot_action_system)
             .add_system_to_stage(BigBrainStage::Actions, actions::idle_action_system)
@@ -695,11 +590,11 @@ impl Plugin for AiPlugin {
     }
 }
 
-#[derive(Bundle, Default)]
-pub struct AssaultAiBundle {
-    assault_ai: AssaultAi,
-    movement_state: MovementState,
-}
+// #[derive(Bundle, Default)]
+// pub struct AssaultAiBundle {
+//     assault_ai: AssaultAi,
+//     movement_state: MovementState,
+// }
 
 // impl AssaultAiBundle {
 //     pub fn new() -> Self {

@@ -1,6 +1,6 @@
-use bevy::{prelude::*, render::camera::Camera};
+use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct CameraTarget;
 
 fn setup_camera_system(mut commands: Commands) {

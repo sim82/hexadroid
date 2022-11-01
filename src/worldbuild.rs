@@ -66,7 +66,7 @@ impl Default for WorldState {
 
 fn update_walls_noise(
     mut commands: Commands,
-    tiles_state: Res<TilesState>,
+    _tiles_state: Res<TilesState>,
     tiles_cache: Res<TileCache>,
     mut world_state: ResMut<WorldState>,
     camera_query: Query<&Transform, With<CameraTarget>>,
@@ -141,7 +141,7 @@ fn update_walls_noise(
             //     continue;
             // }
 
-            let entity = commands
+            let _entity = commands
                 .spawn_bundle(SpatialBundle::default())
                 .insert(TilePos(h))
                 .insert(TileType {

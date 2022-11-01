@@ -11,15 +11,15 @@ impl DebugLinesExt for DebugLines {
         let c0 = Vec3::new(-s, s, 0.0);
         let c1 = Vec3::new(s, s, 0.0);
 
-        let mut start = p + c0;
-        let mut end = p - c0;
+        let start = p + c0;
+        let end = p - c0;
         // let zoff = 5.0;
         // start.z = zoff;
         // end.z = zoff;
         self.line(start, end, duration);
 
-        let mut start = p + c1;
-        let mut end = p - c1;
+        let start = p + c1;
+        let end = p - c1;
         // start.z = zoff;
         // end.z = zoff;
         self.line(start, end, duration);

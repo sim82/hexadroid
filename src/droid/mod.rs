@@ -3,17 +3,20 @@ use std::borrow::Cow;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{collision_groups, input::InputTarget};
+use crate::{camera::CameraTarget, collision_groups, input::InputTarget};
 
-use self::{ai::PrimaryEnemy, weapon::kinetic_projectile_shape_bundle};
+use self::{
+    ai::{EnemyEvaluation, PredictedHit, PrimaryEnemy},
+    weapon::kinetic_projectile_shape_bundle,
+};
 
 pub mod weapon;
 
 pub mod ai;
 
-const STOP_CUTOFF: f32 = 0.5;
-const STOP_MULTIPLIER: f32 = -15.0;
-const FORCE_MULTIPLIER: f32 = 4000.0;
+// const STOP_CUTOFF: f32 = 0.5;
+// const STOP_MULTIPLIER: f32 = -15.0;
+// const FORCE_MULTIPLIER: f32 = 4000.0;
 const IMPULSE_MULTIPLIER: f32 = 8.0;
 const RELOAD_TIMEOUT: f32 = 1.0;
 
@@ -40,18 +43,18 @@ pub struct AttackRequest {
     pub primary_attack: bool,
 }
 
-fn droid_stop_system(mut query: Query<(&mut Velocity, &mut ExternalForce), With<GroundFriction>>) {
-    for (mut velocity, mut external_force) in query.iter_mut() {
-        // info!("vel: {}", velocity.linvel);
+// fn droid_stop_system(mut query: Query<(&mut Velocity, &mut ExternalForce), With<GroundFriction>>) {
+//     for (mut velocity, mut external_force) in query.iter_mut() {
+//         // info!("vel: {}", velocity.linvel);
 
-        if velocity.linvel.length() <= STOP_CUTOFF {
-            velocity.linvel = Vec2::ZERO;
-            continue;
-        }
+//         if velocity.linvel.length() <= STOP_CUTOFF {
+//             velocity.linvel = Vec2::ZERO;
+//             continue;
+//         }
 
-        external_force.force = STOP_MULTIPLIER * velocity.linvel;
-    }
-}
+//         external_force.force = STOP_MULTIPLIER * velocity.linvel;
+//     }
+// }
 
 fn droid_apply_direction_system(
     mut query: Query<(&mut ExternalImpulse, &TargetDirection, &mut WeaponDirection)>,
@@ -121,6 +124,8 @@ pub struct DroidBundle {
     pub attack_request: AttackRequest,
     pub damping: Damping,
     pub mass_properties: ColliderMassProperties,
+    #[bundle]
+    pub spatial_bundle: SpatialBundle,
 }
 
 impl DroidBundle {
@@ -147,20 +152,10 @@ impl DroidBundle {
                 collision_groups::DROIDS,
                 collision_groups::DROIDS | collision_groups::PROJECTILES,
             ),
-            // transform: Transform::from_xyz(translation.x, translation.y, 0.0),
             rigid_body: RigidBody::Dynamic,
             locked_axes,
-            // friction: Friction {
-            //     coefficient: 0.5,
-            //     ..default()
-            // },
-            // restitution: Restitution {
-            //     coefficient: 0.3,
-            //     ..default()
-            // },
             velocity: Velocity::default(),
             name: Name::new(name),
-            // ground_friction: GroundFriction,
             weapon_direction: WeaponDirection { direction: Vec2::X },
             weapon_state: default(),
             external_force: default(),
@@ -169,9 +164,34 @@ impl DroidBundle {
             attack_request: default(),
             damping,
             mass_properties: ColliderMassProperties::Density(1.0),
+            spatial_bundle: default(),
         }
     }
 }
+
+#[derive(Bundle, Default)]
+pub struct PlayerDroidBundle {
+    input_target: InputTarget,
+    camera_target: CameraTarget,
+}
+
+#[derive(Bundle)]
+pub struct AiDroidBundle {
+    predicted_hit: PredictedHit,
+    enemy_evaluation: EnemyEvaluation,
+    primary_enemy: PrimaryEnemy,
+}
+
+impl AiDroidBundle {
+    pub fn with_enemy(enemy: Entity) -> Self {
+        Self {
+            predicted_hit: PredictedHit::default(),
+            enemy_evaluation: EnemyEvaluation::default(),
+            primary_enemy: PrimaryEnemy { enemy },
+        }
+    }
+}
+
 pub struct DroidPlugin;
 
 impl Plugin for DroidPlugin {

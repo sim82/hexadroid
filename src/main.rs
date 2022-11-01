@@ -2,28 +2,14 @@ use bevy::{
     diagnostic::DiagnosticsPlugin,
     //  input::system::exit_on_esc_system,
     prelude::*,
-    sprite::MaterialMesh2dBundle,
 };
-use bevy_prototype_lyon::{
-    prelude::{tess::FillTessellator, *},
-    shapes,
-};
+use bevy_prototype_lyon::{prelude::*, shapes};
 use bevy_rapier2d::prelude::*;
 use clap::Parser;
 use hexadroid::{
-    camera::CameraTarget,
-    droid::{
-        ai::{new_shooting_droid_ai, EnemyEvaluation, PredictedHit, PrimaryEnemy},
-        WeaponDirection,
-    },
-    exit_on_esc_system,
-    input::InputTarget,
-    // render::MyMaterial,
-    tiles::{TilePos, TileType},
-    CmdlineArgs,
-    HEX_LAYOUT,
+    droid::{ai::new_shooting_droid_ai, AiDroidBundle, PlayerDroidBundle},
+    exit_on_esc_system, CmdlineArgs,
 };
-use hexagon_tiles::layout::LayoutTool;
 
 fn main() {
     let args = CmdlineArgs::parse();
@@ -65,12 +51,6 @@ fn main() {
 }
 
 fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
-    // commands
-    //     .spawn()
-    //     .insert(Collider::cuboid(100.0, 100.0))
-    //     .insert(Transform::from_xyz(0.0, 0.0, 0.0))
-    //     .insert(RigidBody::Fixed);
-
     let shape = shapes::RegularPolygon {
         sides: 6,
         feature: shapes::RegularPolygonFeature::Radius(32.0),
@@ -80,17 +60,12 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
     let my_shape_builder = GeometryBuilder::build_as(
         &shape,
         DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
-        // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
-        // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
-        // },
         Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
     );
 
     let enemy = commands
         .spawn_bundle(hexadroid::droid::DroidBundle::new("player", args.gravity))
-        .insert_bundle(SpatialBundle::default())
-        .insert(InputTarget::default())
-        .insert(CameraTarget)
+        .insert_bundle(PlayerDroidBundle::default())
         .insert_bundle(my_shape_builder)
         .id();
 
@@ -98,56 +73,13 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
         let enemy_shape_builder = GeometryBuilder::build_as(
             &shape,
             DrawMode::Stroke(StrokeMode::new(Color::RED, 10.0)),
-            // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
-            // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
-            // },
             Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
         );
 
         commands
             .spawn_bundle(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
-            .insert_bundle(SpatialBundle::default())
-            // .insert_bundle(hexadroid::droid::ai::AssaultAiBundle::default())
-            .insert(PredictedHit::default())
-            .insert(EnemyEvaluation::default())
-            .insert(PrimaryEnemy { enemy })
+            .insert_bundle(AiDroidBundle::with_enemy(enemy))
             .insert_bundle(enemy_shape_builder)
             .insert(new_shooting_droid_ai());
     }
-}
-
-// fn setup_linedraw_test(
-//     mut commands: Commands,
-//     mut mesh_assets: ResMut<Assets<Mesh>>,
-//     mut my_material_assets: ResMut<Assets<MyMaterial>>,
-// ) {
-//     commands
-//         .spawn_bundle(MaterialMesh2dBundle {
-//             mesh: mesh_assets
-//                 .add(Mesh::from(shape::Quad::new(Vec2::new(100.0, 100.0))))
-//                 .into(),
-//             material: my_material_assets.add(MyMaterial {
-//                 alpha: 0.5,
-//                 color: Color::RED,
-//             }),
-//             ..default()
-//         })
-//         .insert(Name::new("quad"));
-// }
-
-fn setup_lyon_test(mut commands: Commands) {
-    let shape = shapes::RegularPolygon {
-        sides: 6,
-        feature: shapes::RegularPolygonFeature::Radius(200.0),
-        ..shapes::RegularPolygon::default()
-    };
-
-    commands.spawn_bundle(GeometryBuilder::build_as(
-        &shape,
-        DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
-        // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
-        // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
-        // },
-        Transform::default(),
-    ));
 }
