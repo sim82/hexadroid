@@ -1,7 +1,7 @@
 use std::io::Write;
 
 use bevy::input::ButtonState;
-use bevy_mouse_tracking_plugin::MousePosWorld;
+use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
 
 use bevy::{input::mouse::MouseButtonInput, math::Vec3Swizzles, prelude::*};
 use bevy_mouse_tracking_plugin::prelude::*;
@@ -146,7 +146,7 @@ fn background_on_click_system(
             info!("mouse pos: {:?} -> {:?}", *mouse, hex);
 
             let tile_pos = TilePos(hex);
-            let click_mode = ClickMode::WaypointSample;
+            let click_mode = ClickMode::TileAddRemove;
 
             match click_mode {
                 ClickMode::TileAddRemove => {
