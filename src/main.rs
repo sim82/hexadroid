@@ -8,8 +8,12 @@ use bevy_rapier2d::prelude::*;
 use clap::Parser;
 use hexadroid::{
     droid::{ai::new_shooting_droid_ai, AiDroidBundle, PlayerDroidBundle},
-    exit_on_esc_system, CmdlineArgs,
+    exit_on_esc_system,
+    portal::Portal,
+    tiles::TilePos,
+    CmdlineArgs,
 };
+use hexagon_tiles::hexagon::Hex;
 
 fn main() {
     let args = CmdlineArgs::parse();
@@ -82,4 +86,9 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             .insert_bundle(enemy_shape_builder)
             .insert(new_shooting_droid_ai());
     }
+
+    commands.spawn().insert(Portal {
+        tile_pos: TilePos(Hex::new(5, -1)),
+        timer: Timer::from_seconds(2.0, true),
+    });
 }
