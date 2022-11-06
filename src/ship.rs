@@ -22,6 +22,18 @@ pub struct ShipInput {
 pub struct ShipThruster {
     pub forward: f32,
     pub rot: f32,
+    pub rot_damping: bool,
+}
+
+#[derive(Component, Default)]
+#[component(storage = "sparse_set")]
+struct ShipBrakeManeuver {}
+
+impl ShipThruster {
+    pub fn apply_clamping(&mut self) {
+        self.forward = self.forward.clamp(0.0, 1.0);
+        self.rot = self.rot.clamp(-1.0, 1.0);
+    }
 }
 
 #[derive(Bundle)]
@@ -84,44 +96,72 @@ impl ShipBundle {
     }
 }
 
-pub fn apply_ship_input_system(
-    mut ship_query: Query<(&ShipInput, &Transform, &mut ExternalImpulse, &mut Damping)>,
-) {
-    for (ship_input, transform, mut extrnal_impulse, mut damping) in &mut ship_query {
-        // info!( "{} {}", )
-        extrnal_impulse.torque_impulse = ship_input.rot * -0.001;
-        let forward = transform.rotation * (SHIP_MAIN_AXIS * 0.5); // Vec3::new(0.0, 0.5, 0.0);
-        extrnal_impulse.impulse = forward.xy() * ship_input.thrust;
-        damping.angular_damping = ship_input.thrust * 2.0;
-        // damping.linear_damping = ship_input.brake;
+pub fn apply_ship_input_system(mut ship_query: Query<(&ShipInput, &mut ShipThruster)>) {
+    for (ship_input, mut thurster) in &mut ship_query {
+        thurster.forward = ship_input.thrust;
+        thurster.rot_damping = ship_input.thrust > f32::EPSILON;
+
+        thurster.rot = ship_input.rot * 0.5;
     }
 }
 
 pub fn ship_brake_maneuver_system(
-    mut query: Query<(&ShipInput, &Transform, &Velocity, &mut ExternalImpulse)>,
+    mut query: Query<(&ShipInput, &Transform, &Velocity, &mut ShipThruster)>,
 ) {
-    for (ship_input, transform, velocity, mut external_impulse) in &mut query {
-        let Some(movement_dir) = velocity.linvel.try_normalize() else {
-             continue;
-         };
+    for (ship_input, transform, velocity, mut thruster) in &mut query {
+        let len = velocity.linvel.length();
+
+        if len < 30.0 {
+            thruster.rot_damping |= ship_input.brake > f32::EPSILON;
+            continue;
+        }
+
+        let movement_dir = velocity.linvel.normalize(); // cannot fail due to previous length check
 
         // let movement_dir = SHIP_MAIN_AXIS.xy();
         let ship_dir = (transform.rotation * SHIP_MAIN_AXIS).xy();
         let angle = ship_dir.angle_between(movement_dir);
         // let x = ship_dir.dot(movement_dir) * ship_dir.perp_dot(movement_dir).signum();
         let diff = 1.0 - angle.abs() / (std::f32::consts::PI * 4.0);
-
+        info!("diff {}", diff);
         if ship_input.brake > f32::EPSILON {
-            if (angle.signum() == velocity.angvel.signum() || velocity.angvel.abs() < 2.0) {
-                external_impulse.torque_impulse = (diff * -0.002) * angle.signum();
-                // todo!();
-            }
             if diff < 0.8 {
-                let forward = (transform.rotation * SHIP_MAIN_AXIS).xy();
-                external_impulse.impulse = forward;
+                thruster.forward = 1.0;
+                // thruster.rot_damping = true;
+            }
+            if angle.signum() == velocity.angvel.signum() || velocity.angvel.abs() < 2.0 {
+                thruster.rot = diff * angle.signum()
             }
             info!("diff {}", diff);
         }
+    }
+}
+
+fn ship_thruster_system(
+    mut query: Query<(
+        &mut ShipThruster,
+        &Transform,
+        &mut ExternalImpulse,
+        &mut Damping,
+    )>,
+) {
+    const ROT_IMPULSE_MULTIPLIER: f32 = -0.002;
+    const IMPULSE_MULTIPLIER: f32 = 0.5;
+    const ROT_DAMPING: f32 = 2.0;
+
+    for (mut thruster, transform, mut extrnal_impulse, mut damping) in &mut query {
+        thruster.apply_clamping();
+
+        extrnal_impulse.torque_impulse = thruster.rot * ROT_IMPULSE_MULTIPLIER;
+        let forward = transform.rotation * SHIP_MAIN_AXIS;
+        extrnal_impulse.impulse = forward.xy() * (thruster.forward * IMPULSE_MULTIPLIER);
+        damping.angular_damping = if thruster.rot_damping {
+            ROT_DAMPING
+        } else {
+            0.0
+        };
+
+        *thruster = default();
     }
 }
 
@@ -154,7 +194,8 @@ pub struct ShipPlugin;
 impl Plugin for ShipPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(apply_ship_input_system)
-            .add_system(ship_brake_maneuver_system.after(apply_ship_input_system)) // can override other input
+            .add_system(ship_brake_maneuver_system.after(apply_ship_input_system))
+            .add_system(ship_thruster_system.after(ship_brake_maneuver_system)) // can override other input
             .add_system(ship_attack_system);
     }
 }
