@@ -59,6 +59,7 @@ pub struct ShipBundle {
 
     pub attack_request: AttackRequest,
     pub damping: Damping,
+    pub read_mass_properties: ReadMassProperties,
     // pub mass_properties: ColliderMassProperties,
     #[bundle]
     pub spatial_bundle: SpatialBundle,
@@ -92,6 +93,7 @@ impl ShipBundle {
             ship_thruster: default(),
             attack_request: default(),
             damping: default(),
+            read_mass_properties: default(),
             // mass_properties: ColliderMassProperties::Density(1.0),
             spatial_bundle: default(),
         }
@@ -152,24 +154,54 @@ pub fn ship_brake_maneuver_system(
     }
 }
 
+// fn ship_thruster_system(
+//     mut query: Query<(
+//         &mut ShipThruster,
+//         &Transform,
+//         &mut ExternalImpulse,
+//         &mut Damping,
+//     )>,
+// ) {
+//     const ROT_IMPULSE_MULTIPLIER: f32 = -0.002;
+//     const IMPULSE_MULTIPLIER: f32 = 0.5;
+//     const ROT_DAMPING: f32 = 2.0;
+
+//     for (mut thruster, transform, mut external_impulse, mut damping) in &mut query {
+//         thruster.apply_clamping();
+
+//         external_impulse.torque_impulse = thruster.rot * ROT_IMPULSE_MULTIPLIER;
+
+//         let forward = transform.rotation * SHIP_MAIN_AXIS;
+//         external_impulse.impulse = forward.xy() * (thruster.forward * IMPULSE_MULTIPLIER);
+//         damping.angular_damping = if thruster.rot_damping {
+//             ROT_DAMPING
+//         } else {
+//             0.0
+//         };
+
+//         *thruster = default();
+//     }
+// }
+
 fn ship_thruster_system(
     mut query: Query<(
         &mut ShipThruster,
         &Transform,
-        &mut ExternalImpulse,
+        &mut ExternalForce,
         &mut Damping,
     )>,
 ) {
-    const ROT_IMPULSE_MULTIPLIER: f32 = -0.002;
-    const IMPULSE_MULTIPLIER: f32 = 0.5;
+    const TORQUE_MULTIPLIER: f32 = -0.2;
+    const FORWARD_FORCE_MULTIPLIER: f32 = 25.0;
     const ROT_DAMPING: f32 = 2.0;
 
-    for (mut thruster, transform, mut external_impulse, mut damping) in &mut query {
+    for (mut thruster, transform, mut external_force, mut damping) in &mut query {
         thruster.apply_clamping();
 
-        external_impulse.torque_impulse = thruster.rot * ROT_IMPULSE_MULTIPLIER;
+        external_force.torque = thruster.rot * TORQUE_MULTIPLIER;
+
         let forward = transform.rotation * SHIP_MAIN_AXIS;
-        external_impulse.impulse = forward.xy() * (thruster.forward * IMPULSE_MULTIPLIER);
+        external_force.force = forward.xy() * (thruster.forward * FORWARD_FORCE_MULTIPLIER);
         damping.angular_damping = if thruster.rot_damping {
             ROT_DAMPING
         } else {
@@ -177,6 +209,17 @@ fn ship_thruster_system(
         };
 
         *thruster = default();
+    }
+}
+
+fn ship_kinetic_debug_system(mut query: Query<(&Velocity, &ExternalImpulse, &ReadMassProperties)>) {
+    for (velocity, external_impulse, mass) in &mut query {
+        if external_impulse.torque_impulse != 0.0 {
+            info!(
+                "torque {} {} {}",
+                external_impulse.torque_impulse, velocity.angvel, mass.0.principal_inertia
+            );
+        }
     }
 }
 
@@ -210,7 +253,8 @@ impl Plugin for ShipPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(apply_ship_input_system)
             .add_system(ship_brake_maneuver_system.after(apply_ship_input_system))
-            .add_system(ship_thruster_system.after(ship_brake_maneuver_system)) // can override other input
+            .add_system(ship_thruster_system.after(ship_brake_maneuver_system))
+            // .add_system(ship_kinetic_debug_system.after(ship_thruster_system)) // can override other input
             .add_system(ship_attack_system);
     }
 }
