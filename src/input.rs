@@ -14,6 +14,7 @@ use hexagon_tiles::{
 
 use crate::{
     droid::{AttackRequest, TargetDirection},
+    ship::ShipInput,
     tiles::{TileCache, TilePos, TileType, TilesState},
     waypoint, Despawn, HEX_LAYOUT,
 };
@@ -78,6 +79,40 @@ fn apply_input_system_8dir(
         }
 
         input_target.direction = dir.normalize_or_zero();
+        attack_request.primary_attack = keyboard_input.pressed(KeyCode::J);
+    }
+}
+
+fn apply_input_system_2_1_dof(
+    mut query: Query<(&mut ShipInput, &Transform, &mut AttackRequest), With<InputTarget>>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    for (mut input_target, _transform, mut attack_request) in query.iter_mut() {
+        let w = keyboard_input.pressed(KeyCode::W);
+        let a = keyboard_input.pressed(KeyCode::A);
+        let s = keyboard_input.pressed(KeyCode::S);
+        let d = keyboard_input.pressed(KeyCode::D);
+
+        let mut rot = 0.0;
+        let mut thrust = 0.0;
+        let mut brake = 0.0;
+        if w {
+            thrust += 1.0;
+        }
+        if s {
+            brake += 1.0;
+        }
+        if d {
+            rot += 1.0;
+        }
+        if a {
+            rot -= 1.0;
+        }
+
+        input_target.rot = rot;
+        input_target.thrust = thrust;
+        input_target.brake = brake;
+
         attack_request.primary_attack = keyboard_input.pressed(KeyCode::J);
     }
 }
@@ -202,6 +237,7 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(apply_input_system_8dir)
+            .add_system(apply_input_system_2_1_dof)
             .add_system(background_on_click_system)
             .add_system(camera_zoom_system)
             .add_system(camera_rotate_system)

@@ -7,9 +7,12 @@ use bevy_prototype_lyon::{prelude::*, shapes};
 use bevy_rapier2d::prelude::*;
 use clap::Parser;
 use hexadroid::{
+    camera::CameraTarget,
     droid::{ai::new_shooting_droid_ai, AiDroidBundle, PlayerDroidBundle},
     exit_on_esc_system,
+    input::InputTarget,
     portal::Portal,
+    ship::{ShipBundle, SHIP_VERTICES},
     tiles::TilePos,
     CmdlineArgs,
 };
@@ -67,10 +70,27 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
         Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
     );
 
-    let enemy = commands
-        .spawn_bundle(hexadroid::droid::DroidBundle::new("player", args.gravity))
-        .insert_bundle(PlayerDroidBundle::default())
-        .insert_bundle(my_shape_builder)
+    // let enemy = commands
+    //     .spawn_bundle(hexadroid::droid::DroidBundle::new("player", args.gravity))
+    //     .insert_bundle(PlayerDroidBundle::default())
+    //     .insert_bundle(my_shape_builder)
+    //     .id();
+    let ship_shape = shapes::Polygon {
+        points: SHIP_VERTICES.into(),
+        closed: true,
+    };
+
+    let ship_shape_builder = GeometryBuilder::build_as(
+        &ship_shape,
+        DrawMode::Stroke(StrokeMode::new(Color::YELLOW, 10.0)),
+        Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+    );
+
+    let ship = commands
+        .spawn_bundle(ShipBundle::new("ship"))
+        .insert_bundle(ship_shape_builder)
+        .insert(InputTarget)
+        .insert(CameraTarget)
         .id();
 
     if !args.no_droid {
@@ -82,7 +102,8 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
 
         commands
             .spawn_bundle(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
-            .insert_bundle(AiDroidBundle::with_enemy(enemy))
+            // .insert_bundle(AiDroidBundle::with_enemy(enemy))
+            .insert_bundle(AiDroidBundle::with_enemy(ship))
             .insert_bundle(enemy_shape_builder)
             .insert(new_shooting_droid_ai());
     }

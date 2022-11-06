@@ -10,13 +10,15 @@ use hexagon_tiles::{
     point::Point,
 };
 
-use crate::portal::PortalPlugin;
+use crate::{portal::PortalPlugin, ship::ShipPlugin};
 
 pub mod collision;
 pub mod droid;
 pub mod input;
-pub mod tiles;
 pub mod portal;
+pub mod tiles;
+
+pub mod ship;
 // pub mod worm {
 //     use perlin_noise::PerlinNoise;
 
@@ -166,7 +168,8 @@ impl PluginGroup for DefaultPlugins {
             // .add(worldbuild::WorldbuildPlugin)
             .add(waypoint::WaypointPlugin)
             .add(EguiPlugin)
-            .add(PortalPlugin);
+            .add(PortalPlugin)
+            .add(ShipPlugin);
     }
 }
 
