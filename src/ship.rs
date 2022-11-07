@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use bevy::{math::Vec3Swizzles, prelude::*};
-use bevy_rapier2d::{na::Quaternion, prelude::*, rapier::prelude::Ball};
+use bevy_rapier2d::prelude::*;
 
 use crate::{
     collision_groups,
@@ -131,8 +131,6 @@ pub fn ship_brake_maneuver_system(
     )>,
 ) {
     for (ship_input, transform, velocity, brake_maneuver, mut thruster) in &mut query {
-        let len = velocity.linvel.length();
-
         let (Some(maneuver_dir), Some(cur_dir)) = (brake_maneuver.direction.try_normalize(), velocity.linvel.try_normalize()) else {
             thruster.rot_damping |= ship_input.brake > f32::EPSILON;
             continue;
@@ -212,7 +210,9 @@ fn ship_thruster_system(
     }
 }
 
-fn ship_kinetic_debug_system(mut query: Query<(&Velocity, &ExternalImpulse, &ReadMassProperties)>) {
+fn _ship_kinetic_debug_system(
+    mut query: Query<(&Velocity, &ExternalImpulse, &ReadMassProperties)>,
+) {
     for (velocity, external_impulse, mass) in &mut query {
         if external_impulse.torque_impulse != 0.0 {
             info!(
@@ -223,7 +223,7 @@ fn ship_kinetic_debug_system(mut query: Query<(&Velocity, &ExternalImpulse, &Rea
     }
 }
 
-fn ship_attack_system_simple(
+fn _ship_attack_system_simple(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &Transform, &AttackRequest, &mut WeaponState), With<ShipInput>>,

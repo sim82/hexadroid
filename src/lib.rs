@@ -10,7 +10,7 @@ use hexagon_tiles::{
     point::Point,
 };
 
-use crate::{portal::PortalPlugin, ship::ShipPlugin};
+use crate::{hexton::HextonPlugin, portal::PortalPlugin, ship::ShipPlugin};
 
 pub mod collision;
 pub mod droid;
@@ -18,6 +18,7 @@ pub mod input;
 pub mod portal;
 pub mod tiles;
 
+pub mod hexton;
 pub mod ship;
 // pub mod worm {
 //     use perlin_noise::PerlinNoise;
@@ -34,6 +35,10 @@ pub mod debug;
 pub mod worldbuild;
 
 pub mod waypoint;
+
+pub mod tunables {
+    pub const LINE_WIDTH: f32 = 4.0;
+}
 
 pub mod collision_groups {
     use bevy_rapier2d::prelude::Group;
@@ -60,6 +65,12 @@ pub struct CmdlineArgs {
 
     #[clap(short, long)]
     pub no_droid: bool,
+
+    #[clap(short, long)]
+    pub ship: bool,
+
+    #[clap(short = 'x', long)]
+    pub hexton: bool,
 }
 
 pub const HEX_LAYOUT: Layout = Layout {
@@ -170,7 +181,8 @@ impl PluginGroup for DefaultPlugins {
             .add(waypoint::WaypointPlugin)
             .add(EguiPlugin)
             .add(PortalPlugin)
-            .add(ShipPlugin);
+            .add(ShipPlugin)
+            .add(HextonPlugin);
     }
 }
 

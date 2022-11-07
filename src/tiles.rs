@@ -12,8 +12,8 @@ use hexagon_tiles::{
 };
 
 use crate::{
-    collision_groups, debug::DebugLinesExt, hex_point_to_vec2, CmdlineArgs, Despawn, COLORS,
-    HEX_LAYOUT,
+    collision_groups, debug::DebugLinesExt, hex_point_to_vec2, tunables::LINE_WIDTH, CmdlineArgs,
+    Despawn, COLORS, HEX_LAYOUT,
 };
 
 pub struct TilesState {
@@ -382,7 +382,10 @@ fn spawn_edgeloops(
         let entity = commands
             .spawn_bundle(GeometryBuilder::build_as(
                 &lyon_polygon,
-                DrawMode::Stroke(StrokeMode::new(COLORS[color_count % COLORS.len()], 10.0)),
+                DrawMode::Stroke(StrokeMode::new(
+                    COLORS[color_count % COLORS.len()],
+                    LINE_WIDTH,
+                )),
                 default(),
             ))
             .insert_bundle(SpatialBundle::default())
