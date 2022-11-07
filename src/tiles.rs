@@ -11,7 +11,10 @@ use hexagon_tiles::{
     layout::LayoutTool,
 };
 
-use crate::{debug::DebugLinesExt, hex_point_to_vec2, CmdlineArgs, Despawn, COLORS, HEX_LAYOUT};
+use crate::{
+    collision_groups, debug::DebugLinesExt, hex_point_to_vec2, CmdlineArgs, Despawn, COLORS,
+    HEX_LAYOUT,
+};
 
 pub struct TilesState {
     pub tile_root: Entity,
@@ -257,6 +260,10 @@ fn optimize_colliders_system(
                 .insert(Transform::from_translation(center.extend(0.0)))
                 .insert(Restitution {
                     coefficient: 1.0,
+                    ..default()
+                })
+                .insert(CollisionGroups {
+                    memberships: collision_groups::LEVEL,
                     ..default()
                 });
         }

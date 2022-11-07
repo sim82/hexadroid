@@ -1,12 +1,12 @@
 use std::borrow::Cow;
 
 use bevy::{math::Vec3Swizzles, prelude::*};
-use bevy_rapier2d::{na::Quaternion, prelude::*};
+use bevy_rapier2d::{na::Quaternion, prelude::*, rapier::prelude::Ball};
 
 use crate::{
     collision_groups,
     droid::{
-        weapon::{self, kinetic_projectile_shape_bundle},
+        weapon::{self, kinetic_projectile_shape_bundle, PROJECTILE_SPEED},
         AttackRequest, WeaponState, RELOAD_TIMEOUT,
     },
 };
@@ -79,7 +79,7 @@ impl ShipBundle {
             collider: Collider::triangle(SHIP_VERTICES[0], SHIP_VERTICES[1], SHIP_VERTICES[2]),
             collision_groups: CollisionGroups::new(
                 collision_groups::DROIDS,
-                collision_groups::DROIDS, /*  | collision_groups::PROJECTILES*/
+                collision_groups::DROIDS | collision_groups::LEVEL, /*  | collision_groups::PROJECTILES*/
             ),
             rigid_body: RigidBody::Dynamic,
             locked_axes: LockedAxes::empty(),
@@ -223,7 +223,7 @@ fn ship_kinetic_debug_system(mut query: Query<(&Velocity, &ExternalImpulse, &Rea
     }
 }
 
-fn ship_attack_system(
+fn ship_attack_system_simple(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &Transform, &AttackRequest, &mut WeaponState), With<ShipInput>>,
@@ -247,6 +247,87 @@ fn ship_attack_system(
             ));
     }
 }
+fn ship_attack_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    rapier_context: Res<RapierContext>,
+    mut query: Query<(Entity, &Transform, &AttackRequest, &mut WeaponState), With<ShipInput>>,
+) {
+    for (entity, transform, AttackRequest { primary_attack }, mut weapon_state) in query.iter_mut()
+    {
+        weapon_state.reload_timeout = (weapon_state.reload_timeout - time.delta_seconds()).max(0.0);
+        if !primary_attack || weapon_state.reload_timeout > f32::EPSILON {
+            continue;
+        }
+
+        let projectile_shape = Collider::ball(10.0);
+        let projectile_pos = transform.translation.xy();
+        let projectile_vel = (transform.rotation * SHIP_MAIN_AXIS).xy() * PROJECTILE_SPEED;
+        let max_toi = 4.0;
+        let filter = QueryFilter {
+            exclude_collider: Some(entity),
+            groups: Some(InteractionGroups {
+                memberships: bevy_rapier2d::rapier::geometry::Group::GROUP_2,
+                filter: bevy_rapier2d::rapier::geometry::Group::GROUP_1,
+            }),
+
+            ..default()
+        };
+        // QueryFilter {
+        //     groups: Some(InteractionGroups {
+        //         memberships: collision_groups::DROIDS.,
+        //         filter: collision_groups::DROIDS,
+        //     }),
+        //     ..default()
+        // };
+        if let Some((entity, hit)) = rapier_context.cast_shape(
+            projectile_pos,
+            default(),
+            projectile_vel,
+            &projectile_shape,
+            max_toi,
+            filter,
+        ) {
+            // The first collider hit has the entity `entity`. The `hit` is a
+            // structure containing details about the hit configuration.
+            info!(
+                "Hit the entity {:?} with the configuration: {:?}",
+                entity, hit
+            );
+            weapon_state.reload_timeout = RELOAD_TIMEOUT;
+            let direction = (transform.rotation * SHIP_MAIN_AXIS).xy();
+            commands
+                .spawn_bundle(weapon::KineticProjectileBundle::with_direction(
+                    entity, // *translation,
+                    direction,
+                ))
+                .insert_bundle(kinetic_projectile_shape_bundle(
+                    transform.translation,
+                    direction,
+                ));
+        }
+    }
+}
+
+// fn cast_shape(rapier_context: Res<RapierContext>) {
+//     let shape = Collider::cuboid(1.0, 2.0, 3.0);
+//     let shape_pos = Vec3::new(1.0, 2.0, 3.0);
+//     let shape_rot = Quat::from_rotation_z(0.8);
+//     let shape_vel = Vec3::new(0.1, 0.4, 0.2);
+//     let max_toi = 4.0;
+//     let filter = QueryFilter::default();
+
+//     if let Some((entity, hit)) =
+//         rapier_context.cast_shape(shape_pos, shape_rot, shape_vel, &shape, max_toi, filter)
+//     {
+//         // The first collider hit has the entity `entity`. The `hit` is a
+//         // structure containing details about the hit configuration.
+//         println!(
+//             "Hit the entity {:?} with the configuration: {:?}",
+//             entity, hit
+//         );
+//     }
+// }
 
 pub struct ShipPlugin;
 impl Plugin for ShipPlugin {

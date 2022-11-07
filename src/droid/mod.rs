@@ -150,7 +150,7 @@ impl DroidBundle {
             collider: Collider::ball(28.0),
             collision_groups: CollisionGroups::new(
                 collision_groups::DROIDS,
-                collision_groups::DROIDS | collision_groups::PROJECTILES,
+                collision_groups::DROIDS | collision_groups::PROJECTILES | collision_groups::LEVEL,
             ),
             rigid_body: RigidBody::Dynamic,
             locked_axes,

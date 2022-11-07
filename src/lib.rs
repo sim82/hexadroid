@@ -40,6 +40,7 @@ pub mod collision_groups {
 
     pub const DROIDS: Group = Group::GROUP_1;
     pub const PROJECTILES: Group = Group::GROUP_2;
+    pub const LEVEL: Group = Group::GROUP_3;
 }
 
 #[derive(Parser, Debug)]

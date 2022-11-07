@@ -8,7 +8,8 @@ use bevy::{
 use bevy_rapier2d::prelude::*;
 use big_brain::prelude::*;
 use lazy_static::lazy_static;
-use parry2d::{
+
+use bevy_rapier2d::parry::{
     query::{self},
     shape::Ball,
 };
@@ -138,7 +139,7 @@ fn incomping_projectile_evaluation_system(
                 &projectile_pos,
                 &projectile_vel,
                 &projectile_shape,
-                0.5,
+                0.3,
                 true,
             ) {
                 if toi.toi < lowest_toi {
@@ -225,7 +226,7 @@ fn assault_predict_system(
                     &enemy_start_pos,
                     &enemy_vel,
                     &enemy_shape,
-                    1.0,
+                    0.7,
                     true,
                 ) {
                     if toi.toi < lowest_toi {
