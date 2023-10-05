@@ -56,7 +56,7 @@ pub struct HextonBundle {
     pub character_controller: KinematicCharacterController,
     pub controller_output: KinematicCharacterControllerOutput,
 
-    #[bundle]
+    // #[bundle]
     pub spatial_bundle: SpatialBundle,
 }
 

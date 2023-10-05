@@ -124,7 +124,7 @@ pub struct DroidBundle {
     pub attack_request: AttackRequest,
     pub damping: Damping,
     pub mass_properties: ColliderMassProperties,
-    #[bundle]
+    // #[bundle]
     pub spatial_bundle: SpatialBundle,
 }
 
