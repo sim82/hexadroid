@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_mouse_tracking_plugin::{prelude::InsertExt, MainCamera};
+use bevy_mouse_tracking_plugin::prelude::*;
 
 #[derive(Component, Default)]
 pub struct CameraTarget;
@@ -7,8 +7,10 @@ pub struct CameraTarget;
 fn setup_camera_system(mut commands: Commands) {
     commands
         .spawn_bundle(Camera2dBundle::default())
-        .add_world_tracking()
-        .insert(MainCamera);
+        .add(InitMouseTracking)
+        // .add_world_tracking()
+        // .insert(MainCamera)
+    ;
 }
 
 fn track_camera_system(
