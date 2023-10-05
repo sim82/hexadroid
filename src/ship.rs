@@ -61,7 +61,7 @@ pub struct ShipBundle {
     pub damping: Damping,
     pub read_mass_properties: ReadMassProperties,
     // pub mass_properties: ColliderMassProperties,
-    #[bundle]
+    // #[bundle]
     pub spatial_bundle: SpatialBundle,
 }
 
@@ -131,7 +131,10 @@ pub fn ship_brake_maneuver_system(
     )>,
 ) {
     for (ship_input, transform, velocity, brake_maneuver, mut thruster) in &mut query {
-        let (Some(maneuver_dir), Some(cur_dir)) = (brake_maneuver.direction.try_normalize(), velocity.linvel.try_normalize()) else {
+        let (Some(maneuver_dir), Some(cur_dir)) = (
+            brake_maneuver.direction.try_normalize(),
+            velocity.linvel.try_normalize(),
+        ) else {
             thruster.rot_damping |= ship_input.brake > f32::EPSILON;
             continue;
         };
