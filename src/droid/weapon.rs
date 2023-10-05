@@ -49,7 +49,8 @@ pub fn kinetic_projectile_shape_bundle(translation: Vec3, direction: Vec2) -> Sh
     };
     GeometryBuilder::build_as(
         &shape,
-        DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
+        // DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
+        Stroke::new(Color::GREEN, 10.0),
         // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
         // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
         // },
