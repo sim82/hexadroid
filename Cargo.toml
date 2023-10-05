@@ -8,24 +8,24 @@ edition = "2021"
 inspector = ["bevy-inspector-egui"]
 
 [dependencies]
-bevy = { version = "0.8" }
+bevy = { version = "0.11" }
 # bevy = { version = "0.8", features = ["dynamic"] }
-bevy_rapier2d = { version = "0.18", features = ["serde-serialize"] }
-bevy-inspector-egui = { version = "0.13", optional = true }
-bevy_prototype_debug_lines = "0.8"
-bevy_mouse_tracking_plugin = "0.4"
-bevy_egui = "0.16"
+bevy_rapier2d = { version = "0.22", features = ["serde-serialize"] }
+bevy-inspector-egui = { version = "0.19", optional = true }
+bevy_prototype_debug_lines = "0.11"
+bevy_mouse_tracking_plugin = "0.6"
+bevy_egui = "0.21"
 hexagon_tiles = "0.1"
-bevy_prototype_lyon = "0.6"
-egui_extras = "0.19"
+bevy_prototype_lyon = "0.9"
+egui_extras = "0.23"
 clap = { version = "4", features = ["derive"] }
 lazy_static = "1"
 rand = "0.8"
 # perlin_noise = "1"
 perlin2d = "0.2"
 serde_yaml = "0.9"
-big-brain = "0.14"
-parry2d = "0.11"
+big-brain = "0.18"
+parry2d = "0.13"
 
 [profile.dev.package."*"]
 opt-level = 3
