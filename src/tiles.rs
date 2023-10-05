@@ -16,6 +16,7 @@ use crate::{
     Despawn, COLORS, HEX_LAYOUT,
 };
 
+#[derive(Resource)]
 pub struct TilesState {
     pub tile_root: Entity,
     edgeloop_root: Entity,
@@ -52,7 +53,7 @@ impl std::hash::Hash for TilePos {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct TileCache {
     pub tiles: HashMap<TilePos, Entity>,
     pub dirty_set: HashSet<Entity>,
@@ -139,8 +140,15 @@ fn spawn_tiles_system(
     // add the modified tiles and their neighbors to dirty_set
     for (entity, pos) in dirty_add {
         tiles_cache.dirty_set.insert(entity);
-        for n in [pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b)) {
-            let pos = TilePos(n);
+        // for n in [pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b)) {
+        //     let pos = TilePos(n);
+        //     if let Some(ne) = tiles_cache.tiles.get(&pos).cloned() {
+        //         tiles_cache.dirty_set.insert(ne);
+        //     }
+        // }
+        for i in 0..6 {
+            let pos = TilePos(pos.0.add(HEX_DIRECTIONS[i]));
+
             if let Some(ne) = tiles_cache.tiles.get(&pos).cloned() {
                 tiles_cache.dirty_set.insert(ne);
             }
@@ -237,8 +245,11 @@ fn optimize_colliders_system(
                 .map(|p| Vec2::new(p.x as f32, p.y as f32))
                 .collect();
 
-            let neighbors = [tile_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b));
-
+            // let neighbors = [tile_pos.0; 6].zip(HEX_DIRECTIONS).map(|(a, b)| a.add(b));
+            let mut neighbors = [tile_pos.0; 6];
+            for i in 0..6 {
+                neighbors[i] = neighbors[i].add(HEX_DIRECTIONS[i]);
+            }
             let mut indices = Vec::new();
 
             // spawn colliders and collect edges only for solid -> free boundaries

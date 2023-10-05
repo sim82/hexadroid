@@ -1,4 +1,4 @@
-#![feature(array_zip)]
+// #![feature(array_zip)]
 
 use bevy::{app::AppExit, prelude::*};
 use bevy_egui::EguiPlugin;
@@ -48,7 +48,7 @@ pub mod collision_groups {
     pub const LEVEL: Group = Group::GROUP_3;
 }
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Resource)]
 #[clap(author, version, about, long_about = None)]
 pub struct CmdlineArgs {
     #[clap(short, long)]
@@ -137,7 +137,7 @@ pub fn despawn_reaper_system(
 pub struct DefaultPlugin;
 impl Plugin for DefaultPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(CoreStage::Last, despawn_reaper_system);
+        app.add_systems(Last, despawn_reaper_system);
     }
 }
 
@@ -177,7 +177,7 @@ impl PluginGroup for DefaultPlugins {
             // .add(render::RenderPlugin)
             // .add(render::pipeline::RenderShapePlugin)
             .add(ShapePlugin)
-            // .add(worldbuild::WorldbuildPlugin)
+            .add(worldbuild::WorldbuildPlugin)
             .add(waypoint::WaypointPlugin)
             .add(EguiPlugin)
             .add(PortalPlugin)

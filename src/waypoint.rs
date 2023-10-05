@@ -13,7 +13,7 @@ use crate::{
     HEX_LAYOUT,
 };
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct GuiState {
     rules: [bool; 6],
     pub rules2: HashSet<[bool; 6]>,
