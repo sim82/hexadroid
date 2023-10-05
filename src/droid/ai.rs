@@ -3,7 +3,6 @@ use crate::droid::weapon::PROJECTILE_SPEED;
 use bevy::{
     math::{Vec2Swizzles, Vec3Swizzles},
     prelude::*,
-    time::FixedTimestep,
 };
 use bevy_rapier2d::prelude::*;
 use big_brain::prelude::*;
@@ -312,39 +311,64 @@ fn assault_predict_system(
 // }
 
 const LABEL: &str = "my_fixed_timestep";
-#[derive(Debug, Hash, PartialEq, Eq, Clone, StageLabel)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone)]
 struct FixedUpdateStage;
 
 pub struct AiPlugin;
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(BigBrainPlugin);
+        app.add_plugin(BigBrainPlugin::new(PreUpdate));
 
-        app.add_stage_after(
-            CoreStage::Update,
-            FixedUpdateStage,
-            SystemStage::parallel()
-                .with_run_criteria(FixedTimestep::step(0.1).with_label(LABEL))
-                .with_system(assault_predict_system)
-                .with_system(incomping_projectile_evaluation_system),
+        // app.add_stage_after(
+        //     CoreStage::Update,
+        //     FixedUpdateStage,
+        //     SystemStage::parallel()
+        //         .with_run_criteria(FixedTimestep::step(0.1).with_label(LABEL))
+        //         .with_system(assault_predict_system)
+        //         .with_system(incomping_projectile_evaluation_system),
+        // );
+
+        app.add_systems(
+            Update,
+            (
+                assault_predict_system,
+                incomping_projectile_evaluation_system,
+            ),
         );
-
-        app
-            // .add_system(movement_update_system)
-            .add_system(enemy_evaluation_system)
-            .add_system_to_stage(BigBrainStage::Actions, actions::shoot_action_system)
-            .add_system_to_stage(BigBrainStage::Actions, actions::idle_action_system)
-            .add_system_to_stage(BigBrainStage::Actions, actions::evade_enemy_action_system)
-            .add_system_to_stage(
-                BigBrainStage::Actions,
-                actions::evade_projectile_action_system,
-            )
-            .add_system_to_stage(BigBrainStage::Scorers, scorers::enemy_hit_score_system)
-            .add_system_to_stage(
-                BigBrainStage::Scorers,
-                scorers::projectile_incoming_score_system,
-            )
-            .add_system_to_stage(BigBrainStage::Scorers, scorers::enemy_close_system);
+        // app
+        //     // .add_system(movement_update_system)
+        //     .add_system(enemy_evaluation_system)
+        //     .add_system_to_stage(BigBrainStage::Actions, actions::shoot_action_system)
+        //     .add_system_to_stage(BigBrainStage::Actions, actions::idle_action_system)
+        //     .add_system_to_stage(BigBrainStage::Actions, actions::evade_enemy_action_system)
+        //     .add_system_to_stage(
+        //         BigBrainStage::Actions,
+        //         actions::evade_projectile_action_system,
+        //     )
+        //     .add_system_to_stage(BigBrainStage::Scorers, scorers::enemy_hit_score_system)
+        //     .add_system_to_stage(
+        //         BigBrainStage::Scorers,
+        //         scorers::projectile_incoming_score_system,
+        //     )
+        //     .add_system_to_stage(BigBrainStage::Scorers, scorers::enemy_close_system);
+        app.add_system(enemy_evaluation_system);
+        app.add_systems(
+            PreUpdate,
+            (
+                actions::shoot_action_system.in_set(BigBrainSet::Actions),
+                actions::idle_action_system.in_set(BigBrainSet::Actions),
+                actions::evade_enemy_action_system.in_set(BigBrainSet::Actions),
+                actions::evade_projectile_action_system.in_set(BigBrainSet::Actions),
+            ),
+        );
+        app.add_systems(
+            PreUpdate,
+            (
+                scorers::enemy_hit_score_system.in_set(BigBrainSet::Scorers),
+                scorers::projectile_incoming_score_system.in_set(BigBrainSet::Scorers),
+                scorers::enemy_close_system.in_set(BigBrainSet::Scorers),
+            ),
+        )
     }
 }
 
