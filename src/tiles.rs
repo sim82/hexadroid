@@ -44,6 +44,18 @@ pub struct TileType {
 #[derive(Component, Eq, PartialEq, Copy, Clone, Debug)]
 pub struct TilePos(pub hexagon_tiles::hexagon::Hex);
 
+impl TilePos {
+    pub fn zero() -> TilePos {
+        TilePos(Hex::new(0, 0))
+    }
+    pub fn get_neighbors(&self) -> [TilePos; 6] {
+        let mut ret = [TilePos::zero(); 6];
+        for i in 0..6 {
+            ret[i] = TilePos(self.0.add(HEX_DIRECTIONS[i]));
+        }
+        ret
+    }
+}
 #[allow(clippy::derive_hash_xor_eq)]
 impl std::hash::Hash for TilePos {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
