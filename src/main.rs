@@ -75,9 +75,12 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
 
         commands
             .spawn(ShipBundle::new("ship"))
-            .insert(ship_shape_builder)
+            .insert(ShapeBundle {
+                path: ship_shape_builder,
+                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                ..default()
+            })
             .insert(Stroke::new(Color::YELLOW, LINE_WIDTH))
-            .insert(Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)))
             .insert(InputTarget)
             .insert(CameraTarget)
             .id()
@@ -91,9 +94,12 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
 
         commands
             .spawn(HextonBundle::new("hexton"))
-            .insert(hexton_shape_builder)
+            .insert(ShapeBundle {
+                path: hexton_shape_builder,
+                transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
+                ..default()
+            })
             .insert(Stroke::new(Color::BLUE, LINE_WIDTH))
-            .insert(Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)))
             .insert(InputTarget)
             .insert(CameraTarget)
             .id()
@@ -103,9 +109,12 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
         commands
             .spawn(hexadroid::droid::DroidBundle::new("player", args.gravity))
             .insert(PlayerDroidBundle::default())
-            .insert(my_shape_builder)
+            .insert(ShapeBundle {
+                path: my_shape_builder,
+                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                ..default()
+            })
             .insert(Stroke::new(Color::GREEN, LINE_WIDTH))
-            .insert(Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)))
             .id()
     };
 
@@ -116,9 +125,12 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             .spawn(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
             // .insert_bundle(AiDroidBundle::with_enemy(enemy))
             .insert(AiDroidBundle::with_enemy(player))
-            .insert(enemy_shape_builder)
+            .insert(ShapeBundle {
+                path: enemy_shape_builder,
+                transform: Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
+                ..default()
+            })
             .insert(Stroke::new(Color::RED, LINE_WIDTH))
-            .insert(Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)))
             .insert(new_shooting_droid_ai());
     }
 

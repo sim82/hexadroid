@@ -403,7 +403,10 @@ fn spawn_edgeloops(
             points: points.clone(),
         };
         let entity = commands
-            .spawn(GeometryBuilder::build_as(&lyon_polygon))
+            .spawn(ShapeBundle {
+                path: GeometryBuilder::build_as(&lyon_polygon),
+                ..default()
+            })
             .insert(SpatialBundle::default())
             .insert(BoundaryMarker { tiles })
             .insert(Stroke::new(COLORS[color_count % COLORS.len()], LINE_WIDTH))
