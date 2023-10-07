@@ -160,18 +160,10 @@ impl PluginGroup for DefaultPlugins {
     fn build(self) -> PluginGroupBuilder {
         use bevy_rapier2d::prelude::*;
 
-        let group = PluginGroupBuilder::start::<Self>();
-        group.add(DefaultPlugin);
-
-        // bevy_rapier plugins
-        group.add(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0));
-
-        if self.debug_draw {
-            group.add(RapierDebugRenderPlugin::default());
-            group.add(DebugLinesPlugin::default());
-        }
-
-        group
+        let group = PluginGroupBuilder::start::<Self>()
+            .add(DefaultPlugin)
+            // bevy_rapier plugins
+            .add(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
             .add(input::InputPlugin)
             .add(droid::DroidPlugin)
             .add(droid::ai::AiPlugin)
@@ -187,7 +179,13 @@ impl PluginGroup for DefaultPlugins {
             .add(PortalPlugin)
             .add(ShipPlugin)
             .add(HextonPlugin);
-        group
+        if self.debug_draw {
+            group
+                .add(RapierDebugRenderPlugin::default())
+                .add(DebugLinesPlugin::default())
+        } else {
+            group
+        }
     }
 }
 

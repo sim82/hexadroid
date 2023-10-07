@@ -142,7 +142,7 @@ fn update_walls_noise(
             // }
 
             let _entity = commands
-                .spawn_bundle(SpatialBundle::default())
+                .spawn(SpatialBundle::default())
                 .insert(TilePos(h))
                 .insert(TileType {
                     wall: true,
@@ -174,7 +174,7 @@ fn worldbuid_egui_ui_system(
     let mut persistence = world_state.perlin.get_persistence();
     let mut scale = world_state.perlin.get_scale();
 
-    let Ok(egui_context) = egui_context.get_single_mut() else {
+    let Ok(mut egui_context) = egui_context.get_single_mut() else {
         return;
     };
     egui::Window::new("path").show(egui_context.get_mut(), |ui| {
@@ -246,12 +246,13 @@ fn worldbuid_egui_ui_system(
             *image = Some(retained_image);
         }
 
-        if let Some(image) = &*image {
-            ui.add(egui::Image::new(
-                image.texture_id(ui.ctx()),
-                image.size_vec2(),
-            ));
-        }
+        // FIXME:
+        // if let Some(image) = &*image {
+        //     ui.add(egui::Image::new(
+        //         image.texture_id(ui.ctx()),
+        //         image.size_vec2(),
+        //     ));
+        // }
     });
 
     world_state.perlin.set_amplitude(amplitude);

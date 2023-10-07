@@ -23,8 +23,8 @@ pub struct GuiState {
 #[derive(Component)]
 pub struct Waypoint;
 
-fn waypoint_egui_system(mut state: ResMut<GuiState>, mut egui_context: Query<&EguiContext>) {
-    let Ok(egui_context) = egui_context.get_single() else {
+fn waypoint_egui_system(mut state: ResMut<GuiState>, mut egui_context: Query<&mut EguiContext>) {
+    let Ok(mut egui_context) = egui_context.get_single_mut() else {
         return;
     };
     egui::Window::new("waypoint").show(egui_context.get_mut(), |ui| {
