@@ -26,7 +26,6 @@ fn main() {
     let mut app = App::new();
     // bevy plugins
     app.add_plugins(DefaultPlugins)
-        .add_plugin(DiagnosticsPlugin)
         .add_system(exit_on_esc_system)
         .insert_resource(Msaa::default());
 
