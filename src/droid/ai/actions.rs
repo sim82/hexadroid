@@ -4,7 +4,7 @@ use bevy::{prelude::*, utils::FloatOrd};
 use big_brain::prelude::*;
 use rand::{thread_rng, Rng};
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ActionBuilder)]
 pub struct ShootAction;
 
 pub fn shoot_action_system(
@@ -39,7 +39,7 @@ pub fn shoot_action_system(
     }
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ActionBuilder)]
 pub struct IdleAction;
 pub fn idle_action_system(
     mut query: Query<(&Actor, &mut ActionState), With<IdleAction>>,
@@ -71,7 +71,7 @@ pub fn idle_action_system(
     }
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ActionBuilder)]
 pub struct EvadeEnemyAction;
 
 pub fn evade_enemy_action_system(
@@ -116,7 +116,7 @@ pub fn evade_enemy_action_system(
     }
 }
 
-#[derive(Component, Debug, Clone, Default)]
+#[derive(Component, Debug, Clone, Default, ActionBuilder)]
 pub struct EvadeProjectileAction {
     direction: Vec2,
 }

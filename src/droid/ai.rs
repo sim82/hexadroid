@@ -5,7 +5,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_rapier2d::prelude::*;
-use big_brain::prelude::*;
+use big_brain::{prelude::*, scorers::FixedScorerBuilder};
 use lazy_static::lazy_static;
 
 use bevy_rapier2d::parry::{
@@ -368,7 +368,7 @@ impl Plugin for AiPlugin {
                 scorers::projectile_incoming_score_system.in_set(BigBrainSet::Scorers),
                 scorers::enemy_close_system.in_set(BigBrainSet::Scorers),
             ),
-        )
+        );
     }
 }
 
@@ -396,5 +396,5 @@ pub fn new_shooting_droid_ai() -> ThinkerBuilder {
             actions::EvadeProjectileAction::default(),
         )
         .when(scorers::EnemyCloseScore, actions::EvadeEnemyAction)
-        .when(FixedScore(0.1), actions::IdleAction)
+        .when(FixedScore::build(0.1), actions::IdleAction)
 }

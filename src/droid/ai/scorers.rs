@@ -7,7 +7,7 @@ use big_brain::{
 
 use super::{EnemyEvaluation, IncomingProjectile, PredictedHit};
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ScorerBuilder)]
 pub struct EnemyHitScore;
 
 pub fn enemy_hit_score_system(
@@ -26,7 +26,7 @@ pub fn enemy_hit_score_system(
     }
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ScorerBuilder)]
 pub struct EnemyCloseScore;
 pub fn enemy_close_system(
     mut scorer_query: Query<(&Actor, &mut Score), With<EnemyCloseScore>>,
@@ -45,7 +45,7 @@ pub fn enemy_close_system(
     }
 }
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug, Clone, ScorerBuilder)]
 pub struct ProjectileIncomingScore;
 pub fn projectile_incoming_score_system(
     mut scorer_query: Query<(&Actor, &mut Score), With<ProjectileIncomingScore>>,
