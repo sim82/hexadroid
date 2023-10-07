@@ -1,6 +1,9 @@
 // #![feature(array_zip)]
 
-use bevy::{app::AppExit, prelude::*};
+use bevy::{
+    app::{AppExit, PluginGroupBuilder},
+    prelude::*,
+};
 use bevy_egui::EguiPlugin;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
@@ -154,9 +157,10 @@ impl DefaultPlugins {
 }
 
 impl PluginGroup for DefaultPlugins {
-    fn build(&mut self, group: &mut bevy::app::PluginGroupBuilder) {
+    fn build(self) -> PluginGroupBuilder {
         use bevy_rapier2d::prelude::*;
 
+        let group = PluginGroupBuilder::start::<Self>();
         group.add(DefaultPlugin);
 
         // bevy_rapier plugins
@@ -183,6 +187,7 @@ impl PluginGroup for DefaultPlugins {
             .add(PortalPlugin)
             .add(ShipPlugin)
             .add(HextonPlugin);
+        group
     }
 }
 

@@ -23,7 +23,7 @@ pub struct GuiState {
 #[derive(Component)]
 pub struct Waypoint;
 
-fn waypoint_egui_system(mut state: ResMut<GuiState>, mut egui_context: ResMut<EguiContext>) {
+fn waypoint_egui_system(mut state: ResMut<GuiState>, mut egui_context: Query<&EguiContext>) {
     egui::Window::new("waypoint").show(egui_context.ctx_mut(), |ui| {
         for (i, r) in state.rules.iter_mut().enumerate() {
             ui.checkbox(r, format!("rule {i}"));

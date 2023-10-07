@@ -19,7 +19,7 @@ enum RebuildState {
     Despawn,
     Respawn,
 }
-
+#[derive(Resource)]
 pub struct WorldState {
     min: Hex,
     max: Hex,
@@ -162,7 +162,7 @@ fn update_walls_noise(
 }
 
 fn worldbuid_egui_ui_system(
-    mut egui_context: ResMut<EguiContext>,
+    mut egui_context: Query<&mut EguiContext>,
     mut world_state: ResMut<WorldState>,
     mut image: Local<Option<RetainedImage>>,
 ) {
@@ -174,7 +174,10 @@ fn worldbuid_egui_ui_system(
     let mut persistence = world_state.perlin.get_persistence();
     let mut scale = world_state.perlin.get_scale();
 
-    egui::Window::new("path").show(egui_context.ctx_mut(), |ui| {
+    let Ok(egui_context) = egui_context.get_single_mut() else {
+        return;
+    };
+    egui::Window::new("path").show(egui_context.get_mut(), |ui| {
         egui::Grid::new("my_grid").num_columns(2).show(ui, |ui| {
             ui.label("amplitude");
             ui.add(egui::Slider::new(&mut amplitude, 0.0..=2.0));

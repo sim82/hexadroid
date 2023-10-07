@@ -6,7 +6,7 @@ pub struct CameraTarget;
 
 fn setup_camera_system(mut commands: Commands) {
     commands
-        .spawn_bundle(Camera2dBundle::default())
+        .spawn(Camera2dBundle::default())
         .add(InitMouseTracking)
         // .add_world_tracking()
         // .insert(MainCamera)
