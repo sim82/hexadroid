@@ -26,7 +26,7 @@ pub fn portal_toggle_system(
                 commands.entity(entity).insert(Despawn::ThisFrame);
             } else {
                 let entity = commands
-                    .spawn_bundle(SpatialBundle::default())
+                    .spawn(SpatialBundle::default())
                     .insert(TileType {
                         wall: true,
                         immediate_collider: true,

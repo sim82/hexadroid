@@ -241,15 +241,15 @@ fn _ship_attack_system_simple(
         weapon_state.reload_timeout = RELOAD_TIMEOUT;
         let direction = (transform.rotation * SHIP_MAIN_AXIS).xy();
         commands
-            .spawn_bundle(weapon::KineticProjectileBundle::with_direction(
+            .spawn(weapon::KineticProjectileBundle::with_direction(
                 entity, // *translation,
                 direction,
             ))
-            .insert_bundle(kinetic_projectile_shape_bundle(
+            .insert(kinetic_projectile_shape_bundle(
                 transform.translation,
                 direction,
             ))
-            .spawn(Stroke::new(Color::GREEN, 10.0));
+            .insert(Stroke::new(Color::GREEN, 10.0));
     }
 }
 fn ship_attack_system(
@@ -305,15 +305,15 @@ fn ship_attack_system(
             weapon_state.reload_timeout = RELOAD_TIMEOUT;
             let direction = (transform.rotation * SHIP_MAIN_AXIS).xy();
             commands
-                .spawn_bundle(weapon::KineticProjectileBundle::with_direction(
+                .spawn(weapon::KineticProjectileBundle::with_direction(
                     entity, // *translation,
                     direction,
                 ))
-                .insert_bundle(kinetic_projectile_shape_bundle(
+                .insert(kinetic_projectile_shape_bundle(
                     transform.translation,
                     direction,
                 ))
-                .spawn(Stroke::new(Color::GREEN, 10.0));
+                .insert(Stroke::new(Color::GREEN, 10.0));
         }
     }
 }

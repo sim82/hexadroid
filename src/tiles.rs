@@ -65,11 +65,11 @@ fn setup_system(
     args: Res<CmdlineArgs>,
 ) {
     tiles_state.tile_root = commands
-        .spawn_bundle(SpatialBundle::default())
+        .spawn(SpatialBundle::default())
         .insert(Name::new("tiles"))
         .id();
     tiles_state.edgeloop_root = commands
-        .spawn_bundle(SpatialBundle::default())
+        .spawn(SpatialBundle::default())
         .insert(Name::new("edge_loops"))
         .id();
 
@@ -83,7 +83,7 @@ fn setup_system(
                 }
 
                 let entity = commands
-                    .spawn_bundle(SpatialBundle::default())
+                    .spawn(SpatialBundle::default())
                     .insert(TilePos(h))
                     .insert(TileType {
                         wall: true,
@@ -391,10 +391,10 @@ fn spawn_edgeloops(
             points: points.clone(),
         };
         let entity = commands
-            .spawn_bundle(GeometryBuilder::build_as(&lyon_polygon))
-            .insert_bundle(SpatialBundle::default())
+            .spawn(GeometryBuilder::build_as(&lyon_polygon))
+            .insert(SpatialBundle::default())
             .insert(BoundaryMarker { tiles })
-            .spawn(Stroke::new(COLORS[color_count % COLORS.len()], LINE_WIDTH))
+            .insert(Stroke::new(COLORS[color_count % COLORS.len()], LINE_WIDTH))
             .id();
 
         commands.entity(root).add_child(entity);
