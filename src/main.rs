@@ -72,15 +72,13 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             closed: true,
         };
 
-        let ship_shape_builder = GeometryBuilder::build_as(
-            &ship_shape,
-            DrawMode::Stroke(StrokeMode::new(Color::YELLOW, LINE_WIDTH)),
-            Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-        );
+        let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
 
         commands
-            .spawn_bundle(ShipBundle::new("ship"))
-            .insert_bundle(ship_shape_builder)
+            .spawn(ShipBundle::new("ship"))
+            .insert(ship_shape_builder)
+            .insert(Stroke::new(Color::YELLOW, LINE_WIDTH))
+            .insert(Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)))
             .insert(InputTarget)
             .insert(CameraTarget)
             .id()
@@ -90,49 +88,43 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             closed: true,
         };
 
-        let hexton_shape_builder = GeometryBuilder::build_as(
-            &hexton_shape,
-            DrawMode::Stroke(StrokeMode::new(Color::BLUE, LINE_WIDTH)),
-            Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
-        );
+        let hexton_shape_builder = GeometryBuilder::build_as(&hexton_shape);
 
         commands
-            .spawn_bundle(HextonBundle::new("hexton"))
-            .insert_bundle(hexton_shape_builder)
+            .spawn(HextonBundle::new("hexton"))
+            .insert(hexton_shape_builder)
+            .insert(Stroke::new(Color::BLUE, LINE_WIDTH))
+            .insert(Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)))
             .insert(InputTarget)
             .insert(CameraTarget)
             .id()
     } else {
-        let my_shape_builder = GeometryBuilder::build_as(
-            &shape,
-            DrawMode::Stroke(StrokeMode::new(Color::GREEN, LINE_WIDTH)),
-            Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-        );
+        let my_shape_builder = GeometryBuilder::build_as(&shape);
 
         commands
-            .spawn_bundle(hexadroid::droid::DroidBundle::new("player", args.gravity))
-            .insert_bundle(PlayerDroidBundle::default())
-            .insert_bundle(my_shape_builder)
+            .spawn(hexadroid::droid::DroidBundle::new("player", args.gravity))
+            .insert(PlayerDroidBundle::default())
+            .insert(my_shape_builder)
+            .insert(Stroke::new(Color::GREEN, LINE_WIDTH))
+            .insert(Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)))
             .id()
     };
 
     if !args.no_droid {
-        let enemy_shape_builder = GeometryBuilder::build_as(
-            &shape,
-            DrawMode::Stroke(StrokeMode::new(Color::RED, LINE_WIDTH)),
-            Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
-        );
+        let enemy_shape_builder = GeometryBuilder::build_as(&shape);
 
         commands
-            .spawn_bundle(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
+            .spawn(hexadroid::droid::DroidBundle::new("r2d2", args.gravity))
             // .insert_bundle(AiDroidBundle::with_enemy(enemy))
-            .insert_bundle(AiDroidBundle::with_enemy(player))
-            .insert_bundle(enemy_shape_builder)
+            .insert(AiDroidBundle::with_enemy(player))
+            .insert(enemy_shape_builder)
+            .insert(Stroke::new(Color::RED, LINE_WIDTH))
+            .insert(Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)))
             .insert(new_shooting_droid_ai());
     }
 
-    commands.spawn().insert(Portal {
+    commands.spawn_empty().insert(Portal {
         tile_pos: TilePos(Hex::new(5, -1)),
-        timer: Timer::from_seconds(2.0, true),
+        timer: Timer::from_seconds(2.0, TimerMode::Repeating),
     });
 }
