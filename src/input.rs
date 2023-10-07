@@ -183,7 +183,7 @@ fn background_on_click_system(
                     } else {
                         info!("spawn");
                         let entity = commands
-                            .spawn_bundle(SpatialBundle::default())
+                            .spawn(SpatialBundle::default())
                             .insert(TileType {
                                 wall: true,
                                 immediate_collider: true,

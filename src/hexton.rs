@@ -26,7 +26,7 @@ impl Default for HextonGravity {
         Self {
             speed: Default::default(),
             jump: Default::default(),
-            jump_timer: Timer::new(Duration::from_millis(300), false),
+            jump_timer: Timer::new(Duration::from_millis(300), TimerMode::Once),
         }
     }
 }

@@ -93,16 +93,16 @@ fn droid_attack_system(
         }
         weapon_state.reload_timeout = RELOAD_TIMEOUT;
         commands
-            .spawn_bundle(weapon::KineticProjectileBundle::with_direction(
+            .spawn(weapon::KineticProjectileBundle::with_direction(
                 entity,
                 // *translation,
                 weapon_direction.direction,
             ))
-            .insert_bundle(kinetic_projectile_shape_bundle(
+            .insert(kinetic_projectile_shape_bundle(
                 *translation,
                 weapon_direction.direction,
             ))
-            .spawn(Stroke::new(Color::GREEN, 10.0));
+            .insert(Stroke::new(Color::GREEN, 10.0));
     }
 }
 
