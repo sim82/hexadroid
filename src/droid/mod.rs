@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
 use bevy::prelude::*;
+use bevy_prototype_lyon::prelude::Stroke;
 use bevy_rapier2d::prelude::*;
 
 use crate::{camera::CameraTarget, collision_groups, input::InputTarget};
@@ -100,7 +101,8 @@ fn droid_attack_system(
             .insert_bundle(kinetic_projectile_shape_bundle(
                 *translation,
                 weapon_direction.direction,
-            ));
+            ))
+            .spawn(Stroke::new(Color::GREEN, 10.0));
     }
 }
 

@@ -47,13 +47,15 @@ pub fn kinetic_projectile_shape_bundle(translation: Vec3, direction: Vec2) -> Sh
         radius: 10.0,
         ..default()
     };
-    GeometryBuilder::build_as(
-        &shape,
-        // DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
-        Stroke::new(Color::GREEN, 10.0),
-        // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
-        // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
-        // },
-        Transform::from_translation(translation + (direction * 50.0).extend(0.0)),
-    )
+    ShapeBundle {
+        path: GeometryBuilder::build_as(
+            &shape,
+            // DrawMode::Stroke(StrokeMode::new(Color::GREEN, 10.0)),
+            // fill_mode: bevy_prototype_lyon::draw::FillMode::color(Color::CYAN),
+            // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
+            // },
+        ),
+        transform: Transform::from_translation(translation + (direction * 50.0).extend(0.0)),
+        ..default()
+    }
 }

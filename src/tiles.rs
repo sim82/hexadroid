@@ -391,16 +391,10 @@ fn spawn_edgeloops(
             points: points.clone(),
         };
         let entity = commands
-            .spawn_bundle(GeometryBuilder::build_as(
-                &lyon_polygon,
-                DrawMode::Stroke(StrokeMode::new(
-                    COLORS[color_count % COLORS.len()],
-                    LINE_WIDTH,
-                )),
-                default(),
-            ))
+            .spawn_bundle(GeometryBuilder::build_as(&lyon_polygon))
             .insert_bundle(SpatialBundle::default())
             .insert(BoundaryMarker { tiles })
+            .spawn(Stroke::new(COLORS[color_count % COLORS.len()], LINE_WIDTH))
             .id();
 
         commands.entity(root).add_child(entity);
@@ -413,7 +407,7 @@ impl Plugin for TilesPlugin {
         app.init_resource::<TileCache>()
             .init_resource::<TilesState>()
             .add_startup_system(setup_system)
-            .add_system_to_stage(CoreStage::PostUpdate, spawn_tiles_system)
+            .add_systems(PostUpdate, spawn_tiles_system)
             .add_system(optimize_colliders_system);
     }
 }

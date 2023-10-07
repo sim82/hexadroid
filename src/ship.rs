@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
 use bevy::{math::Vec3Swizzles, prelude::*};
+use bevy_prototype_lyon::prelude::Stroke;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
@@ -247,7 +248,8 @@ fn _ship_attack_system_simple(
             .insert_bundle(kinetic_projectile_shape_bundle(
                 transform.translation,
                 direction,
-            ));
+            ))
+            .spawn(Stroke::new(Color::GREEN, 10.0));
     }
 }
 fn ship_attack_system(
@@ -310,7 +312,8 @@ fn ship_attack_system(
                 .insert_bundle(kinetic_projectile_shape_bundle(
                     transform.translation,
                     direction,
-                ));
+                ))
+                .spawn(Stroke::new(Color::GREEN, 10.0));
         }
     }
 }
