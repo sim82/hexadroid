@@ -93,7 +93,7 @@ pub fn vec2_to_hex_point(v: Vec2) -> Point {
     }
 }
 
-pub const COLORS_L: f32 = 0.75;
+pub const COLORS_L: f32 = 3.75;
 
 pub const COLORS: [Color; 12] = [
     Color::hsl(0.0, 1.0, COLORS_L),
@@ -109,6 +109,10 @@ pub const COLORS: [Color; 12] = [
     Color::hsl(300.0, 1.0, COLORS_L),
     Color::hsl(330.0, 1.0, COLORS_L),
 ];
+
+pub const GREEN_HDR: Color = Color::rgb(0.0, 5.0, 0.0);
+pub const BLUE_HDR: Color = Color::rgb(0.0, 0.0, 5.0);
+pub const RED_HDR: Color = Color::rgb(5.0, 0.0, 0.0);
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]

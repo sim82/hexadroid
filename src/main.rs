@@ -16,7 +16,7 @@ use hexadroid::{
     ship::{ShipBundle, SHIP_VERTICES},
     tiles::TilePos,
     tunables::LINE_WIDTH,
-    CmdlineArgs,
+    CmdlineArgs, BLUE_HDR, GREEN_HDR, RED_HDR,
 };
 use hexagon_tiles::hexagon::Hex;
 
@@ -27,6 +27,7 @@ fn main() {
     // bevy plugins
     app.add_plugins(DefaultPlugins)
         .add_system(exit_on_esc_system)
+        .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Msaa::default());
 
     app.add_plugins(hexadroid::DefaultPlugins::default().with_debug_draw(args.debug_draw));
@@ -99,7 +100,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
                 ..default()
             })
-            .insert(Stroke::new(Color::BLUE, LINE_WIDTH))
+            .insert(Stroke::new(BLUE_HDR, LINE_WIDTH))
             .insert(InputTarget)
             .insert(CameraTarget)
             .id()
@@ -114,7 +115,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
                 ..default()
             })
-            .insert(Stroke::new(Color::GREEN, LINE_WIDTH))
+            .insert(Stroke::new(GREEN_HDR, LINE_WIDTH))
             .id()
     };
 
@@ -130,7 +131,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 transform: Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
                 ..default()
             })
-            .insert(Stroke::new(Color::RED, LINE_WIDTH))
+            .insert(Stroke::new(RED_HDR, LINE_WIDTH))
             .insert(new_shooting_droid_ai());
     }
 

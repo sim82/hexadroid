@@ -10,6 +10,7 @@ use crate::{
         weapon::{self, kinetic_projectile_shape_bundle, PROJECTILE_SPEED},
         AttackRequest, WeaponState, RELOAD_TIMEOUT,
     },
+    GREEN_HDR,
 };
 
 #[derive(Component, Default)]
@@ -249,7 +250,7 @@ fn _ship_attack_system_simple(
                 transform.translation,
                 direction,
             ))
-            .insert(Stroke::new(Color::GREEN, 10.0));
+            .insert(Stroke::new(GREEN_HDR, 10.0));
     }
 }
 fn ship_attack_system(
@@ -313,7 +314,7 @@ fn ship_attack_system(
                     transform.translation,
                     direction,
                 ))
-                .insert(Stroke::new(Color::GREEN, 10.0));
+                .insert(Stroke::new(GREEN_HDR, 10.0));
         }
     }
 }

@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
+    prelude::*,
+};
 use bevy_mouse_tracking_plugin::prelude::*;
 
 #[derive(Component, Default)]
@@ -6,11 +9,18 @@ pub struct CameraTarget;
 
 fn setup_camera_system(mut commands: Commands) {
     commands
-        .spawn(Camera2dBundle::default())
-        .add(InitMouseTracking)
-        // .add_world_tracking()
-        // .insert(MainCamera)
-    ;
+        .spawn((
+            Camera2dBundle {
+                camera: Camera {
+                    hdr: true,
+                    ..default()
+                },
+                tonemapping: Tonemapping::TonyMcMapface,
+                ..default()
+            },
+            BloomSettings::default(),
+        ))
+        .add(InitMouseTracking);
 }
 
 fn track_camera_system(

@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::Stroke;
 use bevy_rapier2d::prelude::*;
 
-use crate::{camera::CameraTarget, collision_groups, input::InputTarget};
+use crate::{camera::CameraTarget, collision_groups, input::InputTarget, GREEN_HDR};
 
 use self::{
     ai::{EnemyEvaluation, PredictedHit, PrimaryEnemy},
@@ -102,7 +102,7 @@ fn droid_attack_system(
                 *translation,
                 weapon_direction.direction,
             ))
-            .insert(Stroke::new(Color::GREEN, 10.0));
+            .insert(Stroke::new(GREEN_HDR, 10.0));
     }
 }
 
