@@ -379,7 +379,7 @@ dependencies = [
  "bevy_core",
  "bevy_core_pipeline",
  "bevy_ecs",
- "bevy_egui",
+ "bevy_egui 0.21.0",
  "bevy_hierarchy",
  "bevy_log",
  "bevy_math",
@@ -607,6 +607,19 @@ dependencies = [
  "arboard",
  "bevy",
  "egui 0.22.0",
+ "thread_local",
+ "webbrowser",
+]
+
+[[package]]
+name = "bevy_egui"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb1c1f6ad293c60fd8559c4502cda5e832e92b0e0f3d994929b33f24d4352d70"
+dependencies = [
+ "arboard",
+ "bevy",
+ "egui 0.23.0",
  "thread_local",
  "webbrowser",
 ]
@@ -1717,6 +1730,7 @@ version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cfdf4e52dbbb615cfd30cf5a5265335c217b5fd8d669593cea74a517d9c605af"
 dependencies = [
+ "bytemuck",
  "serde",
 ]
 
@@ -1778,6 +1792,7 @@ version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ef2b29de53074e575c18b694167ccbe6e5191f7b25fe65175a0d905a32eeec0"
 dependencies = [
+ "bytemuck",
  "serde",
 ]
 
@@ -1869,6 +1884,7 @@ checksum = "58067b840d009143934d91d8dcb8ded054d8301d7c11a517ace0a99bb1e1595e"
 dependencies = [
  "ab_glyph",
  "ahash",
+ "bytemuck",
  "ecolor 0.23.0",
  "emath 0.23.0",
  "nohash-hasher",
@@ -2297,7 +2313,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_egui",
+ "bevy_egui 0.22.0",
  "bevy_mouse_tracking_plugin",
  "bevy_prototype_debug_lines",
  "bevy_prototype_lyon",
