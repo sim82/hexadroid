@@ -194,11 +194,17 @@ fn background_on_click_system(
                     }
                 }
                 ClickMode::WaypointSample => {
-                    let pattern = [tile_pos.0; 6]
-                        .zip(HEX_DIRECTIONS)
-                        .map(|(a, b)| TilePos(a.add(b)))
-                        .map(|p| tile_cache.tiles.contains_key(&p));
+                    // let pattern = [tile_pos.0; 6]
+                    //     .zip(HEX_DIRECTIONS)
+                    //     .map(|(a, b)| TilePos(a.add(b)))
+                    //     .map(|p| tile_cache.tiles.contains_key(&p));
 
+                    let mut pattern = [false; 6];
+                    for i in 0..6 {
+                        pattern[i] = tile_cache
+                            .tiles
+                            .contains_key(&TilePos(tile_pos.0.add(HEX_DIRECTIONS[i])));
+                    }
                     // add or remove (NOTE: is there a better pattern for this?)
                     let is_new = waypoints_gui_state.rules2.insert(pattern);
                     if !is_new {
