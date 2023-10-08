@@ -1,24 +1,21 @@
-use std::io::Write;
-
+use crate::{
+    droid::{AttackRequest, TargetDirection},
+    hexton::HextonInput,
+    prelude::*,
+    ship::ShipInput,
+    waypoint, Despawn, HEX_LAYOUT,
+};
 use bevy::input::ButtonState;
-use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
-
 use bevy::{input::mouse::MouseButtonInput, math::Vec3Swizzles, prelude::*};
 use bevy_mouse_tracking_plugin::prelude::*;
+use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{
     hexagon::{HexMath, HexRound, HEX_DIRECTIONS},
     layout::LayoutTool,
     point::Point,
 };
-
-use crate::{
-    droid::{AttackRequest, TargetDirection},
-    hexton::HextonInput,
-    ship::ShipInput,
-    tiles::{TileCache, TilePos, TileType, TilesState},
-    waypoint, Despawn, HEX_LAYOUT,
-};
+use std::io::Write;
 
 #[derive(Component, Default)]
 pub struct InputTarget;

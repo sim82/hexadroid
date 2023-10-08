@@ -1,15 +1,13 @@
-use std::borrow::Cow;
-
-use bevy::prelude::*;
-use bevy_prototype_lyon::prelude::Stroke;
-use bevy_rapier2d::prelude::*;
-
-use crate::{camera::CameraTarget, collision_groups, input::InputTarget, GREEN_HDR};
-
 use self::{
     ai::{EnemyEvaluation, PredictedHit, PrimaryEnemy},
     weapon::kinetic_projectile_shape_bundle,
 };
+use crate::prelude::*;
+use crate::{camera::CameraTarget, collision_groups, input::InputTarget};
+use bevy::prelude::*;
+use bevy_prototype_lyon::prelude::Stroke;
+use bevy_rapier2d::prelude::*;
+use std::borrow::Cow;
 
 pub mod weapon;
 

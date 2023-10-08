@@ -106,28 +106,31 @@ pub fn vec2_to_hex_point(v: Vec2) -> Point {
     }
 }
 
-pub const COLORS_L: f32 = 3.75;
+pub mod colors {
+    use bevy::prelude::Color;
 
-pub const COLORS: [Color; 12] = [
-    Color::hsl(0.0, 1.0, COLORS_L),
-    Color::hsl(30.0, 1.0, COLORS_L),
-    Color::hsl(60.0, 1.0, COLORS_L),
-    Color::hsl(90.0, 1.0, COLORS_L),
-    Color::hsl(120.0, 1.0, COLORS_L),
-    Color::hsl(150.0, 1.0, COLORS_L),
-    Color::hsl(180.0, 1.0, COLORS_L),
-    Color::hsl(210.0, 1.0, COLORS_L),
-    Color::hsl(240.0, 1.0, COLORS_L),
-    Color::hsl(270.0, 1.0, COLORS_L),
-    Color::hsl(300.0, 1.0, COLORS_L),
-    Color::hsl(330.0, 1.0, COLORS_L),
-];
+    pub const COLORS_L: f32 = 3.75;
 
-pub const GREEN_HDR: Color = Color::rgb(0.0, 5.0, 0.0);
-pub const BLUE_HDR: Color = Color::rgb(0.0, 0.0, 5.0);
-pub const RED_HDR: Color = Color::rgb(5.0, 0.0, 0.0);
-pub const YELLOW_HDR: Color = Color::rgb(3.0, 3.0, 0.0);
+    pub const COLORS: [Color; 12] = [
+        Color::hsl(0.0, 1.0, COLORS_L),
+        Color::hsl(30.0, 1.0, COLORS_L),
+        Color::hsl(60.0, 1.0, COLORS_L),
+        Color::hsl(90.0, 1.0, COLORS_L),
+        Color::hsl(120.0, 1.0, COLORS_L),
+        Color::hsl(150.0, 1.0, COLORS_L),
+        Color::hsl(180.0, 1.0, COLORS_L),
+        Color::hsl(210.0, 1.0, COLORS_L),
+        Color::hsl(240.0, 1.0, COLORS_L),
+        Color::hsl(270.0, 1.0, COLORS_L),
+        Color::hsl(300.0, 1.0, COLORS_L),
+        Color::hsl(330.0, 1.0, COLORS_L),
+    ];
 
+    pub const GREEN_HDR: Color = Color::rgb(0.0, 5.0, 0.0);
+    pub const BLUE_HDR: Color = Color::rgb(0.0, 0.0, 5.0);
+    pub const RED_HDR: Color = Color::rgb(5.0, 0.0, 0.0);
+    pub const YELLOW_HDR: Color = Color::rgb(3.0, 3.0, 0.0);
+}
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub enum Despawn {
@@ -214,4 +217,10 @@ pub fn exit_on_esc_system(
     if keyboard_input.just_pressed(KeyCode::Escape) {
         app_exit_events.send_default();
     }
+}
+pub mod prelude {
+    pub use crate::colors::*;
+    pub use crate::tiles::{TileCache, TilePos, TileType, TilesState};
+    pub use crate::tunables::default_stroke;
+    pub use crate::Despawn;
 }

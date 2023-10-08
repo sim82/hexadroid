@@ -1,11 +1,8 @@
-use bevy::{
-    diagnostic::DiagnosticsPlugin,
-    //  input::system::exit_on_esc_system,
-    prelude::*,
-};
+use bevy::prelude::*;
 use bevy_prototype_lyon::{prelude::*, shapes};
 use bevy_rapier2d::prelude::*;
 use clap::Parser;
+use hexadroid::prelude::*;
 use hexadroid::{
     camera::CameraTarget,
     droid::{ai::new_shooting_droid_ai, AiDroidBundle, PlayerDroidBundle},
@@ -14,9 +11,7 @@ use hexadroid::{
     input::InputTarget,
     portal::Portal,
     ship::{ShipBundle, SHIP_VERTICES},
-    tiles::TilePos,
-    tunables::{default_stroke, LINE_WIDTH},
-    CmdlineArgs, BLUE_HDR, GREEN_HDR, RED_HDR, YELLOW_HDR,
+    CmdlineArgs,
 };
 use hexagon_tiles::hexagon::Hex;
 
@@ -26,7 +21,7 @@ fn main() {
     let mut app = App::new();
     // bevy plugins
     app.add_plugins(DefaultPlugins)
-        .add_system(exit_on_esc_system)
+        .add_systems(Update, exit_on_esc_system)
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Msaa::default());
 

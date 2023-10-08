@@ -1,17 +1,15 @@
-use std::borrow::Cow;
-
-use bevy::{math::Vec3Swizzles, prelude::*};
-use bevy_prototype_lyon::prelude::Stroke;
-use bevy_rapier2d::prelude::*;
-
+use crate::prelude::*;
 use crate::{
     collision_groups,
     droid::{
         weapon::{self, kinetic_projectile_shape_bundle, PROJECTILE_SPEED},
         AttackRequest, WeaponState, RELOAD_TIMEOUT,
     },
-    GREEN_HDR,
 };
+use bevy::{math::Vec3Swizzles, prelude::*};
+use bevy_prototype_lyon::prelude::Stroke;
+use bevy_rapier2d::prelude::*;
+use std::borrow::Cow;
 
 #[derive(Component, Default)]
 pub struct ShipInput {

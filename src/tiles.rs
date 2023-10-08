@@ -11,12 +11,13 @@ use hexagon_tiles::{
     layout::LayoutTool,
 };
 
+use crate::prelude::*;
 use crate::{
     collision_groups,
     debug::DebugLinesExt,
     hex_point_to_vec2,
     tunables::{default_stroke, LINE_WIDTH, STROKE_OPTIONS},
-    CmdlineArgs, Despawn, COLORS, GREEN_HDR, HEX_LAYOUT,
+    CmdlineArgs, Despawn, HEX_LAYOUT,
 };
 
 #[derive(Resource)]

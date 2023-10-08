@@ -4,14 +4,13 @@ use bevy::{
     math::{Vec2Swizzles, Vec3Swizzles},
     prelude::*,
 };
-use bevy_rapier2d::prelude::*;
-use big_brain::{prelude::*, scorers::FixedScorerBuilder};
-use lazy_static::lazy_static;
-
 use bevy_rapier2d::parry::{
     query::{self},
     shape::Ball,
 };
+use bevy_rapier2d::prelude::*;
+use big_brain::{prelude::*, scorers::FixedScorerBuilder};
+use lazy_static::lazy_static;
 
 pub mod actions;
 pub mod scorers;
