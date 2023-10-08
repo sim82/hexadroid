@@ -12,8 +12,11 @@ use hexagon_tiles::{
 };
 
 use crate::{
-    collision_groups, debug::DebugLinesExt, hex_point_to_vec2, tunables::LINE_WIDTH, CmdlineArgs,
-    Despawn, COLORS, HEX_LAYOUT,
+    collision_groups,
+    debug::DebugLinesExt,
+    hex_point_to_vec2,
+    tunables::{default_stroke, LINE_WIDTH, STROKE_OPTIONS},
+    CmdlineArgs, Despawn, COLORS, GREEN_HDR, HEX_LAYOUT,
 };
 
 #[derive(Resource)]
@@ -409,7 +412,9 @@ fn spawn_edgeloops(
             })
             .insert(SpatialBundle::default())
             .insert(BoundaryMarker { tiles })
-            .insert(Stroke::new(COLORS[color_count % COLORS.len()], LINE_WIDTH))
+            .insert(default_stroke(COLORS[color_count % COLORS.len()]))
+            // .insert(Stroke::new(COLORS[color_count % COLORS.len()], LINE_WIDTH))
+            // .insert(Fill::color(GREEN_HDR))
             .id();
 
         commands.entity(root).add_child(entity);

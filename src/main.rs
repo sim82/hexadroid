@@ -15,8 +15,8 @@ use hexadroid::{
     portal::Portal,
     ship::{ShipBundle, SHIP_VERTICES},
     tiles::TilePos,
-    tunables::LINE_WIDTH,
-    CmdlineArgs, BLUE_HDR, GREEN_HDR, RED_HDR,
+    tunables::{default_stroke, LINE_WIDTH},
+    CmdlineArgs, BLUE_HDR, GREEN_HDR, RED_HDR, YELLOW_HDR,
 };
 use hexagon_tiles::hexagon::Hex;
 
@@ -81,7 +81,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
                 ..default()
             })
-            .insert(Stroke::new(Color::YELLOW, LINE_WIDTH))
+            .insert(default_stroke(YELLOW_HDR))
             .insert(InputTarget)
             .insert(CameraTarget)
             .id()
@@ -100,7 +100,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
                 ..default()
             })
-            .insert(Stroke::new(BLUE_HDR, LINE_WIDTH))
+            .insert(default_stroke(BLUE_HDR))
             .insert(InputTarget)
             .insert(CameraTarget)
             .id()
@@ -115,7 +115,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
                 ..default()
             })
-            .insert(Stroke::new(GREEN_HDR, LINE_WIDTH))
+            .insert(default_stroke(GREEN_HDR))
             .id()
     };
 
@@ -131,7 +131,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 transform: Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
                 ..default()
             })
-            .insert(Stroke::new(RED_HDR, LINE_WIDTH))
+            .insert(default_stroke(RED_HDR))
             .insert(new_shooting_droid_ai());
     }
 

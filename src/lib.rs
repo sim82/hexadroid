@@ -40,7 +40,20 @@ pub mod worldbuild;
 pub mod waypoint;
 
 pub mod tunables {
+    use bevy::prelude::Color;
+    use bevy_prototype_lyon::prelude::{LineJoin, Stroke, StrokeOptions};
+
     pub const LINE_WIDTH: f32 = 4.0;
+
+    pub const STROKE_OPTIONS: StrokeOptions = StrokeOptions::DEFAULT
+        .with_line_width(LINE_WIDTH)
+        .with_line_join(LineJoin::Round);
+    pub fn default_stroke(color: Color) -> Stroke {
+        Stroke {
+            color,
+            options: STROKE_OPTIONS,
+        }
+    }
 }
 
 pub mod collision_groups {
@@ -113,6 +126,7 @@ pub const COLORS: [Color; 12] = [
 pub const GREEN_HDR: Color = Color::rgb(0.0, 5.0, 0.0);
 pub const BLUE_HDR: Color = Color::rgb(0.0, 0.0, 5.0);
 pub const RED_HDR: Color = Color::rgb(5.0, 0.0, 0.0);
+pub const YELLOW_HDR: Color = Color::rgb(3.0, 3.0, 0.0);
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
