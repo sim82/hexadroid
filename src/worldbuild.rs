@@ -242,13 +242,9 @@ fn worldbuid_egui_ui_system(
             *image = Some(retained_image);
         }
 
-        // FIXME:
-        // if let Some(image) = &*image {
-        //     ui.add(egui::Image::new(
-        //         image.texture_id(ui.ctx()),
-        //         image.size_vec2(),
-        //     ));
-        // }
+        if let Some(image) = &*image {
+            ui.image((image.texture_id(ui.ctx()), image.size_vec2()));
+        }
     });
 
     world_state.perlin.set_amplitude(amplitude);
