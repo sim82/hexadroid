@@ -9,7 +9,7 @@ use bevy_rapier2d::parry::{
     shape::Ball,
 };
 use bevy_rapier2d::prelude::*;
-use big_brain::{prelude::*, scorers::FixedScorerBuilder};
+use big_brain::prelude::*;
 use lazy_static::lazy_static;
 
 pub mod actions;
@@ -309,14 +309,14 @@ fn assault_predict_system(
 //     }
 // }
 
-const LABEL: &str = "my_fixed_timestep";
+// const LABEL: &str = "my_fixed_timestep";
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 struct FixedUpdateStage;
 
 pub struct AiPlugin;
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(BigBrainPlugin::new(PreUpdate));
+        app.add_plugins(BigBrainPlugin::new(PreUpdate));
 
         // app.add_stage_after(
         //     CoreStage::Update,
@@ -350,7 +350,7 @@ impl Plugin for AiPlugin {
         //         scorers::projectile_incoming_score_system,
         //     )
         //     .add_system_to_stage(BigBrainStage::Scorers, scorers::enemy_close_system);
-        app.add_system(enemy_evaluation_system);
+        app.add_systems(Update, enemy_evaluation_system);
         app.add_systems(
             PreUpdate,
             (

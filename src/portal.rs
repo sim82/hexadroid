@@ -39,6 +39,6 @@ pub struct PortalPlugin;
 
 impl Plugin for PortalPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(portal_toggle_system);
+        app.add_systems(Update, portal_toggle_system);
     }
 }

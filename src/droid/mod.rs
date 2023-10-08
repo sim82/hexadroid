@@ -198,7 +198,7 @@ impl Plugin for DroidPlugin {
     fn build(&self, app: &mut App) {
         app
             // .add_system(droid_stop_system)
-            .add_system(droid_apply_direction_system) //.after(droid_stop_system))
-            .add_system(droid_attack_system);
+            .add_systems(Update, droid_apply_direction_system) //.after(droid_stop_system))
+            .add_systems(Update, droid_attack_system);
     }
 }

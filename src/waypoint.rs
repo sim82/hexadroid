@@ -1,17 +1,8 @@
+use crate::{debug::DebugLinesExt, hex_point_to_vec2, prelude::*, HEX_LAYOUT};
 use bevy::{prelude::*, utils::HashSet};
 use bevy_egui::{egui, EguiContext};
 use bevy_prototype_debug_lines::DebugLines;
-use hexagon_tiles::{
-    hexagon::{HexMath, HEX_DIRECTIONS},
-    layout::LayoutTool,
-};
-
-use crate::{
-    debug::DebugLinesExt,
-    hex_point_to_vec2,
-    tiles::{TileCache, TilePos},
-    HEX_LAYOUT,
-};
+use hexagon_tiles::layout::LayoutTool;
 
 #[derive(Default, Resource)]
 pub struct GuiState {
@@ -145,7 +136,6 @@ pub struct WaypointPlugin;
 impl Plugin for WaypointPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GuiState>()
-            .add_system(waypoint_egui_system)
-            .add_system(waypoint_update_system);
+            .add_systems(Update, (waypoint_egui_system, waypoint_update_system));
     }
 }

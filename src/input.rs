@@ -8,7 +8,7 @@ use crate::{
 use bevy::input::ButtonState;
 use bevy::{input::mouse::MouseButtonInput, math::Vec3Swizzles, prelude::*};
 use bevy_mouse_tracking_plugin::prelude::*;
-use bevy_mouse_tracking_plugin::{MousePos, MousePosWorld};
+use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{
     hexagon::{HexMath, HexRound, HEX_DIRECTIONS},
@@ -91,7 +91,7 @@ fn apply_input_system_jnr(
         let mut forward = 0.0;
         let w = keyboard_input.pressed(KeyCode::W);
         let a = keyboard_input.pressed(KeyCode::A);
-        let s = keyboard_input.pressed(KeyCode::S);
+        // let s = keyboard_input.pressed(KeyCode::S);
         let d = keyboard_input.pressed(KeyCode::D);
 
         if d {
@@ -231,12 +231,17 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(apply_input_system_8dir)
-            .add_system(apply_input_system_2_1_dof)
-            .add_system(apply_input_system_jnr)
-            .add_system(background_on_click_system)
-            .add_system(camera_zoom_system)
-            .add_system(camera_rotate_system)
-            .add_plugin(MousePosPlugin);
+        app.add_systems(
+            Update,
+            (
+                apply_input_system_8dir,
+                apply_input_system_2_1_dof,
+                apply_input_system_jnr,
+                background_on_click_system,
+                camera_zoom_system,
+                camera_rotate_system,
+            ),
+        )
+        .add_plugins(MousePosPlugin);
     }
 }

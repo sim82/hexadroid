@@ -45,7 +45,7 @@ fn main() {
         }
     }
 
-    app.add_startup_system(setup_geometry)
+    app.add_systems(Startup, setup_geometry)
         // .add_startup_system(setup_linedraw_test)
         // .add_startup_system(setup_lyon_test)
         ;

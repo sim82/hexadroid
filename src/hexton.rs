@@ -159,8 +159,8 @@ fn debug_hexton_input_system(
 pub struct HextonPlugin;
 impl Plugin for HextonPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(apply_hexton_input_system)
-        .add_system(debug_hexton_input_system)
+        app.add_systems(Update, apply_hexton_input_system)
+        .add_systems(Update, debug_hexton_input_system)
             // .add_system(ship_brake_maneuver_system.after(apply_ship_input_system))
             // .add_system(ship_thruster_system.after(ship_brake_maneuver_system))
             // // .add_system(ship_kinetic_debug_system.after(ship_thruster_system)) // can override other input

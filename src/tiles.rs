@@ -13,11 +13,7 @@ use hexagon_tiles::{
 
 use crate::prelude::*;
 use crate::{
-    collision_groups,
-    debug::DebugLinesExt,
-    hex_point_to_vec2,
-    tunables::{default_stroke, LINE_WIDTH, STROKE_OPTIONS},
-    CmdlineArgs, Despawn, HEX_LAYOUT,
+    collision_groups, debug::DebugLinesExt, hex_point_to_vec2, CmdlineArgs, Despawn, HEX_LAYOUT,
 };
 
 #[derive(Resource)]
@@ -427,8 +423,8 @@ impl Plugin for TilesPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TileCache>()
             .init_resource::<TilesState>()
-            .add_startup_system(setup_system)
+            .add_systems(Startup, setup_system)
             .add_systems(PostUpdate, spawn_tiles_system)
-            .add_system(optimize_colliders_system);
+            .add_systems(Update, optimize_colliders_system);
     }
 }

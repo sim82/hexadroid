@@ -290,9 +290,13 @@ pub struct WorldbuildPlugin;
 
 impl Plugin for WorldbuildPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<WorldState>()
-            .add_system(update_walls_noise)
-            .add_system(worldbuid_egui_ui_system)
-            .add_system(world_debug_input_system);
+        app.init_resource::<WorldState>().add_systems(
+            Update,
+            (
+                update_walls_noise,
+                worldbuid_egui_ui_system,
+                world_debug_input_system,
+            ),
+        );
     }
 }

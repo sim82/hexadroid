@@ -32,7 +32,7 @@ fn projectile_collision_system(
 pub struct CollisionPlugin;
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(display_events_system)
-            .add_system(projectile_collision_system);
+        app.add_systems(Update, display_events_system)
+            .add_systems(Update, projectile_collision_system);
     }
 }
