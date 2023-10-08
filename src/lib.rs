@@ -194,7 +194,7 @@ impl PluginGroup for DefaultPlugins {
             // .add(render::RenderPlugin)
             // .add(render::pipeline::RenderShapePlugin)
             .add(ShapePlugin)
-            .add(worldbuild::WorldbuildPlugin)
+            // .add(worldbuild::WorldbuildPlugin)
             .add(waypoint::WaypointPlugin)
             .add(EguiPlugin)
             .add(PortalPlugin)

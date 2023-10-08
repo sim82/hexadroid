@@ -1,6 +1,7 @@
 use crate::{
     droid::{AttackRequest, TargetDirection},
     hexton::HextonInput,
+    portal::PortalToggleRequest,
     prelude::*,
     ship::ShipInput,
     waypoint, Despawn, HEX_LAYOUT,
@@ -48,7 +49,24 @@ fn apply_input_system_8dir(
         attack_request.primary_attack = keyboard_input.pressed(KeyCode::J);
     }
 }
-
+fn apply_input_system_portal_toggle(
+    mut commands: Commands,
+    query: Query<&Transform, With<InputTarget>>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    for transform in &query {
+        if keyboard_input.just_pressed(KeyCode::H) {
+            let hex_pos = LayoutTool::pixel_to_hex(
+                HEX_LAYOUT,
+                Point {
+                    x: transform.translation.x.into(),
+                    y: transform.translation.y.into(),
+                },
+            );
+            commands.spawn((TilePos(hex_pos.round()), PortalToggleRequest));
+        }
+    }
+}
 fn apply_input_system_2_1_dof(
     mut query: Query<(&mut ShipInput, &Transform, &mut AttackRequest), With<InputTarget>>,
     keyboard_input: Res<Input<KeyCode>>,
@@ -240,6 +258,7 @@ impl Plugin for InputPlugin {
                 background_on_click_system,
                 camera_zoom_system,
                 camera_rotate_system,
+                apply_input_system_portal_toggle,
             ),
         )
         .add_plugins(MousePosPlugin);
