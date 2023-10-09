@@ -175,3 +175,50 @@ pub fn evade_projectile_action_system(
         }
     }
 }
+
+#[derive(Component, Debug, Clone, Default, ActionBuilder)]
+pub struct RoamAction {
+    direction: Vec2,
+    timer: Timer,
+}
+
+pub fn roam_action_system(
+    time: Res<Time>,
+    mut query: Query<(&Actor, &mut ActionState, &mut RoamAction)>,
+    mut direction_query: Query<&mut TargetDirection>,
+) {
+    for (Actor(actor), mut state, mut roam) in &mut query {
+        info!("roam action {:?}", state);
+        match *state {
+            ActionState::Requested => {
+                let mut rng = thread_rng();
+
+                roam.direction = DIRECTIONS[rng.gen_range(0..6)];
+                roam.timer = Timer::from_seconds(0.5, TimerMode::Once);
+                *state = ActionState::Executing;
+            }
+            ActionState::Executing | ActionState::Cancelled => {
+                roam.timer.tick(time.delta());
+                if let Ok(mut target_direction) = direction_query.get_mut(*actor) {
+                    if roam.timer.finished() {
+                        target_direction.direction = default();
+                    } else {
+                        target_direction.direction = roam.direction;
+                    }
+                }
+                if roam.timer.finished() {
+                    *state = ActionState::Success;
+                }
+            }
+            // All Actions should make sure to handle cancellations!
+            // ActionState::Cancelled => {
+            //     if let Ok(mut target_direction) = direction_query.get_mut(*actor) {
+            //         target_direction.direction = default();
+            //     }
+            //     debug!("Action was cancelled. Considering this a failure.");
+            //     *state = ActionState::Failure;
+            // }
+            _ => {}
+        }
+    }
+}

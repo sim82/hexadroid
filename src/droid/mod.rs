@@ -7,7 +7,7 @@ use crate::{camera::CameraTarget, collision_groups, input::InputTarget};
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::Stroke;
 use bevy_rapier2d::prelude::*;
-use std::borrow::Cow;
+use std::{borrow::Cow, time::Duration};
 
 pub mod weapon;
 
@@ -42,6 +42,10 @@ pub struct AttackRequest {
     pub primary_attack: bool,
 }
 
+#[derive(Component, Default)]
+pub struct MovementStats {
+    pub idle_duration: Duration,
+}
 // fn droid_stop_system(mut query: Query<(&mut Velocity, &mut ExternalForce), With<GroundFriction>>) {
 //     for (mut velocity, mut external_force) in query.iter_mut() {
 //         // info!("vel: {}", velocity.linvel);
@@ -56,12 +60,23 @@ pub struct AttackRequest {
 // }
 
 fn droid_apply_direction_system(
-    mut query: Query<(&mut ExternalImpulse, &TargetDirection, &mut WeaponDirection)>,
+    time: Res<Time>,
+    mut query: Query<(
+        &mut ExternalImpulse,
+        &TargetDirection,
+        &mut WeaponDirection,
+        &mut MovementStats,
+    )>,
 ) {
-    for (mut external_impulse, target_direction, mut weapon_direction) in query.iter_mut() {
+    for (mut external_impulse, target_direction, mut weapon_direction, mut movement_stats) in
+        query.iter_mut()
+    {
         if target_direction.direction.length() > f32::EPSILON {
             external_impulse.impulse = IMPULSE_MULTIPLIER * target_direction.direction;
             weapon_direction.direction = target_direction.direction;
+            movement_stats.idle_duration = default();
+        } else {
+            movement_stats.idle_duration += time.delta();
         }
     }
 }
@@ -122,6 +137,7 @@ pub struct DroidBundle {
     pub weapon_state: WeaponState,
     pub target_direction: TargetDirection,
     pub attack_request: AttackRequest,
+    pub movement_stats: MovementStats,
     pub damping: Damping,
     pub mass_properties: ColliderMassProperties,
     // #[bundle]
@@ -162,6 +178,7 @@ impl DroidBundle {
             external_impulse: default(),
             target_direction: default(),
             attack_request: default(),
+            movement_stats: default(),
             damping,
             mass_properties: ColliderMassProperties::Density(1.0),
             spatial_bundle: default(),

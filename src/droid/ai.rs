@@ -358,6 +358,7 @@ impl Plugin for AiPlugin {
                 actions::idle_action_system.in_set(BigBrainSet::Actions),
                 actions::evade_enemy_action_system.in_set(BigBrainSet::Actions),
                 actions::evade_projectile_action_system.in_set(BigBrainSet::Actions),
+                actions::roam_action_system.in_set(BigBrainSet::Actions),
             ),
         );
         app.add_systems(
@@ -366,6 +367,7 @@ impl Plugin for AiPlugin {
                 scorers::enemy_hit_score_system.in_set(BigBrainSet::Scorers),
                 scorers::projectile_incoming_score_system.in_set(BigBrainSet::Scorers),
                 scorers::enemy_close_system.in_set(BigBrainSet::Scorers),
+                scorers::idle_boredom_score_system.in_set(BigBrainSet::Scorers),
             ),
         );
     }
@@ -395,5 +397,6 @@ pub fn new_shooting_droid_ai() -> ThinkerBuilder {
             actions::EvadeProjectileAction::default(),
         )
         .when(scorers::EnemyCloseScore, actions::EvadeEnemyAction)
+        .when(scorers::IdleBoredomScore, actions::RoamAction::default())
         .when(FixedScore::build(0.1), actions::IdleAction)
 }

@@ -5,6 +5,8 @@ use big_brain::{
     prelude::*,
 };
 
+use crate::droid::MovementStats;
+
 use super::{EnemyEvaluation, IncomingProjectile, PredictedHit};
 
 #[derive(Component, Debug, Clone, ScorerBuilder)]
@@ -58,5 +60,23 @@ pub fn projectile_incoming_score_system(
         } else {
             score.set(0.0);
         }
+    }
+}
+
+#[derive(Component, Debug, Clone, ScorerBuilder)]
+pub struct IdleBoredomScore;
+pub fn idle_boredom_score_system(
+    mut scorer_query: Query<(&Actor, &mut Score), With<IdleBoredomScore>>,
+    movement_stats_query: Query<&MovementStats>,
+) {
+    for (Actor(actor), mut score) in &mut scorer_query {
+        let Ok(movement_stats) = movement_stats_query.get(*actor) else {
+            continue;
+        };
+        score.set(
+            LinearEvaluator::new_ranged(4.0, 7.0)
+                .evaluate(movement_stats.idle_duration.as_secs_f32()),
+        );
+        info!("idle boredom: {}", score.get());
     }
 }
