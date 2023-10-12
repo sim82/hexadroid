@@ -64,7 +64,7 @@ pub mod collision_groups {
     pub const LEVEL: Group = Group::GROUP_3;
 }
 
-#[derive(Parser, Debug, Resource)]
+#[derive(Parser, Debug, Resource, Clone)]
 #[clap(author, version, about, long_about = None)]
 pub struct CmdlineArgs {
     #[clap(short, long)]
@@ -87,6 +87,9 @@ pub struct CmdlineArgs {
 
     #[clap(short = 'x', long)]
     pub hexton: bool,
+
+    #[clap(short = 'b', long)]
+    pub worldbuild: bool,
 }
 
 pub const HEX_LAYOUT: Layout = Layout {
@@ -165,15 +168,20 @@ impl Plugin for DefaultPlugin {
     }
 }
 
-#[derive(Default)]
+// #[derive(Default)]
 pub struct DefaultPlugins {
-    debug_draw: bool,
+    // debug_draw: bool,
+    args: CmdlineArgs,
 }
 
 impl DefaultPlugins {
-    pub fn with_debug_draw(mut self, b: bool) -> Self {
-        self.debug_draw = b;
-        self
+    // pub fn with_debug_draw(mut self, b: bool) -> Self {
+    //     self.debug_draw = b;
+    //     self
+    // }
+
+    pub fn new(args: CmdlineArgs) -> DefaultPlugins {
+        DefaultPlugins { args }
     }
 }
 
@@ -200,7 +208,12 @@ impl PluginGroup for DefaultPlugins {
             .add(PortalPlugin)
             .add(ShipPlugin)
             .add(HextonPlugin);
-        if self.debug_draw {
+        let group = if self.args.worldbuild {
+            group.add(worldbuild::WorldbuildPlugin)
+        } else {
+            group
+        };
+        if self.args.debug_draw {
             group
                 .add(RapierDebugRenderPlugin::default())
                 .add(DebugLinesPlugin::default())

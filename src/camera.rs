@@ -18,6 +18,7 @@ fn setup_camera_system(mut commands: Commands) {
                 tonemapping: Tonemapping::TonyMcMapface,
                 ..default()
             },
+            // BloomSettings::SCREEN_BLUR,
             BloomSettings::default(),
         ))
         .add(InitMouseTracking);
