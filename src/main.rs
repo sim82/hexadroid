@@ -111,6 +111,14 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 ..default()
             })
             .insert(default_stroke(GREEN_HDR))
+            .insert(ParticleSource {
+                rate: 10,
+                direction: ParticleDirection::Uniform,
+                speed: 100.0,
+                speed_spread: 50.0,
+                lifetime: 1.0,
+                lifetime_spread: 0.5,
+            })
             .id()
     };
 
