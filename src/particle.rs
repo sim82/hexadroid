@@ -39,7 +39,9 @@ fn spawn_particle_system(
     source_query: Query<(&ParticleSource, &Transform)>,
 ) {
     let mut rng = rand::thread_rng();
+    let mut particle_batch = Vec::new();
     for (source, source_transform) in &source_query {
+        particle_batch.reserve(source.rate as usize);
         for _ in 0..source.rate {
             let direction_vec = match source.direction {
                 ParticleDirection::DirectionalNormal {
@@ -60,7 +62,7 @@ fn spawn_particle_system(
             let speed = source.speed + rng.gen_range(-source.speed_spread..source.speed_spread);
             let lifetime =
                 source.lifetime + rng.gen_range(-source.lifetime_spread..source.lifetime_spread);
-            commands.spawn((
+            particle_batch.push((
                 ParticleBundle {
                     rigid_body: RigidBody::Dynamic,
                     velocity: Velocity::linear(direction_vec * speed),
@@ -76,9 +78,9 @@ fn spawn_particle_system(
                 },
                 default_stroke(COLORS[rng.gen_range(0..COLORS.len())]),
             ));
-            //
         }
     }
+    commands.spawn_batch(particle_batch);
 }
 
 fn evolve_particle_system(mut query: Query<(&Particle, &mut Transform, &Despawn)>) {
