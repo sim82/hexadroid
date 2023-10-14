@@ -19,6 +19,7 @@ pub struct KineticProjectileBundle {
     active_collision_types: ActiveCollisionTypes,
     projectile: Projectile,
     despawn: Despawn,
+    mass_properies: ColliderMassProperties,
 }
 
 pub const PROJECTILE_SPEED: f32 = 800.0;
@@ -38,6 +39,7 @@ impl KineticProjectileBundle {
                 | ActiveCollisionTypes::KINEMATIC_STATIC,
             projectile: Projectile { owner },
             despawn: Despawn::TimeToLive(10.0),
+            mass_properies: ColliderMassProperties::Density(0.3),
         }
     }
 }

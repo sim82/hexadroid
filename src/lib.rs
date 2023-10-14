@@ -13,7 +13,9 @@ use hexagon_tiles::{
     point::Point,
 };
 
-use crate::{hexton::HextonPlugin, portal::PortalPlugin, ship::ShipPlugin};
+use crate::{
+    hexton::HextonPlugin, particle::ParticlePlugin, portal::PortalPlugin, ship::ShipPlugin,
+};
 
 pub mod collision;
 pub mod droid;
@@ -22,6 +24,7 @@ pub mod portal;
 pub mod tiles;
 
 pub mod hexton;
+pub mod particle;
 pub mod ship;
 // pub mod worm {
 //     use perlin_noise::PerlinNoise;
@@ -134,9 +137,10 @@ pub mod colors {
     pub const RED_HDR: Color = Color::rgb(5.0, 0.0, 0.0);
     pub const YELLOW_HDR: Color = Color::rgb(3.0, 3.0, 0.0);
 }
-#[derive(Component)]
+#[derive(Component, Default)]
 #[component(storage = "SparseSet")]
 pub enum Despawn {
+    #[default]
     ThisFrame,
     TimeToLive(f32),
 }
@@ -207,7 +211,8 @@ impl PluginGroup for DefaultPlugins {
             .add(EguiPlugin)
             .add(PortalPlugin)
             .add(ShipPlugin)
-            .add(HextonPlugin);
+            .add(HextonPlugin)
+            .add(ParticlePlugin);
         let group = if self.args.worldbuild {
             group.add(worldbuild::WorldbuildPlugin)
         } else {
@@ -234,6 +239,7 @@ pub fn exit_on_esc_system(
 pub mod prelude {
     pub use crate::collision::CollisionFxType;
     pub use crate::colors::*;
+    pub use crate::particle::{ParticleDirection, ParticleSource};
     pub use crate::tiles::{TileCache, TilePos, TileType, TilesState};
     pub use crate::tunables::default_stroke;
     pub use crate::Despawn;

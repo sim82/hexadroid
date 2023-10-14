@@ -4,6 +4,7 @@ use crate::{
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::RapierContext;
+#[allow(deprecated)]
 use egui_extras::RetainedImage;
 use hexagon_tiles::hexagon::{Hex, HexMath, HexRound};
 use perlin2d::PerlinNoise2D;
@@ -157,6 +158,7 @@ fn update_walls_noise(
     };
 }
 
+#[allow(deprecated)]
 fn worldbuid_egui_ui_system(
     mut egui_context: Query<&mut EguiContext>,
     mut world_state: ResMut<WorldState>,

@@ -1,4 +1,4 @@
-use crate::{droid::weapon::Projectile, Despawn};
+use crate::{droid::weapon::Projectile, prelude::*, Despawn};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -25,7 +25,19 @@ fn projectile_collision_system(
                     .or_else(|_| projectile_query.get(*b));
 
                 if let Ok(projectile) = projectile {
-                    commands.entity(projectile).insert(Despawn::ThisFrame);
+                    commands
+                        .entity(projectile)
+                        .insert(ParticleSource {
+                            rate: 100,
+                            direction: ParticleDirection::Uniform,
+                            speed: 100.0,
+                            speed_spread: 80.0,
+                            lifetime: 1.0,
+                            lifetime_spread: 0.5,
+                        })
+                        .insert(Despawn::TimeToLive(0.2))
+                        // don't register more Projectile collisions in the next frames
+                        .remove::<Projectile>();
                 }
             }
             CollisionEvent::Stopped(_, _, _) => (),
