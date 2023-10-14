@@ -270,13 +270,10 @@ fn ship_attack_system(
         let max_toi = 4.0;
         let filter = QueryFilter {
             exclude_collider: Some(entity),
-            groups: Some(
-                CollisionGroups {
-                    memberships: collision_groups::PROJECTILES,
-                    filters: collision_groups::DROIDS,
-                }
-                .into(),
-            ),
+            groups: Some(CollisionGroups {
+                memberships: collision_groups::PROJECTILES,
+                filters: collision_groups::DROIDS,
+            }),
 
             ..default()
         };
