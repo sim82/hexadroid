@@ -2,8 +2,8 @@ use self::{
     ai::{EnemyEvaluation, PredictedHit, PrimaryEnemy},
     weapon::kinetic_projectile_shape_bundle,
 };
-use crate::prelude::*;
 use crate::{camera::CameraTarget, collision_groups, input::InputTarget};
+use crate::{collision::CollisionFxType, prelude::*};
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::Stroke;
 use bevy_rapier2d::prelude::*;
@@ -142,6 +142,9 @@ pub struct DroidBundle {
     pub mass_properties: ColliderMassProperties,
     // #[bundle]
     pub spatial_bundle: SpatialBundle,
+    pub collision_fx: CollisionFxType,
+    pub active_events: ActiveEvents,
+    pub active_collision_types: ActiveCollisionTypes,
 }
 
 impl DroidBundle {
@@ -182,6 +185,10 @@ impl DroidBundle {
             damping,
             mass_properties: ColliderMassProperties::Density(1.0),
             spatial_bundle: default(),
+            collision_fx: CollisionFxType::Spark,
+            active_events: ActiveEvents::COLLISION_EVENTS,
+            active_collision_types: ActiveCollisionTypes::default()
+                | ActiveCollisionTypes::KINEMATIC_STATIC,
         }
     }
 }

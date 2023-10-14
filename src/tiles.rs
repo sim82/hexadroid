@@ -133,10 +133,13 @@ fn spawn_tiles_system(
                 .map(|p| Vec2::new(p.x as f32, p.y as f32))
                 .collect();
 
-            commands.entity(entity).insert(Collider::polyline(
-                corners,
-                Some(vec![[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]),
-            ));
+            commands
+                .entity(entity)
+                .insert(Collider::polyline(
+                    corners,
+                    Some(vec![[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]),
+                ))
+                .insert(CollisionFxType::Spark);
         }
 
         tiles_cache.tiles.insert(*tile_pos, entity);
@@ -276,7 +279,8 @@ fn optimize_colliders_system(
                 .insert(CollisionGroups {
                     memberships: collision_groups::LEVEL,
                     ..default()
-                });
+                })
+                .insert(CollisionFxType::Spark);
         }
     }
 

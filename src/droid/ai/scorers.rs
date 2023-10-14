@@ -74,9 +74,9 @@ pub fn idle_boredom_score_system(
             continue;
         };
         score.set(
-            LinearEvaluator::new_ranged(4.0, 7.0)
+            LinearEvaluator::new_ranged(2.0, 7.0)
                 .evaluate(movement_stats.idle_duration.as_secs_f32()),
         );
-        info!("idle boredom: {}", score.get());
+        // info!("idle boredom: {}", score.get());
     }
 }
