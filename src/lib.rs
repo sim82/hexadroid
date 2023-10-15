@@ -207,16 +207,25 @@ impl PluginGroup for DefaultPlugins {
             .add(collision::CollisionPlugin)
             .add(camera::CameraPlugin)
             .add(tiles::TilesPlugin)
-            // .add(render::RenderPlugin)
-            // .add(render::pipeline::RenderShapePlugin)
             .add(ShapePlugin)
-            // .add(worldbuild::WorldbuildPlugin)
             .add(waypoint::WaypointPlugin)
-            .add(EguiPlugin)
             .add(PortalPlugin)
             .add(ShipPlugin)
             .add(HextonPlugin)
             .add(ParticlePlugin);
+
+        // egui plugins
+        #[cfg(feature = "inspector")]
+        let group = {
+            if self.args.world_inspector {
+                group.add(bevy_inspector_egui::quick::WorldInspectorPlugin::new())
+            } else {
+                group.add(EguiPlugin)
+            }
+        };
+        #[cfg(not(feature = "inspector"))]
+        let group = group.add(EguiPlugin);
+
         let group = if self.args.worldbuild {
             group.add(worldbuild::WorldbuildPlugin)
         } else {
