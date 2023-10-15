@@ -68,6 +68,7 @@ fn spawn_particle_system(
     let mut particle_batch = Vec::new();
     for (source, source_transform) in &source_query {
         particle_batch.reserve(source.rate as usize);
+        let material = &res.materials[rng.gen_range(0..res.materials.len())];
         for _ in 0..source.rate {
             let direction_vec = match source.direction {
                 ParticleDirection::DirectionalNormal {
@@ -91,7 +92,7 @@ fn spawn_particle_system(
                 },
                 MaterialMesh2dBundle {
                     mesh: res.mesh.clone(),
-                    material: res.materials[rng.gen_range(0..res.materials.len())].clone(),
+                    material: material.clone(),
                     transform: *source_transform,
                     ..default()
                 },

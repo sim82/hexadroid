@@ -28,14 +28,14 @@ fn projectile_collision_system(
                     commands
                         .entity(projectile)
                         .insert(ParticleSource {
-                            rate: 500,
+                            rate: 200,
                             direction: ParticleDirection::Uniform,
                             speed: 200.0,
                             speed_spread: 180.0,
                             lifetime: 0.80,
                             lifetime_spread: 0.5,
                         })
-                        .insert(Despawn::TimeToLive(0.067))
+                        .insert(Despawn::TimeToLive(0.1))
                         // don't register more Projectile collisions in the next frames
                         .remove::<Projectile>();
                 }
