@@ -188,7 +188,7 @@ pub fn roam_action_system(
     mut direction_query: Query<&mut TargetDirection>,
 ) {
     for (Actor(actor), mut state, mut roam) in &mut query {
-        info!("roam action {:?}", state);
+        // info!("roam action {:?}", state);
         match *state {
             ActionState::Requested => {
                 let mut rng = thread_rng();

@@ -2,6 +2,7 @@
 
 use bevy::{
     app::{AppExit, PluginGroupBuilder},
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
 };
 use bevy_egui::EguiPlugin;
@@ -93,6 +94,9 @@ pub struct CmdlineArgs {
 
     #[clap(short = 'b', long)]
     pub worldbuild: bool,
+
+    #[clap(short = 'l', long)]
+    pub diaglog: bool,
 }
 
 pub const HEX_LAYOUT: Layout = Layout {
@@ -218,10 +222,17 @@ impl PluginGroup for DefaultPlugins {
         } else {
             group
         };
-        if self.args.debug_draw {
+        let group = if self.args.debug_draw {
             group
                 .add(RapierDebugRenderPlugin::default())
                 .add(DebugLinesPlugin::default())
+        } else {
+            group
+        };
+        if self.args.diaglog {
+            group
+                .add(FrameTimeDiagnosticsPlugin)
+                .add(LogDiagnosticsPlugin::default())
         } else {
             group
         }
