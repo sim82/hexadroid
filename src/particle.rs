@@ -1,10 +1,19 @@
 use std::f32::consts::TAU;
 
 use crate::prelude::*;
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    sprite::{Material2d, MaterialMesh2dBundle, Mesh2dHandle},
+};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
+
+#[derive(Resource, Default)]
+pub struct ParticleResources {
+    pub mesh: Mesh2dHandle,
+    pub materials: Vec<Handle<ColorMaterial>>,
+}
 
 pub enum ParticleDirection {
     DirectionalNormal { direction: Vec2, spread: f32 },
@@ -34,8 +43,25 @@ struct ParticleBundle {
     pub despawn: Despawn,
 }
 
+fn init_particle_system(
+    mut commands: Commands,
+    mut res: ResMut<ParticleResources>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    let q = shape::Quad::new(Vec2::splat(2.5));
+    // let q = shape::Box::new(100.0, 100.0, 100.0);
+    res.mesh = meshes.add(q.into()).into();
+    for color in &COLORS {
+        res.materials.push(materials.add(ColorMaterial {
+            color: *color,
+            ..default()
+        }));
+    }
+}
 fn spawn_particle_system(
     mut commands: Commands,
+    res: Res<ParticleResources>,
     source_query: Query<(&ParticleSource, &Transform)>,
 ) {
     let mut rng = rand::thread_rng();
@@ -51,14 +77,6 @@ fn spawn_particle_system(
                 ParticleDirection::Uniform => Vec2::from_angle(rng.gen_range(0.0..TAU)),
             };
 
-            let shape = shapes::Circle {
-                radius: 0.5,
-                ..default()
-            };
-            let shape = shapes::Rectangle {
-                extents: Vec2::splat(0.5),
-                ..default()
-            };
             let speed = source.speed + rng.gen_range(-source.speed_spread..source.speed_spread);
             let lifetime =
                 source.lifetime + rng.gen_range(-source.lifetime_spread..source.lifetime_spread);
@@ -71,12 +89,12 @@ fn spawn_particle_system(
                         initial_lifetime: lifetime,
                     },
                 },
-                ShapeBundle {
-                    path: GeometryBuilder::build_as(&shape),
+                MaterialMesh2dBundle {
+                    mesh: res.mesh.clone(),
+                    material: res.materials[rng.gen_range(0..res.materials.len())].clone(),
                     transform: *source_transform,
                     ..default()
                 },
-                default_stroke(COLORS[rng.gen_range(0..COLORS.len())]),
             ));
         }
     }
@@ -102,6 +120,8 @@ pub struct ParticlePlugin;
 
 impl Plugin for ParticlePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (spawn_particle_system, evolve_particle_system));
+        app.init_resource::<ParticleResources>()
+            .add_systems(Startup, init_particle_system)
+            .add_systems(Update, (spawn_particle_system, evolve_particle_system));
     }
 }
