@@ -9,6 +9,7 @@ use crate::{
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_prototype_lyon::prelude::Stroke;
 use bevy_rapier2d::prelude::*;
+use rand_distr::Normal;
 use std::borrow::Cow;
 
 #[derive(Component, Default)]
@@ -63,6 +64,7 @@ pub struct ShipBundle {
     // pub mass_properties: ColliderMassProperties,
     // #[bundle]
     pub spatial_bundle: SpatialBundle,
+    pub particle_source: ParticleSource,
 }
 
 pub const SHIP_VERTICES: [Vec2; 3] = [
@@ -96,6 +98,12 @@ impl ShipBundle {
             read_mass_properties: default(),
             // mass_properties: ColliderMassProperties::Density(1.0),
             spatial_bundle: default(),
+            particle_source: ParticleSource {
+                lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
+                speed_distr: Normal::new(200.0, 90.0).unwrap(),
+                rate: 0,
+                direction: ParticleDirection::Uniform,
+            },
         }
     }
 }
@@ -213,6 +221,22 @@ fn ship_thruster_system(
     }
 }
 
+fn ship_thruster_particle_system(
+    mut query: Query<(&mut ParticleSource, &ShipThruster, &Transform)>,
+) {
+    for (mut particle_source, thruster, transform) in &mut query {
+        if thruster.forward > 0.0 {
+            let forward = transform.rotation * -SHIP_MAIN_AXIS;
+            particle_source.rate = 50;
+            particle_source.direction = ParticleDirection::DirectionalNormal {
+                direction: -forward.xy().angle_between(Vec2::X),
+                std_dev: 0.07,
+            }
+        } else {
+            particle_source.rate = 0;
+        }
+    }
+}
 fn _ship_kinetic_debug_system(
     mut query: Query<(&Velocity, &ExternalImpulse, &ReadMassProperties)>,
 ) {
@@ -344,6 +368,7 @@ impl Plugin for ShipPlugin {
                 ship_brake_maneuver_system.after(apply_ship_input_system),
                 ship_thruster_system.after(ship_brake_maneuver_system),
                 ship_attack_system,
+                ship_thruster_particle_system.after(apply_ship_input_system),
             ),
         );
     }

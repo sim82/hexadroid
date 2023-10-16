@@ -17,7 +17,7 @@ pub struct ParticleResources {
 }
 
 pub enum ParticleDirection {
-    DirectionalNormal { direction: Vec2, std_dev: f32 },
+    DirectionalNormal { direction: f32, std_dev: f32 },
     Uniform,
 }
 
@@ -70,10 +70,12 @@ fn spawn_particle_system(
         let material = &res.materials[rng.gen_range(0..res.materials.len())];
         for _ in 0..source.rate {
             let direction_vec = match source.direction {
-                ParticleDirection::DirectionalNormal {
-                    direction: _,
-                    std_dev: _,
-                } => todo!(),
+                ParticleDirection::DirectionalNormal { direction, std_dev } => {
+                    let direction = direction; //.angle_between(Vec2::X);
+                    let distr = Normal::new(direction, std_dev).unwrap();
+                    let dir = distr.sample(&mut rng);
+                    Vec2::from_angle(dir)
+                }
                 ParticleDirection::Uniform => Vec2::from_angle(rng.gen_range(0.0..TAU)),
             };
 

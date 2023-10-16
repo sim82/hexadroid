@@ -31,6 +31,10 @@ fn projectile_collision_system(
                         .insert(ParticleSource {
                             rate: 200,
                             direction: ParticleDirection::Uniform,
+                            // direction: ParticleDirection::DirectionalNormal {
+                            //     direction: Vec2::X,
+                            //     std_dev: 0.1,
+                            // },
                             speed_distr: Normal::new(200.0, 90.0).unwrap(),
                             lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
                         })
