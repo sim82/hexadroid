@@ -1,6 +1,7 @@
 use crate::{droid::weapon::Projectile, prelude::*, Despawn};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use rand_distr::Normal;
 
 #[derive(Component, Debug, Copy, Clone)]
 pub enum CollisionFxType {
@@ -30,10 +31,8 @@ fn projectile_collision_system(
                         .insert(ParticleSource {
                             rate: 200,
                             direction: ParticleDirection::Uniform,
-                            speed: 200.0,
-                            speed_spread: 180.0,
-                            lifetime: 0.80,
-                            lifetime_spread: 0.5,
+                            speed_distr: Normal::new(200.0, 90.0).unwrap(),
+                            lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
                         })
                         .insert(Despawn::TimeToLive(0.1))
                         // don't register more Projectile collisions in the next frames

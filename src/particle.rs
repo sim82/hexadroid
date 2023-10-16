@@ -1,4 +1,4 @@
-use std::f32::consts::TAU;
+use std::{f32::consts::TAU, ops::Range};
 
 use crate::prelude::*;
 use bevy::{
@@ -7,7 +7,8 @@ use bevy::{
 };
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::Rng;
+use rand::{prelude::Distribution, Rng};
+use rand_distr::Normal;
 
 #[derive(Resource, Default)]
 pub struct ParticleResources {
@@ -16,7 +17,7 @@ pub struct ParticleResources {
 }
 
 pub enum ParticleDirection {
-    DirectionalNormal { direction: Vec2, spread: f32 },
+    DirectionalNormal { direction: Vec2, std_dev: f32 },
     Uniform,
 }
 
@@ -24,10 +25,8 @@ pub enum ParticleDirection {
 pub struct ParticleSource {
     pub rate: u32,
     pub direction: ParticleDirection,
-    pub speed: f32,
-    pub speed_spread: f32,
-    pub lifetime: f32,
-    pub lifetime_spread: f32,
+    pub speed_distr: Normal<f32>,
+    pub lifetime_distr: Normal<f32>,
 }
 
 #[derive(Component, Default)]
@@ -73,14 +72,13 @@ fn spawn_particle_system(
             let direction_vec = match source.direction {
                 ParticleDirection::DirectionalNormal {
                     direction: _,
-                    spread: _,
+                    std_dev: _,
                 } => todo!(),
                 ParticleDirection::Uniform => Vec2::from_angle(rng.gen_range(0.0..TAU)),
             };
 
-            let speed = source.speed + rng.gen_range(-source.speed_spread..source.speed_spread);
-            let lifetime =
-                source.lifetime + rng.gen_range(-source.lifetime_spread..source.lifetime_spread);
+            let speed = source.speed_distr.sample(&mut rng).max(0.0);
+            let lifetime = source.lifetime_distr.sample(&mut rng).max(0.0);
             particle_batch.push((
                 ParticleBundle {
                     rigid_body: RigidBody::Dynamic,

@@ -22,6 +22,7 @@ egui_extras = "0.23"
 clap = { version = "4", features = ["derive"] }
 lazy_static = "1"
 rand = "0.8"
+rand_distr = "0.4"
 # perlin_noise = "1"
 perlin2d = "0.2"
 serde_yaml = "0.9"
