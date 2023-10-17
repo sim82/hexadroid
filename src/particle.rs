@@ -27,6 +27,7 @@ pub struct ParticleSource {
     pub direction: ParticleDirection,
     pub speed_distr: Normal<f32>,
     pub lifetime_distr: Normal<f32>,
+    pub velocity_offset: Vec2,
 }
 
 #[derive(Component, Default)]
@@ -86,7 +87,7 @@ fn spawn_particle_system(
             particle_batch.push((
                 ParticleBundle {
                     rigid_body: RigidBody::Dynamic,
-                    velocity: Velocity::linear(direction_vec * speed),
+                    velocity: Velocity::linear(source.velocity_offset + direction_vec * speed),
                     despawn: Despawn::TimeToLive(lifetime),
                     particle: Particle {
                         initial_lifetime: lifetime,

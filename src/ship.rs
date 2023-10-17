@@ -68,7 +68,6 @@ pub struct ShipBundle {
     // pub mass_properties: ColliderMassProperties,
     // #[bundle]
     pub spatial_bundle: SpatialBundle,
-    // pub particle_source: ParticleSource,
 }
 
 pub const SHIP_VERTICES: [Vec2; 3] = [
@@ -102,12 +101,6 @@ impl ShipBundle {
             read_mass_properties: default(),
             // mass_properties: ColliderMassProperties::Density(1.0),
             spatial_bundle: default(),
-            // particle_source: ParticleSource {
-            //     lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
-            //     speed_distr: Normal::new(200.0, 90.0).unwrap(),
-            //     rate: 0,
-            //     direction: ParticleDirection::Uniform,
-            // },
         }
     }
 }
@@ -149,6 +142,7 @@ pub fn ship_attach_thruster_particle_spawner_system(
                     speed_distr: Normal::new(200.0, 90.0).unwrap(),
                     rate: 0,
                     direction: ParticleDirection::Uniform,
+                    velocity_offset: Vec2::default(),
                 },
                 ShipThrusterParticleSpawner,
             ));
@@ -249,10 +243,10 @@ fn ship_thruster_system(
 
 fn ship_thruster_particle_system(
     mut query: Query<(&Parent, &mut ParticleSource), With<ShipThrusterParticleSpawner>>,
-    ship_query: Query<(&ShipThruster, &Transform)>,
+    ship_query: Query<(&ShipThruster, &Transform, &Velocity)>,
 ) {
     for (parent, mut particle_source) in &mut query {
-        let Ok((thruster, transform)) = ship_query.get(parent.get()) else {
+        let Ok((thruster, transform, velocity)) = ship_query.get(parent.get()) else {
             continue;
         };
         if thruster.forward > 0.0 {
@@ -261,7 +255,8 @@ fn ship_thruster_particle_system(
             particle_source.direction = ParticleDirection::DirectionalNormal {
                 direction: -forward.xy().angle_between(Vec2::X),
                 std_dev: 0.07,
-            }
+            };
+            particle_source.velocity_offset = velocity.linvel;
         } else {
             particle_source.rate = 0;
         }
