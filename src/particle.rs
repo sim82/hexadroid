@@ -61,13 +61,14 @@ fn init_particle_system(
 fn spawn_particle_system(
     mut commands: Commands,
     res: Res<ParticleResources>,
-    source_query: Query<(&ParticleSource, &Transform)>,
+    source_query: Query<(&ParticleSource, &GlobalTransform)>,
 ) {
     let mut rng = rand::thread_rng();
     let mut particle_batch = Vec::new();
     for (source, source_transform) in &source_query {
         particle_batch.reserve(source.rate as usize);
         let material = &res.materials[rng.gen_range(0..res.materials.len())];
+        let transform = source_transform.compute_transform();
         for _ in 0..source.rate {
             let direction_vec = match source.direction {
                 ParticleDirection::DirectionalNormal { direction, std_dev } => {
@@ -81,6 +82,7 @@ fn spawn_particle_system(
 
             let speed = source.speed_distr.sample(&mut rng).max(0.0);
             let lifetime = source.lifetime_distr.sample(&mut rng).max(0.0);
+
             particle_batch.push((
                 ParticleBundle {
                     rigid_body: RigidBody::Dynamic,
@@ -93,7 +95,7 @@ fn spawn_particle_system(
                 MaterialMesh2dBundle {
                     mesh: res.mesh.clone(),
                     material: material.clone(),
-                    transform: *source_transform,
+                    transform,
                     ..default()
                 },
             ));

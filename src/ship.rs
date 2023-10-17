@@ -39,6 +39,10 @@ impl ShipThruster {
     }
 }
 
+// marker component for the particle spawner attached to ships
+#[derive(Component)]
+pub struct ShipThrusterParticleSpawner;
+
 #[derive(Bundle)]
 pub struct ShipBundle {
     pub collider: Collider,
@@ -64,7 +68,7 @@ pub struct ShipBundle {
     // pub mass_properties: ColliderMassProperties,
     // #[bundle]
     pub spatial_bundle: SpatialBundle,
-    pub particle_source: ParticleSource,
+    // pub particle_source: ParticleSource,
 }
 
 pub const SHIP_VERTICES: [Vec2; 3] = [
@@ -98,12 +102,12 @@ impl ShipBundle {
             read_mass_properties: default(),
             // mass_properties: ColliderMassProperties::Density(1.0),
             spatial_bundle: default(),
-            particle_source: ParticleSource {
-                lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
-                speed_distr: Normal::new(200.0, 90.0).unwrap(),
-                rate: 0,
-                direction: ParticleDirection::Uniform,
-            },
+            // particle_source: ParticleSource {
+            //     lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
+            //     speed_distr: Normal::new(200.0, 90.0).unwrap(),
+            //     rate: 0,
+            //     direction: ParticleDirection::Uniform,
+            // },
         }
     }
 }
@@ -128,7 +132,29 @@ pub fn apply_ship_input_system(
         }
     }
 }
-
+pub fn ship_attach_thruster_particle_spawner_system(
+    mut commands: Commands,
+    query: Query<Entity, Added<ShipThruster>>,
+) {
+    for entity in &query {
+        commands.entity(entity).with_children(|commands| {
+            //
+            commands.spawn((
+                SpatialBundle {
+                    transform: Transform::from_translation(SHIP_MAIN_AXIS * -30.0),
+                    ..default()
+                },
+                ParticleSource {
+                    lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
+                    speed_distr: Normal::new(200.0, 90.0).unwrap(),
+                    rate: 0,
+                    direction: ParticleDirection::Uniform,
+                },
+                ShipThrusterParticleSpawner,
+            ));
+        });
+    }
+}
 pub fn ship_brake_maneuver_system(
     mut query: Query<(
         &ShipInput,
@@ -222,9 +248,13 @@ fn ship_thruster_system(
 }
 
 fn ship_thruster_particle_system(
-    mut query: Query<(&mut ParticleSource, &ShipThruster, &Transform)>,
+    mut query: Query<(&Parent, &mut ParticleSource), With<ShipThrusterParticleSpawner>>,
+    ship_query: Query<(&ShipThruster, &Transform)>,
 ) {
-    for (mut particle_source, thruster, transform) in &mut query {
+    for (parent, mut particle_source) in &mut query {
+        let Ok((thruster, transform)) = ship_query.get(parent.get()) else {
+            continue;
+        };
         if thruster.forward > 0.0 {
             let forward = transform.rotation * -SHIP_MAIN_AXIS;
             particle_source.rate = 50;
@@ -370,6 +400,7 @@ impl Plugin for ShipPlugin {
                 ship_attack_system,
                 ship_thruster_particle_system.after(apply_ship_input_system),
             ),
-        );
+        )
+        .add_systems(PostUpdate, ship_attach_thruster_particle_spawner_system);
     }
 }
