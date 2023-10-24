@@ -15,7 +15,8 @@ use hexagon_tiles::{
 };
 
 use crate::{
-    hexton::HextonPlugin, particle::ParticlePlugin, portal::PortalPlugin, ship::ShipPlugin,
+    debug_ui::DebugUiPlugin, hexton::HextonPlugin, particle::ParticlePlugin, portal::PortalPlugin,
+    ship::ShipPlugin,
 };
 
 pub mod collision;
@@ -67,6 +68,7 @@ pub mod collision_groups {
     pub const PROJECTILES: Group = Group::GROUP_2;
     pub const LEVEL: Group = Group::GROUP_3;
 }
+pub mod debug_ui;
 
 #[derive(Parser, Debug, Resource, Clone)]
 #[clap(author, version, about, long_about = None)]
@@ -212,7 +214,8 @@ impl PluginGroup for DefaultPlugins {
             .add(PortalPlugin)
             .add(ShipPlugin)
             .add(HextonPlugin)
-            .add(ParticlePlugin);
+            .add(ParticlePlugin)
+            .add(DebugUiPlugin);
 
         // egui plugins
         #[cfg(feature = "inspector")]

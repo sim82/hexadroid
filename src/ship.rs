@@ -178,7 +178,7 @@ pub fn ship_brake_maneuver_system(
             if angle.signum() == velocity.angvel.signum() || velocity.angvel.abs() < 2.0 {
                 thruster.rot = diff * angle.signum()
             }
-            info!("diff {}", diff);
+            // info!("diff {}", diff);
         }
     }
 }
@@ -237,7 +237,7 @@ fn ship_thruster_system(
             0.0
         };
 
-        *thruster = default();
+        // *thruster = default();
     }
 }
 
@@ -249,6 +249,7 @@ fn ship_thruster_particle_system(
         let Ok((thruster, transform, velocity)) = ship_query.get(parent.get()) else {
             continue;
         };
+        // info!("thruster: {}", thruster.forward);
         if thruster.forward > 0.0 {
             let forward = transform.rotation * -SHIP_MAIN_AXIS;
             particle_source.rate = 50;
@@ -333,20 +334,21 @@ fn ship_attack_system(
         //     }),
         //     ..default()
         // };
-        if let Some((entity, hit)) = rapier_context.cast_shape(
-            projectile_pos,
-            default(),
-            projectile_vel,
-            &projectile_shape,
-            max_toi,
-            filter,
-        ) {
+        // if let Some((entity, hit)) = rapier_context.cast_shape(
+        //     projectile_pos,
+        //     default(),
+        //     projectile_vel,
+        //     &projectile_shape,
+        //     max_toi,
+        //     filter,
+        // )
+        {
             // The first collider hit has the entity `entity`. The `hit` is a
             // structure containing details about the hit configuration.
-            info!(
-                "Hit the entity {:?} with the configuration: {:?}",
-                entity, hit
-            );
+            // info!(
+            //     "Hit the entity {:?} with the configuration: {:?}",
+            //     entity, hit
+            // );
             weapon_state.reload_timeout = RELOAD_TIMEOUT;
             let direction = (transform.rotation * SHIP_MAIN_AXIS).xy();
             commands
@@ -393,7 +395,7 @@ impl Plugin for ShipPlugin {
                 ship_brake_maneuver_system.after(apply_ship_input_system),
                 ship_thruster_system.after(ship_brake_maneuver_system),
                 ship_attack_system,
-                ship_thruster_particle_system.after(apply_ship_input_system),
+                ship_thruster_particle_system.after(ship_thruster_system),
             ),
         )
         .add_systems(PostUpdate, ship_attach_thruster_particle_spawner_system);
