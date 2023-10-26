@@ -2,6 +2,7 @@ use std::{f32::consts::TAU, ops::Range};
 
 use crate::prelude::*;
 use bevy::{
+    diagnostic::{Diagnostic, DiagnosticId, Diagnostics, RegisterDiagnostic},
     prelude::*,
     sprite::{Material2d, MaterialMesh2dBundle, Mesh2dHandle},
 };
@@ -9,6 +10,10 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::{prelude::Distribution, Rng};
 use rand_distr::Normal;
+
+// d'oh the only 128bin random number generator I found only produces binary numbers
+pub const PARTICLE_COUNT: DiagnosticId = DiagnosticId::from_u128(0b00010001110010101001001110001101011100000101101010011100101100010111001010001001111001111010011011100100000001010100011100100011);
+pub const NEW_PARTICLE_COUNT: DiagnosticId = DiagnosticId::from_u128(0b11110100000001001100011110101100010011111100101110011101001110011110111000111000101000100111101101111111101100001010011011101101);
 
 #[derive(Resource, Default)]
 pub struct ParticleResources {
@@ -60,6 +65,7 @@ fn init_particle_system(
     }
 }
 fn spawn_particle_system(
+    mut diagnostics: Diagnostics,
     mut commands: Commands,
     res: Res<ParticleResources>,
     source_query: Query<(&ParticleSource, &GlobalTransform)>,
@@ -102,10 +108,15 @@ fn spawn_particle_system(
             ));
         }
     }
+    diagnostics.add_measurement(NEW_PARTICLE_COUNT, || particle_batch.len() as f64);
     commands.spawn_batch(particle_batch);
 }
 
-fn evolve_particle_system(mut query: Query<(&Particle, &mut Transform, &Despawn)>) {
+fn evolve_particle_system(
+    mut diagnostics: Diagnostics,
+    mut query: Query<(&Particle, &mut Transform, &Despawn)>,
+) {
+    let mut num_particles = 0;
     for (particle, mut transform, despawn) in &mut query {
         let f = match despawn {
             Despawn::ThisFrame => continue,
@@ -117,14 +128,22 @@ fn evolve_particle_system(mut query: Query<(&Particle, &mut Transform, &Despawn)
         .clamp(0.0, 1.0);
 
         transform.scale = Vec3::splat(f);
+        num_particles += 1;
         //
     }
+    diagnostics.add_measurement(PARTICLE_COUNT, || num_particles.into());
 }
 pub struct ParticlePlugin;
 
 impl Plugin for ParticlePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ParticleResources>()
+            .register_diagnostic(
+                Diagnostic::new(PARTICLE_COUNT, "particle count", 10).with_suffix("part"),
+            )
+            .register_diagnostic(
+                Diagnostic::new(NEW_PARTICLE_COUNT, "new particle", 10).with_suffix("part/fr"),
+            )
             .add_systems(Startup, init_particle_system)
             .add_systems(Update, (spawn_particle_system, evolve_particle_system));
     }

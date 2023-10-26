@@ -1,62 +1,61 @@
 use bevy::{
-    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    diagnostic::{DiagnosticId, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
+
+use crate::particle::{ParticlePlugin, NEW_PARTICLE_COUNT, PARTICLE_COUNT};
 // A unit struct to help identify the FPS UI component, since there may be many Text components
 #[derive(Component)]
-struct FpsText;
+struct FpsText(DiagnosticId);
 
 // A unit struct to help identify the color-changing Text component
 #[derive(Component)]
 struct ColorText;
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // UI camera
-    // commands.spawn(Camera2dBundle::default());
-    // // Text with one section
-    // commands.spawn((
-    //     // Create a TextBundle that has a Text with a single section.
-    //     TextBundle::from_section(
-    //         // Accepts a `String` or any type that converts into a `String`, such as `&str`
-    //         "hello\nbevy!",
-    //         TextStyle {
-    //             // This font is loaded and will be used instead of the default font.
-    //             font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-    //             font_size: 100.0,
-    //             color: Color::WHITE,
-    //         },
-    //     ) // Set the alignment of the Text
-    //     .with_text_alignment(TextAlignment::Center)
-    //     // Set the style of the TextBundle itself.
-    //     .with_style(Style {
-    //         position_type: PositionType::Absolute,
-    //         bottom: Val::Px(5.0),
-    //         right: Val::Px(15.0),
-    //         ..default()
-    //     }),
-    //     ColorText,
-    // ));
-    // Text with multiple sections
-    commands.spawn((
-        // Create a TextBundle that has a Text with a list of sections.
-        TextBundle::from_sections([
-            TextSection::new(
-                "FPS: ",
-                TextStyle {
-                    // This font is loaded and will be used instead of the default font.
-                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+#[derive(Bundle)]
+struct DiagnosticBundle {
+    pub text_bundle: TextBundle,
+    pub diagnostic: FpsText,
+}
+impl DiagnosticBundle {
+    pub fn new(text: &str, diagnostic: DiagnosticId, asset_server: &AssetServer) -> Self {
+        Self {
+            text_bundle: TextBundle::from_sections([
+                TextSection::new(
+                    text,
+                    TextStyle {
+                        // This font is loaded and will be used instead of the default font.
+                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        font_size: 30.0,
+                        color: Color::WHITE,
+                    },
+                ),
+                TextSection::from_style(TextStyle {
                     font_size: 30.0,
-                    color: Color::WHITE,
-                },
-            ),
-            TextSection::from_style(TextStyle {
-                font_size: 30.0,
-                color: Color::GOLD,
-                // If no font is specified, it will use the default font.
-                ..default()
-            }),
-        ]),
-        FpsText,
+                    color: Color::GOLD,
+                    // If no font is specified, it will use the default font.
+                    ..default()
+                }),
+            ]),
+            diagnostic: FpsText(diagnostic),
+        }
+    }
+}
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn(DiagnosticBundle::new(
+        "fps",
+        FrameTimeDiagnosticsPlugin::FPS,
+        &asset_server,
+    ));
+    commands.spawn(DiagnosticBundle::new(
+        "particles",
+        PARTICLE_COUNT,
+        &asset_server,
+    ));
+    commands.spawn(DiagnosticBundle::new(
+        "new particles",
+        NEW_PARTICLE_COUNT,
+        &asset_server,
     ));
 }
 
@@ -74,12 +73,9 @@ fn text_color_system(time: Res<Time>, mut query: Query<&mut Text, With<ColorText
     }
 }
 
-fn text_update_system(
-    diagnostics: Res<DiagnosticsStore>,
-    mut query: Query<&mut Text, With<FpsText>>,
-) {
-    for mut text in &mut query {
-        if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+fn text_update_system(diagnostics: Res<DiagnosticsStore>, mut query: Query<(&mut Text, &FpsText)>) {
+    for (mut text, FpsText(diag)) in &mut query {
+        if let Some(fps) = diagnostics.get(*diag) {
             if let Some(value) = fps.smoothed() {
                 // Update the value of the second section
                 text.sections[1].value = format!("{value:.2}");
