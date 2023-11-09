@@ -74,7 +74,8 @@ fn spawn_particle_system(
     let mut particle_batch = Vec::new();
     for (source, source_transform) in &source_query {
         particle_batch.reserve(source.rate as usize);
-        let material = &res.materials[rng.gen_range(0..res.materials.len())];
+        // let material = &res.materials[rng.gen_range(0..res.materials.len())];
+        let material = &res.materials[7];
         let transform = source_transform.compute_transform();
         for _ in 0..source.rate {
             let direction_vec = match source.direction {
