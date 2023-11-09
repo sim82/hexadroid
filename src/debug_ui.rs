@@ -47,16 +47,18 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         FrameTimeDiagnosticsPlugin::FPS,
         &asset_server,
     ));
-    commands.spawn(DiagnosticBundle::new(
-        "particles",
-        PARTICLE_COUNT,
-        &asset_server,
-    ));
-    commands.spawn(DiagnosticBundle::new(
-        "new particles",
-        NEW_PARTICLE_COUNT,
-        &asset_server,
-    ));
+    if false {
+        commands.spawn(DiagnosticBundle::new(
+            "particles",
+            PARTICLE_COUNT,
+            &asset_server,
+        ));
+        commands.spawn(DiagnosticBundle::new(
+            "new particles",
+            NEW_PARTICLE_COUNT,
+            &asset_server,
+        ));
+    }
 }
 
 fn text_color_system(time: Res<Time>, mut query: Query<&mut Text, With<ColorText>>) {

@@ -2,7 +2,7 @@ use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     prelude::*,
 };
-use bevy_mouse_tracking_plugin::prelude::*;
+// use bevy_mouse_tracking_plugin::prelude::*;
 
 #[derive(Component, Default)]
 pub struct CameraTarget;
@@ -21,7 +21,8 @@ fn setup_camera_system(mut commands: Commands) {
             // BloomSettings::SCREEN_BLUR,
             BloomSettings::default(),
         ))
-        .add(InitMouseTracking);
+        // .add(InitMouseTracking)
+    ;
 }
 
 fn track_camera_system(

@@ -1,7 +1,7 @@
 use crate::{debug::DebugLinesExt, hex_point_to_vec2, prelude::*, HEX_LAYOUT};
 use bevy::{prelude::*, utils::HashSet};
 use bevy_egui::{egui, EguiContext};
-use bevy_prototype_debug_lines::DebugLines;
+// use bevy_prototype_debug_lines::DebugLines;
 use hexagon_tiles::layout::LayoutTool;
 
 #[derive(Default, Resource)]
@@ -30,7 +30,7 @@ fn waypoint_egui_system(mut state: ResMut<GuiState>, mut egui_context: Query<&mu
 fn waypoint_update_system(
     tiles_cache: Res<TileCache>,
     mut state: ResMut<GuiState>,
-    mut debug_lines: Option<ResMut<DebugLines>>,
+    // mut debug_lines: Option<ResMut<DebugLines>>,
 ) {
     if !state.update {
         return;
@@ -126,9 +126,9 @@ fn waypoint_update_system(
         }
 
         let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, p.0)).extend(0.0);
-        if let Some(debug_lines) = debug_lines.as_mut() {
-            debug_lines.cross(center, 15.0);
-        }
+        // if let Some(debug_lines) = debug_lines.as_mut() {
+        //     debug_lines.cross(center, 15.0);
+        // }
     }
 }
 

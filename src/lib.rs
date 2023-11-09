@@ -6,7 +6,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::EguiPlugin;
-use bevy_prototype_debug_lines::DebugLinesPlugin;
+// use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
 use clap::Parser;
 use hexagon_tiles::{
@@ -235,9 +235,8 @@ impl PluginGroup for DefaultPlugins {
             group
         };
         let group = if self.args.debug_draw {
-            group
-                .add(RapierDebugRenderPlugin::default())
-                .add(DebugLinesPlugin::default())
+            group.add(RapierDebugRenderPlugin::default())
+            // .add(DebugLinesPlugin::default())
         } else {
             group
         };

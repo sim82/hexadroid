@@ -270,7 +270,9 @@ fn _ship_kinetic_debug_system(
         if external_impulse.torque_impulse != 0.0 {
             info!(
                 "torque {} {} {}",
-                external_impulse.torque_impulse, velocity.angvel, mass.0.principal_inertia
+                external_impulse.torque_impulse,
+                velocity.angvel,
+                mass.get().principal_inertia
             );
         }
     }

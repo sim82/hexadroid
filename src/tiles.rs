@@ -2,7 +2,7 @@ use bevy::{
     prelude::*,
     utils::{HashMap, HashSet, Instant},
 };
-use bevy_prototype_debug_lines::DebugLines;
+// use bevy_prototype_debug_lines::DebugLines;
 use bevy_prototype_lyon::{prelude::*, shapes};
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{
@@ -215,7 +215,7 @@ fn optimize_colliders_system(
     query: Query<&TilePos>,
     boundary_query: Query<(Entity, &BoundaryMarker)>,
     mut color_count: Local<usize>,
-    mut debug_lines: Option<ResMut<DebugLines>>,
+    // mut debug_lines: Option<ResMut<DebugLines>>,
     tiles_state: Res<TilesState>,
 ) {
     if *delay > 0.0 {
@@ -243,9 +243,9 @@ fn optimize_colliders_system(
         if let Ok(tile_pos) = query.get(*entity) {
             let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, tile_pos.0));
 
-            if let Some(debug_lines) = debug_lines.as_mut() {
-                debug_lines.cross(center.extend(0.0), 5.0);
-            }
+            // if let Some(debug_lines) = debug_lines.as_mut() {
+            //     debug_lines.cross(center.extend(0.0), 5.0);
+            // }
 
             let corners: Vec<Vec2> = LayoutTool::polygon_corners(HEX_LAYOUT, Hex::new(0, 0))
                 .iter()

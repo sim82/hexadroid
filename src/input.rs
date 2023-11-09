@@ -8,8 +8,8 @@ use crate::{
 };
 use bevy::input::ButtonState;
 use bevy::{input::mouse::MouseButtonInput, math::Vec3Swizzles, prelude::*};
-use bevy_mouse_tracking_plugin::prelude::*;
-use bevy_mouse_tracking_plugin::MousePosWorld;
+// use bevy_mouse_tracking_plugin::prelude::*;
+// use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{
     hexagon::{HexMath, HexRound, HEX_DIRECTIONS},
@@ -165,85 +165,87 @@ pub enum ClickMode {
     TileAddRemove,
     WaypointSample,
 }
-fn background_on_click_system(
-    mut commands: Commands,
-    mouse: Res<MousePosWorld>,
-    // mut pointer_pos: Local<Vec2>,
-    mut mouse_button_input_events: EventReader<MouseButtonInput>,
-    mut tile_cache: ResMut<TileCache>,
-    tiles_state: Res<TilesState>,
-    mut waypoints_gui_state: ResMut<waypoint::GuiState>, // FIXME: make click_handler mode specific.
-) {
-    for button_event in mouse_button_input_events.iter() {
-        if button_event.button == MouseButton::Left && button_event.state == ButtonState::Released {
-            // info!("click: {:?}", pointer_pos);
-            let hex = LayoutTool::pixel_to_hex(
-                HEX_LAYOUT,
-                Point {
-                    x: mouse.x as f64,
-                    y: mouse.y as f64,
-                },
-            )
-            .round();
-            info!("mouse pos: {:?} -> {:?}", *mouse, hex);
+// FIXME: disabled due to missing mouse track plugin
+fn background_on_click_system() {}
+// fn background_on_click_system(
+//     mut commands: Commands,
+//     mouse: Res<MousePosWorld>,
+//     // mut pointer_pos: Local<Vec2>,
+//     mut mouse_button_input_events: EventReader<MouseButtonInput>,
+//     mut tile_cache: ResMut<TileCache>,
+//     tiles_state: Res<TilesState>,
+//     mut waypoints_gui_state: ResMut<waypoint::GuiState>, // FIXME: make click_handler mode specific.
+// ) {
+//     for button_event in mouse_button_input_events.iter() {
+//         if button_event.button == MouseButton::Left && button_event.state == ButtonState::Released {
+//             // info!("click: {:?}", pointer_pos);
+//             let hex = LayoutTool::pixel_to_hex(
+//                 HEX_LAYOUT,
+//                 Point {
+//                     x: mouse.x as f64,
+//                     y: mouse.y as f64,
+//                 },
+//             )
+//             .round();
+//             info!("mouse pos: {:?} -> {:?}", *mouse, hex);
 
-            let tile_pos = TilePos(hex);
-            let click_mode = ClickMode::TileAddRemove;
+//             let tile_pos = TilePos(hex);
+//             let click_mode = ClickMode::TileAddRemove;
 
-            match click_mode {
-                ClickMode::TileAddRemove => {
-                    if let Some(entity) = tile_cache.tiles.remove(&tile_pos) {
-                        info!("delete");
-                        commands.entity(entity).insert(Despawn::ThisFrame);
-                    } else {
-                        info!("spawn");
-                        let entity = commands
-                            .spawn(SpatialBundle::default())
-                            .insert(TileType {
-                                wall: true,
-                                immediate_collider: true,
-                            })
-                            .insert(TilePos(hex))
-                            .id();
-                        commands.entity(tiles_state.tile_root).add_child(entity);
-                    }
-                }
-                ClickMode::WaypointSample => {
-                    // let pattern = [tile_pos.0; 6]
-                    //     .zip(HEX_DIRECTIONS)
-                    //     .map(|(a, b)| TilePos(a.add(b)))
-                    //     .map(|p| tile_cache.tiles.contains_key(&p));
+//             match click_mode {
+//                 ClickMode::TileAddRemove => {
+//                     if let Some(entity) = tile_cache.tiles.remove(&tile_pos) {
+//                         info!("delete");
+//                         commands.entity(entity).insert(Despawn::ThisFrame);
+//                     } else {
+//                         info!("spawn");
+//                         let entity = commands
+//                             .spawn(SpatialBundle::default())
+//                             .insert(TileType {
+//                                 wall: true,
+//                                 immediate_collider: true,
+//                             })
+//                             .insert(TilePos(hex))
+//                             .id();
+//                         commands.entity(tiles_state.tile_root).add_child(entity);
+//                     }
+//                 }
+//                 ClickMode::WaypointSample => {
+//                     // let pattern = [tile_pos.0; 6]
+//                     //     .zip(HEX_DIRECTIONS)
+//                     //     .map(|(a, b)| TilePos(a.add(b)))
+//                     //     .map(|p| tile_cache.tiles.contains_key(&p));
 
-                    let mut pattern = [false; 6];
-                    for i in 0..6 {
-                        pattern[i] = tile_cache
-                            .tiles
-                            .contains_key(&TilePos(tile_pos.0.add(HEX_DIRECTIONS[i])));
-                    }
-                    // add or remove (NOTE: is there a better pattern for this?)
-                    let is_new = waypoints_gui_state.rules2.insert(pattern);
-                    if !is_new {
-                        waypoints_gui_state.rules2.remove(&pattern);
-                    }
+//                     let mut pattern = [false; 6];
+//                     for i in 0..6 {
+//                         pattern[i] = tile_cache
+//                             .tiles
+//                             .contains_key(&TilePos(tile_pos.0.add(HEX_DIRECTIONS[i])));
+//                     }
+//                     // add or remove (NOTE: is there a better pattern for this?)
+//                     let is_new = waypoints_gui_state.rules2.insert(pattern);
+//                     if !is_new {
+//                         waypoints_gui_state.rules2.remove(&pattern);
+//                     }
 
-                    let mut pattern_sorted = waypoints_gui_state
-                        .rules2
-                        .iter()
-                        .cloned()
-                        .collect::<Vec<_>>();
-                    pattern_sorted.sort();
-                    let mut f = std::fs::File::create("pattern.txt").unwrap();
-                    for p in pattern_sorted {
-                        let p = p.map(i32::from);
-                        let _ = writeln!(f, "{}{}{}{}{}{}", p[0], p[1], p[2], p[3], p[4], p[5]);
-                    }
+//                     let mut pattern_sorted = waypoints_gui_state
+//                         .rules2
+//                         .iter()
+//                         .cloned()
+//                         .collect::<Vec<_>>();
+//                     pattern_sorted.sort();
+//                     let mut f = std::fs::File::create("pattern.txt").unwrap();
+//                     for p in pattern_sorted {
+//                         let p = p.map(i32::from);
+//                         let _ = writeln!(f, "{}{}{}{}{}{}", p[0], p[1], p[2], p[3], p[4], p[5]);
+//                     }
 
-                    waypoints_gui_state.update = true;
-                }
-            }
-        }
-    }
-}
+//                     waypoints_gui_state.update = true;
+//                 }
+//             }
+//         }
+//     }
+// }
 
 pub struct InputPlugin;
 
@@ -261,6 +263,7 @@ impl Plugin for InputPlugin {
                 apply_input_system_portal_toggle,
             ),
         )
-        .add_plugins(MousePosPlugin);
+        // .add_plugins(MousePosPlugin)
+        ;
     }
 }

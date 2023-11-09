@@ -57,7 +57,10 @@ pub fn kinetic_projectile_shape_bundle(translation: Vec3, direction: Vec2) -> Sh
             // outline_mode: StrokeMode::new(Color::BLACK, 2.0),
             // },
         ),
-        transform: Transform::from_translation(translation + (direction * 50.0).extend(0.0)),
+        spatial: SpatialBundle {
+            transform: Transform::from_translation(translation + (direction * 50.0).extend(0.0)),
+            ..default()
+        },
         ..default()
     }
 }

@@ -65,7 +65,10 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             .spawn(ShipBundle::new("ship"))
             .insert(ShapeBundle {
                 path: ship_shape_builder,
-                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                spatial: SpatialBundle {
+                    transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                    ..default()
+                },
                 ..default()
             })
             .insert(default_stroke(YELLOW_HDR))
@@ -84,7 +87,10 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             .spawn(HextonBundle::new("hexton"))
             .insert(ShapeBundle {
                 path: hexton_shape_builder,
-                transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
+                spatial: SpatialBundle {
+                    transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
+                    ..default()
+                },
                 ..default()
             })
             .insert(default_stroke(BLUE_HDR))
@@ -99,7 +105,10 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             .insert(PlayerDroidBundle::default())
             .insert(ShapeBundle {
                 path: my_shape_builder,
-                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                spatial: SpatialBundle {
+                    transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                    ..default()
+                },
                 ..default()
             })
             .insert(default_stroke(GREEN_HDR))
@@ -123,7 +132,10 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             .insert(AiDroidBundle::with_enemy(player))
             .insert(ShapeBundle {
                 path: enemy_shape_builder,
-                transform: Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
+                spatial: SpatialBundle {
+                    transform: Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
+                    ..default()
+                },
                 ..default()
             })
             .insert(default_stroke(RED_HDR))
