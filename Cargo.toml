@@ -10,14 +10,14 @@ inspector = ["bevy-inspector-egui"]
 
 [dependencies]
 # bevy = { version = "0.11" }
-bevy = { version = "0.11", features = ["dynamic_linking"] }
-bevy_rapier2d = { version = "0.22", features = ["serde-serialize"] }
-bevy-inspector-egui = { version = "0.19", optional = true }
-bevy_prototype_debug_lines = "0.11"
-bevy_mouse_tracking_plugin = "0.6"
-bevy_egui = "0.22"
+bevy = { version = "0.12", features = ["dynamic_linking"] }
+bevy_rapier2d = { version = "0.23", features = ["serde-serialize"] }
+bevy-inspector-egui = { version = "0.21", optional = true }
+# bevy_prototype_debug_lines = "0.12"
+# bevy_mouse_tracking_plugin = "0.6"
+bevy_egui = "0.23"
 hexagon_tiles = "0.1"
-bevy_prototype_lyon = "0.9"
+bevy_prototype_lyon = "0.10"
 egui_extras = "0.23"
 clap = { version = "4", features = ["derive"] }
 lazy_static = "1"
@@ -26,7 +26,8 @@ rand_distr = "0.4"
 # perlin_noise = "1"
 perlin2d = "0.2"
 serde_yaml = "0.9"
-big-brain = "0.18"
+# big-brain = "0.18"
+big-brain = { git="https://github.com/zkat/big-brain.git"}
 parry2d = "0.13"
 
 [profile.dev.package."*"]
