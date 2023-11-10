@@ -1,8 +1,10 @@
+use crate::{particle::ParticleDamping, prelude::*};
 use bevy::prelude::*;
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*, shapes};
 use bevy_rapier2d::prelude::*;
+use rand_distr::Normal;
 
-use crate::{collision_groups, Despawn};
+use crate::{collision_groups, prelude::ParticleSource, Despawn};
 #[derive(Component)]
 pub struct Projectile {
     pub owner: Entity,
@@ -62,5 +64,29 @@ pub fn kinetic_projectile_shape_bundle(translation: Vec3, direction: Vec2) -> Sh
             ..default()
         },
         ..default()
+    }
+}
+
+#[derive(Bundle)]
+pub struct WaveAttackBundle {
+    pub spatial: SpatialBundle,
+    pub particle_source: ParticleSource,
+    pub despawn: Despawn,
+}
+
+impl WaveAttackBundle {
+    pub fn wave_attack(translation: Vec3) -> WaveAttackBundle {
+        WaveAttackBundle {
+            spatial: SpatialBundle::from_transform(Transform::from_translation(translation)),
+            particle_source: ParticleSource {
+                rate: 200,
+                direction: ParticleDirection::Uniform,
+                speed_distr: Normal::new(800.0, 10.0).unwrap(),
+                lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
+                velocity_offset: Vec2::default(),
+                damping: ParticleDamping::None,
+            },
+            despawn: Despawn::FramesToLive(1),
+        }
     }
 }

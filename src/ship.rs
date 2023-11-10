@@ -143,6 +143,7 @@ pub fn ship_attach_thruster_particle_spawner_system(
                     rate: 0,
                     direction: ParticleDirection::Uniform,
                     velocity_offset: Vec2::default(),
+                    damping: default(),
                 },
                 ShipThrusterParticleSpawner,
             ));
@@ -353,16 +354,20 @@ fn ship_attack_system(
             // );
             weapon_state.reload_timeout = RELOAD_TIMEOUT;
             let direction = (transform.rotation * SHIP_MAIN_AXIS).xy();
-            commands
-                .spawn(weapon::KineticProjectileBundle::with_direction(
-                    entity, // *translation,
-                    direction,
-                ))
-                .insert(kinetic_projectile_shape_bundle(
-                    transform.translation,
-                    direction,
-                ))
-                .insert(Stroke::new(GREEN_HDR, 10.0));
+            if false {
+                commands
+                    .spawn(weapon::KineticProjectileBundle::with_direction(
+                        entity, // *translation,
+                        direction,
+                    ))
+                    .insert(kinetic_projectile_shape_bundle(
+                        transform.translation,
+                        direction,
+                    ))
+                    .insert(Stroke::new(GREEN_HDR, 10.0));
+            } else {
+                commands.spawn(weapon::WaveAttackBundle::wave_attack(transform.translation));
+            }
         }
     }
 }

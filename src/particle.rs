@@ -26,6 +26,11 @@ pub enum ParticleDirection {
     Uniform,
 }
 
+#[derive(Component, Default)]
+pub struct ParticleVelocity {
+    pub linear: Vec2,
+}
+
 #[derive(Component)]
 pub struct ParticleSource {
     pub rate: u32,
@@ -33,18 +38,41 @@ pub struct ParticleSource {
     pub speed_distr: Normal<f32>,
     pub lifetime_distr: Normal<f32>,
     pub velocity_offset: Vec2,
+    pub damping: ParticleDamping,
+}
+
+#[derive(Clone, Copy)]
+pub enum ParticleDamping {
+    None,
+    Exponential(f32),
+}
+impl ParticleDamping {
+    fn apply(&self, linear: Vec2) -> Vec2 {
+        match self {
+            Self::None => linear,
+            Self::Exponential(f) => linear * *f,
+        }
+    }
+}
+
+impl Default for ParticleDamping {
+    fn default() -> Self {
+        ParticleDamping::Exponential(0.98)
+    }
 }
 
 #[derive(Component, Default)]
 struct Particle {
     pub initial_lifetime: f32,
+    pub damping: ParticleDamping,
 }
 
 #[derive(Bundle, Default)]
 struct ParticleBundle {
     pub particle: Particle,
-    pub rigid_body: RigidBody,
-    pub velocity: Velocity,
+    // pub rigid_body: RigidBody,
+    // pub velocity: Velocity,
+    pub velocity: ParticleVelocity,
     pub despawn: Despawn,
 }
 
@@ -93,11 +121,13 @@ fn spawn_particle_system(
 
             particle_batch.push((
                 ParticleBundle {
-                    rigid_body: RigidBody::Dynamic,
-                    velocity: Velocity::linear(source.velocity_offset + direction_vec * speed),
+                    velocity: ParticleVelocity {
+                        linear: source.velocity_offset + direction_vec * speed,
+                    },
                     despawn: Despawn::TimeToLive(lifetime),
                     particle: Particle {
                         initial_lifetime: lifetime,
+                        damping: source.damping,
                     },
                 },
                 MaterialMesh2dBundle {
@@ -114,20 +144,28 @@ fn spawn_particle_system(
 }
 
 fn evolve_particle_system(
+    time: Res<Time>,
     mut diagnostics: Diagnostics,
-    mut query: Query<(&Particle, &mut Transform, &Despawn)>,
+    mut query: Query<(&Particle, &mut Transform, &Despawn, &mut ParticleVelocity)>,
 ) {
     let mut num_particles = 0;
-    for (particle, mut transform, despawn) in &mut query {
+    for (particle, mut transform, despawn, mut velocity) in &mut query {
         let f = match despawn {
             Despawn::ThisFrame => continue,
             Despawn::TimeToLive(ttl) => {
                 //
                 ttl / particle.initial_lifetime
             }
+            Despawn::FramesToLive(_) => 1.0,
         }
         .clamp(0.0, 1.0);
 
+        let new_velocity = particle.damping.apply(velocity.linear);
+        let integ_vel = (velocity.linear + new_velocity) / 2.0;
+        velocity.linear = new_velocity;
+
+        let delta_seconds = time.delta_seconds().min(0.1);
+        transform.translation += (integ_vel * delta_seconds).extend(0.0);
         transform.scale = Vec3::splat(f);
         num_particles += 1;
         //

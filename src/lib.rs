@@ -152,6 +152,7 @@ pub enum Despawn {
     #[default]
     ThisFrame,
     TimeToLive(f32),
+    FramesToLive(u32),
 }
 
 pub fn despawn_reaper_system(
@@ -165,6 +166,14 @@ pub fn despawn_reaper_system(
             Despawn::TimeToLive(ref mut ttl) => {
                 *ttl -= time.delta_seconds();
                 *ttl <= 0.0
+            }
+            Despawn::FramesToLive(ref mut f) => {
+                if *f == 0 {
+                    true
+                } else {
+                    *f -= 1;
+                    false
+                }
             }
         };
         if despawn {
