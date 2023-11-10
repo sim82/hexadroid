@@ -99,6 +99,9 @@ pub struct CmdlineArgs {
 
     #[clap(short = 'l', long)]
     pub diaglog: bool,
+
+    #[clap(short = 'p', long)]
+    pub benchmark: bool,
 }
 
 pub const HEX_LAYOUT: Layout = Layout {

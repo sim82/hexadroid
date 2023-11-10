@@ -14,6 +14,7 @@ use hexadroid::{
     CmdlineArgs,
 };
 use hexagon_tiles::hexagon::Hex;
+use rand_distr::Normal;
 
 fn main() {
     let args = CmdlineArgs::parse();
@@ -97,6 +98,22 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             .insert(InputTarget)
             .insert(CameraTarget)
             .id()
+    } else if args.benchmark {
+        commands
+            .spawn(SpatialBundle {
+                transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
+                ..default()
+            })
+            .insert(ParticleSource {
+                rate: 50,
+                direction: ParticleDirection::Uniform,
+                speed_distr: Normal::new(200.0, 90.0).unwrap(),
+                lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
+                velocity_offset: Vec2::default(),
+            })
+            .insert(CameraTarget)
+            .id()
+        //
     } else {
         let my_shape_builder = GeometryBuilder::build_as(&shape);
 
@@ -140,10 +157,9 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
             })
             .insert(default_stroke(RED_HDR))
             .insert(new_shooting_droid_ai());
+        commands.spawn_empty().insert(Portal {
+            tile_pos: TilePos(Hex::new(5, -1)),
+            timer: Timer::from_seconds(2.0, TimerMode::Repeating),
+        });
     }
-
-    commands.spawn_empty().insert(Portal {
-        tile_pos: TilePos(Hex::new(5, -1)),
-        timer: Timer::from_seconds(2.0, TimerMode::Repeating),
-    });
 }
