@@ -111,6 +111,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
                 velocity_offset: Vec2::default(),
                 damping: default(),
+                initial_offset: 0.0,
             })
             .insert(CameraTarget)
             .id()

@@ -1,10 +1,8 @@
 use crate::prelude::*;
 use crate::{
     collision_groups,
-    droid::{
-        weapon::{self, kinetic_projectile_shape_bundle, PROJECTILE_SPEED},
-        AttackRequest, WeaponState, RELOAD_TIMEOUT,
-    },
+    droid::{AttackRequest, WeaponState, RELOAD_TIMEOUT},
+    weapon::{self, kinetic_projectile_shape_bundle, PROJECTILE_SPEED},
 };
 use bevy::{math::Vec3Swizzles, prelude::*};
 use bevy_prototype_lyon::prelude::Stroke;
@@ -144,6 +142,7 @@ pub fn ship_attach_thruster_particle_spawner_system(
                     direction: ParticleDirection::Uniform,
                     velocity_offset: Vec2::default(),
                     damping: default(),
+                    initial_offset: 0.0,
                 },
                 ShipThrusterParticleSpawner,
             ));

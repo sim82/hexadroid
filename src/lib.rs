@@ -16,7 +16,7 @@ use hexagon_tiles::{
 
 use crate::{
     debug_ui::DebugUiPlugin, hexton::HextonPlugin, particle::ParticlePlugin, portal::PortalPlugin,
-    ship::ShipPlugin,
+    ship::ShipPlugin, weapon::WeaponPlugin,
 };
 
 pub mod collision;
@@ -43,6 +43,7 @@ pub mod debug;
 pub mod worldbuild;
 
 pub mod waypoint;
+pub mod weapon;
 
 pub mod tunables {
     use bevy::prelude::Color;
@@ -227,6 +228,7 @@ impl PluginGroup for DefaultPlugins {
             .add(ShipPlugin)
             .add(HextonPlugin)
             .add(ParticlePlugin)
+            .add(WeaponPlugin)
             .add(DebugUiPlugin);
 
         // egui plugins

@@ -1,4 +1,4 @@
-use crate::{droid::weapon::Projectile, particle::ParticleDamping, prelude::*, Despawn};
+use crate::{particle::ParticleDamping, prelude::*, weapon::Projectile, Despawn};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand_distr::Normal;
@@ -35,6 +35,7 @@ fn projectile_collision_system(
                             lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
                             velocity_offset: Vec2::default(),
                             damping: default(),
+                            initial_offset: 0.0,
                         })
                         .insert(Despawn::TimeToLive(0.1))
                         // don't register more Projectile collisions in the next frames

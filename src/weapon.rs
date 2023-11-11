@@ -67,11 +67,15 @@ pub fn kinetic_projectile_shape_bundle(translation: Vec3, direction: Vec2) -> Sh
     }
 }
 
+#[derive(Component)]
+pub struct WaveAttack;
+
 #[derive(Bundle)]
 pub struct WaveAttackBundle {
     pub spatial: SpatialBundle,
     pub particle_source: ParticleSource,
     pub despawn: Despawn,
+    pub wave_attack: WaveAttack,
 }
 
 impl WaveAttackBundle {
@@ -85,8 +89,94 @@ impl WaveAttackBundle {
                 lifetime_distr: Normal::new(0.4, 0.01).unwrap(),
                 velocity_offset: Vec2::default(),
                 damping: ParticleDamping::None,
+                initial_offset: 0.0,
             },
             despawn: Despawn::FramesToLive(1),
+            wave_attack: WaveAttack,
         }
+    }
+}
+
+#[derive(Component)]
+pub struct WaveAttackProxy {
+    pub target: Entity,
+    pub timeout: f32,
+    pub source_dir: Vec2,
+}
+
+pub fn wave_attack_spawn_proxies(
+    mut commands: Commands,
+    query: Query<&Transform, Added<WaveAttack>>,
+    target_query: Query<(Entity, &Transform), With<WeaponTarget>>,
+) {
+    for transform in &query {
+        for (target, target_transform) in &target_query {
+            let d = transform.translation - target_transform.translation;
+            let dist = d.length();
+            let timeout = dist / 1800.0;
+            commands.spawn_empty().insert(WaveAttackProxy {
+                target,
+                timeout,
+                source_dir: d.xy().normalize_or_zero(),
+            });
+        }
+    }
+}
+pub fn wave_attack_proxy_update(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut WaveAttackProxy)>,
+    target_query: Query<&Transform, With<WeaponTarget>>,
+) {
+    for (proxy_entity, mut proxy) in &mut query {
+        proxy.timeout -= time.delta_seconds();
+        if proxy.timeout <= 0.0 {
+            let Ok(target_transform) = target_query.get(proxy.target) else {
+                continue;
+            };
+            //
+            // let mut fx_transform = *target_transform;
+            // fx_transform.translation += (proxy.source_dir * 50.0).extend(0.0);
+            commands
+                .spawn(SpatialBundle::from_transform(*target_transform))
+                .insert(ParticleSource {
+                    rate: 200,
+                    direction: ParticleDirection::DirectionalNormal {
+                        direction: -proxy.source_dir.angle_between(Vec2::X),
+                        std_dev: 0.3,
+                    },
+                    speed_distr: Normal::new(100.0, 10.0).unwrap(),
+                    lifetime_distr: Normal::new(0.4, 0.05).unwrap(),
+                    velocity_offset: Vec2::default(),
+                    damping: default(),
+                    initial_offset: 0.45,
+                })
+                .insert(Despawn::FramesToLive(1));
+            commands.entity(proxy_entity).insert(Despawn::ThisFrame);
+        }
+    }
+}
+#[derive(Component)]
+pub struct WeaponTarget {
+    pub kinetic_projectile: bool,
+    pub wave_attack: bool,
+}
+
+impl Default for WeaponTarget {
+    fn default() -> Self {
+        Self {
+            kinetic_projectile: true,
+            wave_attack: true,
+        }
+    }
+}
+pub struct WeaponPlugin;
+
+impl Plugin for WeaponPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            // .add_system(droid_stop_system)
+            .add_systems(Update, wave_attack_proxy_update) //.after(droid_stop_system))
+            .add_systems(Update, wave_attack_spawn_proxies);
     }
 }

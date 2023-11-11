@@ -1,15 +1,13 @@
-use self::{
-    ai::{EnemyEvaluation, PredictedHit, PrimaryEnemy},
-    weapon::kinetic_projectile_shape_bundle,
-};
+use self::ai::{EnemyEvaluation, PredictedHit, PrimaryEnemy};
+use crate::weapon::WeaponTarget;
 use crate::{camera::CameraTarget, collision_groups, input::InputTarget};
-use crate::{collision::CollisionFxType, prelude::*};
+use crate::{
+    collision::CollisionFxType, prelude::*, weapon, weapon::kinetic_projectile_shape_bundle,
+};
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::Stroke;
 use bevy_rapier2d::prelude::*;
 use std::{borrow::Cow, time::Duration};
-
-pub mod weapon;
 
 pub mod ai;
 
@@ -145,6 +143,7 @@ pub struct DroidBundle {
     pub collision_fx: CollisionFxType,
     pub active_events: ActiveEvents,
     pub active_collision_types: ActiveCollisionTypes,
+    pub weapon_target: WeaponTarget,
 }
 
 impl DroidBundle {
@@ -189,6 +188,7 @@ impl DroidBundle {
             active_events: ActiveEvents::COLLISION_EVENTS,
             active_collision_types: ActiveCollisionTypes::default()
                 | ActiveCollisionTypes::KINEMATIC_STATIC,
+            weapon_target: default(),
         }
     }
 }

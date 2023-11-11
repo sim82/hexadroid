@@ -1,5 +1,5 @@
-use super::{weapon::Projectile, WeaponState};
-use crate::droid::weapon::PROJECTILE_SPEED;
+use crate::weapon::PROJECTILE_SPEED;
+use crate::{droid::WeaponState, weapon::Projectile};
 use bevy::{
     math::{Vec2Swizzles, Vec3Swizzles},
     prelude::*,

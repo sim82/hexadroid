@@ -39,6 +39,7 @@ pub struct ParticleSource {
     pub lifetime_distr: Normal<f32>,
     pub velocity_offset: Vec2,
     pub damping: ParticleDamping,
+    pub initial_offset: f32,
 }
 
 #[derive(Clone, Copy)]
@@ -119,6 +120,8 @@ fn spawn_particle_system(
             let speed = source.speed_distr.sample(&mut rng).max(0.0);
             let lifetime = source.lifetime_distr.sample(&mut rng).max(0.0);
 
+            let mut transform = transform;
+            transform.translation += (direction_vec * speed * source.initial_offset).extend(0.0);
             particle_batch.push((
                 ParticleBundle {
                     velocity: ParticleVelocity {
