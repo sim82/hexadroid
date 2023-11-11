@@ -79,10 +79,10 @@ impl WaveAttackBundle {
         WaveAttackBundle {
             spatial: SpatialBundle::from_transform(Transform::from_translation(translation)),
             particle_source: ParticleSource {
-                rate: 200,
+                rate: 400,
                 direction: ParticleDirection::Uniform,
-                speed_distr: Normal::new(800.0, 10.0).unwrap(),
-                lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
+                speed_distr: Normal::new(1800.0, 10.0).unwrap(),
+                lifetime_distr: Normal::new(0.4, 0.01).unwrap(),
                 velocity_offset: Vec2::default(),
                 damping: ParticleDamping::None,
             },
