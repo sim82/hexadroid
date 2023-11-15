@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::{prelude::*, shapes};
 use bevy_rapier2d::prelude::*;
 use clap::Parser;
+use hexadroid::particle::ColorGenerator;
 use hexadroid::prelude::*;
 use hexadroid::{
     camera::CameraTarget,
@@ -112,6 +113,7 @@ fn setup_geometry(mut commands: Commands, args: Res<CmdlineArgs>) {
                 velocity_offset: Vec2::default(),
                 damping: default(),
                 initial_offset: 0.0,
+                color_generator: ColorGenerator::Static(7),
             })
             .insert(CameraTarget)
             .id()

@@ -40,8 +40,24 @@ pub struct ParticleSource {
     pub velocity_offset: Vec2,
     pub damping: ParticleDamping,
     pub initial_offset: f32,
+    pub color_generator: ColorGenerator,
 }
 
+pub enum ColorGenerator {
+    Static(usize),
+    Random,
+}
+
+impl ColorGenerator {
+    pub fn next(&self, res: &ParticleResources) -> Handle<ColorMaterial> {
+        match self {
+            ColorGenerator::Static(c) => res.materials[*c].clone(),
+            ColorGenerator::Random => {
+                res.materials[rand::thread_rng().gen_range(0..res.materials.len())].clone()
+            }
+        }
+    }
+}
 #[derive(Clone, Copy)]
 pub enum ParticleDamping {
     None,
@@ -104,7 +120,8 @@ fn spawn_particle_system(
     for (source, source_transform) in &source_query {
         particle_batch.reserve(source.rate as usize);
         // let material = &res.materials[rng.gen_range(0..res.materials.len())];
-        let material = &res.materials[7];
+        // let material = &res.materials[7];
+        let material = source.color_generator.next(&*res);
         let transform = source_transform.compute_transform();
         for _ in 0..source.rate {
             let direction_vec = match source.direction {

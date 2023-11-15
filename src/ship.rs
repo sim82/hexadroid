@@ -1,3 +1,4 @@
+use crate::particle::ColorGenerator;
 use crate::prelude::*;
 use crate::{
     collision_groups,
@@ -143,6 +144,7 @@ pub fn ship_attach_thruster_particle_spawner_system(
                     velocity_offset: Vec2::default(),
                     damping: default(),
                     initial_offset: 0.0,
+                    color_generator: ColorGenerator::Static(7),
                 },
                 ShipThrusterParticleSpawner,
             ));

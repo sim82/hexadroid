@@ -1,4 +1,7 @@
-use crate::{particle::ParticleDamping, prelude::*};
+use crate::{
+    particle::{ColorGenerator, ParticleDamping},
+    prelude::*,
+};
 use bevy::prelude::*;
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*, shapes};
 use bevy_rapier2d::prelude::*;
@@ -90,6 +93,8 @@ impl WaveAttackBundle {
                 velocity_offset: Vec2::default(),
                 damping: ParticleDamping::None,
                 initial_offset: 0.0,
+                // color_generator: ColorGenerator::Static(2),
+                color_generator: ColorGenerator::Random,
             },
             despawn: Despawn::FramesToLive(1),
             wave_attack: WaveAttack,
@@ -150,6 +155,7 @@ pub fn wave_attack_proxy_update(
                     velocity_offset: Vec2::default(),
                     damping: default(),
                     initial_offset: 0.45,
+                    color_generator: ColorGenerator::Static(7),
                 })
                 .insert(Despawn::FramesToLive(1));
             commands.entity(proxy_entity).insert(Despawn::ThisFrame);

@@ -1,4 +1,9 @@
-use crate::{particle::ParticleDamping, prelude::*, weapon::Projectile, Despawn};
+use crate::{
+    particle::{ColorGenerator, ParticleDamping},
+    prelude::*,
+    weapon::Projectile,
+    Despawn,
+};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand_distr::Normal;
@@ -36,6 +41,8 @@ fn projectile_collision_system(
                             velocity_offset: Vec2::default(),
                             damping: default(),
                             initial_offset: 0.0,
+                            color_generator: ColorGenerator::Static(7),
+                            // color_generator: ColorGenerator::Random,
                         })
                         .insert(Despawn::TimeToLive(0.1))
                         // don't register more Projectile collisions in the next frames
