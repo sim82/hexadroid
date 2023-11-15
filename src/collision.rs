@@ -1,9 +1,4 @@
-use crate::{
-    particle::{ColorGenerator},
-    prelude::*,
-    weapon::Projectile,
-    Despawn,
-};
+use crate::{particle::ColorGenerator, prelude::*, weapon::Projectile, Despawn};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand_distr::Normal;
@@ -13,7 +8,7 @@ pub enum CollisionFxType {
     Spark,
 }
 fn display_events_system(mut collision_events: EventReader<CollisionEvent>) {
-    for collision_event in collision_events.iter() {
+    for collision_event in collision_events.read() {
         info!("Received collision event: {:?}", collision_event);
     }
 }
@@ -23,7 +18,7 @@ fn projectile_collision_system(
     mut collision_events: EventReader<CollisionEvent>,
     projectile_query: Query<Entity, With<Projectile>>,
 ) {
-    for collision_event in collision_events.iter() {
+    for collision_event in collision_events.read() {
         match collision_event {
             CollisionEvent::Started(a, b, _) => {
                 let projectile = projectile_query
@@ -59,7 +54,7 @@ fn collision_fx_system(
     mut collision_events: EventReader<CollisionEvent>,
     collision_fx_query: Query<&CollisionFxType>,
 ) {
-    for collision_event in collision_events.iter() {
+    for collision_event in collision_events.read() {
         info!("collision event: {collision_event:?}");
         match collision_event {
             CollisionEvent::Started(a, b, _) => {

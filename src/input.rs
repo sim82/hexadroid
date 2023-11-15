@@ -3,19 +3,15 @@ use crate::{
     hexton::HextonInput,
     portal::PortalToggleRequest,
     prelude::*,
-    ship::ShipInput, HEX_LAYOUT,
+    ship::ShipInput,
+    HEX_LAYOUT,
 };
 
 use bevy::{math::Vec3Swizzles, prelude::*};
 // use bevy_mouse_tracking_plugin::prelude::*;
 // use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_rapier2d::prelude::*;
-use hexagon_tiles::{
-    hexagon::{HexMath, HexRound},
-    layout::LayoutTool,
-    point::Point,
-};
-
+use hexagon_tiles::{hexagon::HexRound, layout::LayoutTool, point::Point};
 
 #[derive(Component, Default)]
 pub struct InputTarget;
