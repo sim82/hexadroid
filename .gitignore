@@ -2,7 +2,7 @@
 physics.yaml
 pattern.txt
 tree.txt
-.cargo/
+.cargo/config
 target/
 .idea/
 .DS_Store
