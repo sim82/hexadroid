@@ -308,7 +308,7 @@ fn _ship_attack_system_simple(
 fn ship_attack_system(
     mut commands: Commands,
     time: Res<Time>,
-    rapier_context: Res<RapierContext>,
+    _rapier_context: Res<RapierContext>,
     mut query: Query<(Entity, &Transform, &AttackRequest, &mut WeaponState), With<ShipInput>>,
 ) {
     for (entity, transform, AttackRequest { primary_attack }, mut weapon_state) in query.iter_mut()
@@ -318,11 +318,11 @@ fn ship_attack_system(
             continue;
         }
 
-        let projectile_shape = Collider::ball(10.0);
-        let projectile_pos = transform.translation.xy();
-        let projectile_vel = (transform.rotation * SHIP_MAIN_AXIS).xy() * PROJECTILE_SPEED;
-        let max_toi = 4.0;
-        let filter = QueryFilter {
+        let _projectile_shape = Collider::ball(10.0);
+        let _projectile_pos = transform.translation.xy();
+        let _projectile_vel = (transform.rotation * SHIP_MAIN_AXIS).xy() * PROJECTILE_SPEED;
+        let _max_toi = 4.0;
+        let _filter = QueryFilter {
             exclude_collider: Some(entity),
             groups: Some(CollisionGroups {
                 memberships: collision_groups::PROJECTILES,

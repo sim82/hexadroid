@@ -1,4 +1,4 @@
-use crate::{debug::DebugLinesExt, hex_point_to_vec2, prelude::*, HEX_LAYOUT};
+use crate::{hex_point_to_vec2, prelude::*, HEX_LAYOUT};
 use bevy::{prelude::*, utils::HashSet};
 use bevy_egui::{egui, EguiContext};
 // use bevy_prototype_debug_lines::DebugLines;
@@ -125,7 +125,7 @@ fn waypoint_update_system(
             continue;
         }
 
-        let center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, p.0)).extend(0.0);
+        let _center = hex_point_to_vec2(LayoutTool::hex_to_pixel(HEX_LAYOUT, p.0)).extend(0.0);
         // if let Some(debug_lines) = debug_lines.as_mut() {
         //     debug_lines.cross(center, 15.0);
         // }

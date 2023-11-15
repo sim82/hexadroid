@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::particle::{ParticlePlugin, NEW_PARTICLE_COUNT, PARTICLE_COUNT};
+use crate::particle::{NEW_PARTICLE_COUNT, PARTICLE_COUNT};
 // A unit struct to help identify the FPS UI component, since there may be many Text components
 #[derive(Component)]
 struct FpsText(DiagnosticId);

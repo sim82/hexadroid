@@ -13,7 +13,7 @@ use hexagon_tiles::{
 
 use crate::prelude::*;
 use crate::{
-    collision_groups, debug::DebugLinesExt, hex_point_to_vec2, CmdlineArgs, Despawn, HEX_LAYOUT,
+    collision_groups, hex_point_to_vec2, CmdlineArgs, Despawn, HEX_LAYOUT,
 };
 
 #[derive(Resource)]

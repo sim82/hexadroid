@@ -1,13 +1,12 @@
-use std::{f32::consts::TAU, ops::Range};
+use std::f32::consts::TAU;
 
 use crate::prelude::*;
 use bevy::{
     diagnostic::{Diagnostic, DiagnosticId, Diagnostics, RegisterDiagnostic},
     prelude::*,
-    sprite::{Material2d, MaterialMesh2dBundle, Mesh2dHandle},
+    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
-use bevy_prototype_lyon::prelude::*;
-use bevy_rapier2d::prelude::*;
+
 use rand::{prelude::Distribution, Rng};
 use rand_distr::Normal;
 
@@ -94,7 +93,7 @@ struct ParticleBundle {
 }
 
 fn init_particle_system(
-    mut commands: Commands,
+    _commands: Commands,
     mut res: ResMut<ParticleResources>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -121,12 +120,12 @@ fn spawn_particle_system(
         particle_batch.reserve(source.rate as usize);
         // let material = &res.materials[rng.gen_range(0..res.materials.len())];
         // let material = &res.materials[7];
-        let material = source.color_generator.next(&*res);
+        let material = source.color_generator.next(&res);
         let transform = source_transform.compute_transform();
         for _ in 0..source.rate {
             let direction_vec = match source.direction {
                 ParticleDirection::DirectionalNormal { direction, std_dev } => {
-                    let direction = direction; //.angle_between(Vec2::X);
+                    // let direction = direction; //.angle_between(Vec2::X);
                     let distr = Normal::new(direction, std_dev).unwrap();
                     let dir = distr.sample(&mut rng);
                     Vec2::from_angle(dir)

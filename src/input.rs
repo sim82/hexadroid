@@ -3,20 +3,19 @@ use crate::{
     hexton::HextonInput,
     portal::PortalToggleRequest,
     prelude::*,
-    ship::ShipInput,
-    waypoint, Despawn, HEX_LAYOUT,
+    ship::ShipInput, HEX_LAYOUT,
 };
-use bevy::input::ButtonState;
-use bevy::{input::mouse::MouseButtonInput, math::Vec3Swizzles, prelude::*};
+
+use bevy::{math::Vec3Swizzles, prelude::*};
 // use bevy_mouse_tracking_plugin::prelude::*;
 // use bevy_mouse_tracking_plugin::MousePosWorld;
 use bevy_rapier2d::prelude::*;
 use hexagon_tiles::{
-    hexagon::{HexMath, HexRound, HEX_DIRECTIONS},
+    hexagon::{HexMath, HexRound},
     layout::LayoutTool,
     point::Point,
 };
-use std::io::Write;
+
 
 #[derive(Component, Default)]
 pub struct InputTarget;

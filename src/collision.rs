@@ -1,5 +1,5 @@
 use crate::{
-    particle::{ColorGenerator, ParticleDamping},
+    particle::{ColorGenerator},
     prelude::*,
     weapon::Projectile,
     Despawn,
@@ -55,7 +55,7 @@ fn projectile_collision_system(
 }
 
 fn collision_fx_system(
-    mut commands: Commands,
+    _commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
     collision_fx_query: Query<&CollisionFxType>,
 ) {
