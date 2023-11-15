@@ -10,7 +10,8 @@ inspector = ["bevy-inspector-egui"]
 
 [dependencies]
 # bevy = { version = "0.11" }
-bevy = { version = "0.12", features = ["dynamic_linking"] }
+# bevy = { version = "0.12", features = ["dynamic_linking"] }
+bevy = { version = "0.12"}
 bevy_rapier2d = { version = "0.23", features = ["serde-serialize"] }
 bevy-inspector-egui = { version = "0.21", optional = true }
 # bevy_prototype_debug_lines = "0.12"

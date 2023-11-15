@@ -3,3 +3,8 @@ physics.yaml
 pattern.txt
 tree.txt
 .cargo/
+target/
+.idea/
+.DS_Store
+
+dist/
