@@ -13,10 +13,13 @@ use hexagon_tiles::{
     layout::{Layout, LAYOUT_ORIENTATION_POINTY},
     point::Point,
 };
+use menu::MenuState;
+use state::GameState;
 
 use crate::{
-    debug_ui::DebugUiPlugin, hexton::HextonPlugin, menu::MenuPlugin, particle::ParticlePlugin,
-    portal::PortalPlugin, ship::ShipPlugin, state::StatePlugin, weapon::WeaponPlugin,
+    debug_ui::DebugUiPlugin, game::GamePlugin, hexton::HextonPlugin, menu::MenuPlugin,
+    particle::ParticlePlugin, portal::PortalPlugin, ship::ShipPlugin, state::StatePlugin,
+    weapon::WeaponPlugin,
 };
 
 pub mod collision;
@@ -72,6 +75,152 @@ pub mod collision_groups {
 pub mod debug_ui;
 pub mod menu;
 pub mod state;
+pub mod game {
+    use bevy::prelude::*;
+    use bevy_prototype_lyon::{prelude::*, shapes};
+    use hexagon_tiles::hexagon::Hex;
+    use rand_distr::Normal;
+
+    use crate::{
+        camera::CameraTarget,
+        droid::{ai::new_shooting_droid_ai, AiDroidBundle, DroidBundle, PlayerDroidBundle},
+        hexton::{HextonBundle, HEXTON_VERTICES},
+        input::InputTarget,
+        particle::ColorGenerator,
+        portal::Portal,
+        prelude::*,
+        ship::{ShipBundle, SHIP_VERTICES},
+        state::GameState,
+        CmdlineArgs,
+    };
+
+    pub struct GamePlugin;
+
+    fn game_setup(mut commands: Commands, args: Res<CmdlineArgs>) {
+        let shape = shapes::RegularPolygon {
+            sides: 6,
+            feature: shapes::RegularPolygonFeature::Radius(32.0),
+            ..shapes::RegularPolygon::default()
+        };
+
+        let player = if args.ship {
+            let ship_shape = shapes::Polygon {
+                points: SHIP_VERTICES.into(),
+                closed: true,
+            };
+
+            let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
+
+            commands
+                .spawn(ShipBundle::new("ship"))
+                .insert(ShapeBundle {
+                    path: ship_shape_builder,
+                    spatial: SpatialBundle {
+                        transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(default_stroke(YELLOW_HDR))
+                .insert(InputTarget)
+                .insert(CameraTarget)
+                .id()
+        } else if args.hexton {
+            let hexton_shape = shapes::Polygon {
+                points: HEXTON_VERTICES.into(),
+                closed: true,
+            };
+
+            let hexton_shape_builder = GeometryBuilder::build_as(&hexton_shape);
+
+            commands
+                .spawn(HextonBundle::new("hexton"))
+                .insert(ShapeBundle {
+                    path: hexton_shape_builder,
+                    spatial: SpatialBundle {
+                        transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(default_stroke(BLUE_HDR))
+                .insert(InputTarget)
+                .insert(CameraTarget)
+                .id()
+        } else if args.benchmark {
+            commands
+                .spawn(SpatialBundle {
+                    transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
+                    ..default()
+                })
+                .insert(ParticleSource {
+                    rate: 50,
+                    direction: ParticleDirection::Uniform,
+                    speed_distr: Normal::new(200.0, 90.0).unwrap(),
+                    lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
+                    velocity_offset: Vec2::default(),
+                    damping: default(),
+                    initial_offset: 0.0,
+                    color_generator: ColorGenerator::Static(7),
+                })
+                .insert(CameraTarget)
+                .id()
+            //
+        } else {
+            let my_shape_builder = GeometryBuilder::build_as(&shape);
+
+            commands
+                .spawn(DroidBundle::new("player", args.gravity))
+                .insert(PlayerDroidBundle::default())
+                .insert(ShapeBundle {
+                    path: my_shape_builder,
+                    spatial: SpatialBundle {
+                        transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(default_stroke(GREEN_HDR))
+                // .insert(ParticleSource {
+                //     rate: 1000,
+                //     direction: ParticleDirection::Uniform,
+                //     speed: 100.0,
+                //     speed_spread: 50.0,
+                //     lifetime: 1.0,
+                //     lifetime_spread: 0.5,
+                // })
+                .id()
+        };
+
+        if !args.no_droid {
+            let enemy_shape_builder = GeometryBuilder::build_as(&shape);
+
+            commands
+                .spawn(DroidBundle::new("r2d2", args.gravity))
+                // .insert_bundle(AiDroidBundle::with_enemy(enemy))
+                .insert(AiDroidBundle::with_enemy(player))
+                .insert(ShapeBundle {
+                    path: enemy_shape_builder,
+                    spatial: SpatialBundle {
+                        transform: Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(default_stroke(RED_HDR))
+                .insert(new_shooting_droid_ai());
+            commands.spawn_empty().insert(Portal {
+                tile_pos: TilePos(Hex::new(5, -1)),
+                timer: Timer::from_seconds(2.0, TimerMode::Repeating),
+            });
+        }
+    }
+    impl Plugin for GamePlugin {
+        fn build(&self, app: &mut App) {
+            app.add_systems(OnEnter(GameState::Game), game_setup);
+        }
+    }
+}
 
 #[derive(Parser, Debug, Resource, Clone)]
 #[clap(author, version, about, long_about = None)]
@@ -189,7 +338,8 @@ pub fn despawn_reaper_system(
 pub struct DefaultPlugin;
 impl Plugin for DefaultPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Last, despawn_reaper_system);
+        app.add_systems(Update, toggle_on_esc_system)
+            .add_systems(Last, despawn_reaper_system);
     }
 }
 
@@ -233,6 +383,7 @@ impl PluginGroup for DefaultPlugins {
             .add(WeaponPlugin)
             .add(DebugUiPlugin)
             .add(MenuPlugin)
+            .add(GamePlugin)
             .add(StatePlugin);
 
         // egui plugins
@@ -274,6 +425,25 @@ pub fn exit_on_esc_system(
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         app_exit_events.send_default();
+    }
+}
+pub fn toggle_on_esc_system(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut app_exit_events: EventWriter<AppExit>,
+    cur_game_state: Res<State<GameState>>,
+    mut menu_state: ResMut<NextState<MenuState>>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        // app_exit_events.send_default();
+        match cur_game_state.get() {
+            GameState::Splash => todo!(),
+            GameState::Menu => {}
+            GameState::Game => {
+                menu_state.set(MenuState::Main);
+                game_state.set(GameState::Menu);
+            }
+        }
     }
 }
 pub mod prelude {
