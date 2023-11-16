@@ -429,7 +429,7 @@ pub fn exit_on_esc_system(
 }
 pub fn toggle_on_esc_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut app_exit_events: EventWriter<AppExit>,
+    _app_exit_events: EventWriter<AppExit>,
     cur_game_state: Res<State<GameState>>,
     mut menu_state: ResMut<NextState<MenuState>>,
     mut game_state: ResMut<NextState<GameState>>,

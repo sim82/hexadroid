@@ -1,21 +1,9 @@
 use bevy::prelude::*;
-use bevy_prototype_lyon::{prelude::*, shapes};
+
 use bevy_rapier2d::prelude::*;
 use clap::Parser;
-use hexadroid::particle::ColorGenerator;
-use hexadroid::prelude::*;
-use hexadroid::{
-    camera::CameraTarget,
-    droid::{ai::new_shooting_droid_ai, AiDroidBundle, PlayerDroidBundle},
-    exit_on_esc_system,
-    hexton::{HextonBundle, HEXTON_VERTICES},
-    input::InputTarget,
-    portal::Portal,
-    ship::{ShipBundle, SHIP_VERTICES},
-    CmdlineArgs,
-};
-use hexagon_tiles::hexagon::Hex;
-use rand_distr::Normal;
+
+use hexadroid::CmdlineArgs;
 
 fn main() {
     let args = CmdlineArgs::parse();
