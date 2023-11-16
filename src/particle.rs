@@ -1,6 +1,6 @@
 use std::f32::consts::TAU;
 
-use crate::prelude::*;
+use crate::{prelude::*, state::GameState};
 use bevy::{
     diagnostic::{Diagnostic, DiagnosticId, Diagnostics, RegisterDiagnostic},
     prelude::*,
@@ -203,6 +203,9 @@ impl Plugin for ParticlePlugin {
                 Diagnostic::new(NEW_PARTICLE_COUNT, "new particle", 10).with_suffix("part/fr"),
             )
             .add_systems(Startup, init_particle_system)
-            .add_systems(Update, (spawn_particle_system, evolve_particle_system));
+            .add_systems(
+                Update,
+                (spawn_particle_system, evolve_particle_system).run_if(in_state(GameState::Game)),
+            );
     }
 }

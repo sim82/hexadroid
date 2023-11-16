@@ -73,154 +73,9 @@ pub mod collision_groups {
     pub const LEVEL: Group = Group::GROUP_3;
 }
 pub mod debug_ui;
+pub mod game;
 pub mod menu;
 pub mod state;
-pub mod game {
-    use bevy::prelude::*;
-    use bevy_prototype_lyon::{prelude::*, shapes};
-    use hexagon_tiles::hexagon::Hex;
-    use rand_distr::Normal;
-
-    use crate::{
-        camera::CameraTarget,
-        droid::{ai::new_shooting_droid_ai, AiDroidBundle, DroidBundle, PlayerDroidBundle},
-        hexton::{HextonBundle, HEXTON_VERTICES},
-        input::InputTarget,
-        particle::ColorGenerator,
-        portal::Portal,
-        prelude::*,
-        ship::{ShipBundle, SHIP_VERTICES},
-        state::GameState,
-        CmdlineArgs,
-    };
-
-    pub struct GamePlugin;
-
-    fn game_setup(mut commands: Commands, args: Res<CmdlineArgs>) {
-        let shape = shapes::RegularPolygon {
-            sides: 6,
-            feature: shapes::RegularPolygonFeature::Radius(32.0),
-            ..shapes::RegularPolygon::default()
-        };
-
-        let player = if args.ship {
-            let ship_shape = shapes::Polygon {
-                points: SHIP_VERTICES.into(),
-                closed: true,
-            };
-
-            let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
-
-            commands
-                .spawn(ShipBundle::new("ship"))
-                .insert(ShapeBundle {
-                    path: ship_shape_builder,
-                    spatial: SpatialBundle {
-                        transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .insert(default_stroke(YELLOW_HDR))
-                .insert(InputTarget)
-                .insert(CameraTarget)
-                .id()
-        } else if args.hexton {
-            let hexton_shape = shapes::Polygon {
-                points: HEXTON_VERTICES.into(),
-                closed: true,
-            };
-
-            let hexton_shape_builder = GeometryBuilder::build_as(&hexton_shape);
-
-            commands
-                .spawn(HextonBundle::new("hexton"))
-                .insert(ShapeBundle {
-                    path: hexton_shape_builder,
-                    spatial: SpatialBundle {
-                        transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .insert(default_stroke(BLUE_HDR))
-                .insert(InputTarget)
-                .insert(CameraTarget)
-                .id()
-        } else if args.benchmark {
-            commands
-                .spawn(SpatialBundle {
-                    transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
-                    ..default()
-                })
-                .insert(ParticleSource {
-                    rate: 50,
-                    direction: ParticleDirection::Uniform,
-                    speed_distr: Normal::new(200.0, 90.0).unwrap(),
-                    lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
-                    velocity_offset: Vec2::default(),
-                    damping: default(),
-                    initial_offset: 0.0,
-                    color_generator: ColorGenerator::Static(7),
-                })
-                .insert(CameraTarget)
-                .id()
-            //
-        } else {
-            let my_shape_builder = GeometryBuilder::build_as(&shape);
-
-            commands
-                .spawn(DroidBundle::new("player", args.gravity))
-                .insert(PlayerDroidBundle::default())
-                .insert(ShapeBundle {
-                    path: my_shape_builder,
-                    spatial: SpatialBundle {
-                        transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .insert(default_stroke(GREEN_HDR))
-                // .insert(ParticleSource {
-                //     rate: 1000,
-                //     direction: ParticleDirection::Uniform,
-                //     speed: 100.0,
-                //     speed_spread: 50.0,
-                //     lifetime: 1.0,
-                //     lifetime_spread: 0.5,
-                // })
-                .id()
-        };
-
-        if !args.no_droid {
-            let enemy_shape_builder = GeometryBuilder::build_as(&shape);
-
-            commands
-                .spawn(DroidBundle::new("r2d2", args.gravity))
-                // .insert_bundle(AiDroidBundle::with_enemy(enemy))
-                .insert(AiDroidBundle::with_enemy(player))
-                .insert(ShapeBundle {
-                    path: enemy_shape_builder,
-                    spatial: SpatialBundle {
-                        transform: Transform::from_translation(Vec3::new(-100.0, 100.0, 0.0)),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .insert(default_stroke(RED_HDR))
-                .insert(new_shooting_droid_ai());
-            commands.spawn_empty().insert(Portal {
-                tile_pos: TilePos(Hex::new(5, -1)),
-                timer: Timer::from_seconds(2.0, TimerMode::Repeating),
-            });
-        }
-    }
-    impl Plugin for GamePlugin {
-        fn build(&self, app: &mut App) {
-            app.add_systems(OnEnter(GameState::Game), game_setup);
-        }
-    }
-}
 
 #[derive(Parser, Debug, Resource, Clone)]
 #[clap(author, version, about, long_about = None)]
@@ -437,11 +292,14 @@ pub fn toggle_on_esc_system(
     if keyboard_input.just_pressed(KeyCode::Escape) {
         // app_exit_events.send_default();
         match cur_game_state.get() {
-            GameState::Splash => todo!(),
-            GameState::Menu => {}
+            GameState::None => {}
+            GameState::Paused => {
+                menu_state.set(MenuState::Disabled);
+                game_state.set(GameState::Game);
+            }
             GameState::Game => {
                 menu_state.set(MenuState::Main);
-                game_state.set(GameState::Menu);
+                game_state.set(GameState::Paused);
             }
         }
     }

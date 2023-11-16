@@ -40,9 +40,9 @@ pub enum MenuState {
     Main,
     Disabled,
 }
-fn menu_setup(mut menu_state: ResMut<NextState<MenuState>>) {
-    menu_state.set(MenuState::Main);
-}
+// fn menu_setup(mut menu_state: ResMut<NextState<MenuState>>) {
+//     menu_state.set(MenuState::Main);
+// }
 
 fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Common style for all buttons on the screen
@@ -177,6 +177,8 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 });
         });
 }
+
+#[allow(clippy::type_complexity)]
 fn menu_action(
     interaction_query: Query<
         (&Interaction, &MenuButtonAction),
@@ -218,13 +220,14 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<MenuState>()
-            .add_systems(OnEnter(GameState::Menu), menu_setup)
+            // .add_systems(OnEnter(GameState::Menu), menu_setup)
             // Systems to handle the main menu screen
             .add_systems(OnEnter(MenuState::Main), main_menu_setup)
             .add_systems(OnExit(MenuState::Main), despawn_screen::<OnMainMenuScreen>)
             .add_systems(
                 Update,
-                (menu_action/*, button_system*/).run_if(in_state(GameState::Menu)),
+                menu_action,
+                // (menu_action/*, button_system*/.run_if(in_state(GameState::Menu)),
             );
     }
 }
