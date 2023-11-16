@@ -15,8 +15,8 @@ use hexagon_tiles::{
 };
 
 use crate::{
-    debug_ui::DebugUiPlugin, hexton::HextonPlugin, particle::ParticlePlugin, portal::PortalPlugin,
-    ship::ShipPlugin, weapon::WeaponPlugin,
+    debug_ui::DebugUiPlugin, hexton::HextonPlugin, menu::MenuPlugin, particle::ParticlePlugin,
+    portal::PortalPlugin, ship::ShipPlugin, state::StatePlugin, weapon::WeaponPlugin,
 };
 
 pub mod collision;
@@ -70,6 +70,8 @@ pub mod collision_groups {
     pub const LEVEL: Group = Group::GROUP_3;
 }
 pub mod debug_ui;
+pub mod menu;
+pub mod state;
 
 #[derive(Parser, Debug, Resource, Clone)]
 #[clap(author, version, about, long_about = None)]
@@ -229,7 +231,9 @@ impl PluginGroup for DefaultPlugins {
             .add(HextonPlugin)
             .add(ParticlePlugin)
             .add(WeaponPlugin)
-            .add(DebugUiPlugin);
+            .add(DebugUiPlugin)
+            .add(MenuPlugin)
+            .add(StatePlugin);
 
         // egui plugins
         #[cfg(feature = "inspector")]
