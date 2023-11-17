@@ -3,15 +3,24 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use clap::Parser;
 
-use hexadroid::CmdlineArgs;
+use hexadroid::{game::GameSpawnInfo, CmdlineArgs};
 
 fn main() {
     let args = CmdlineArgs::parse();
 
+    let spawn_info = GameSpawnInfo {
+        spawn_player_ship: args.ship,
+        spawn_player_droid: !args.ship && !args.hexton,
+        spawn_player_jnr: args.hexton,
+        spawn_enemy_droids: if args.no_droid { 0 } else { 1 },
+        spawn_benchmark: args.benchmark,
+        gravity: args.gravity,
+    };
     let mut app = App::new();
     // bevy plugins
     app.add_plugins(DefaultPlugins)
         .insert_resource(ClearColor(Color::BLACK))
+        .insert_resource(spawn_info)
         .insert_resource(Msaa::default());
 
     app.add_plugins(hexadroid::DefaultPlugins::new(args.clone())); //default().with_debug_draw(args.debug_draw));

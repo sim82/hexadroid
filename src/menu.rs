@@ -1,6 +1,6 @@
 use bevy::{app::AppExit, prelude::*};
 
-use crate::state::GameState;
+use crate::{game::GameSpawnInfo, state::GameState};
 // Tag component used to tag entities added on the main menu screen
 #[derive(Component)]
 struct OnMainMenuScreen;
@@ -25,7 +25,10 @@ const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 // All actions that can be triggered from a button click
 #[derive(Component)]
 enum MenuButtonAction {
-    Play,
+    PlayDroid,
+    PlayShip,
+    PlayHexton,
+    DropGame,
     // Settings,
     // SettingsDisplay,
     // SettingsSound,
@@ -121,7 +124,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 background_color: NORMAL_BUTTON.into(),
                                 ..default()
                             },
-                            MenuButtonAction::Play,
+                            MenuButtonAction::PlayDroid,
                         ))
                         .with_children(|parent| {
                             let icon = asset_server.load("textures/Game Icons/right.png");
@@ -131,7 +134,70 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 ..default()
                             });
                             parent.spawn(TextBundle::from_section(
-                                "New Game",
+                                "Play Droid",
+                                button_text_style.clone(),
+                            ));
+                        });
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                            MenuButtonAction::PlayShip,
+                        ))
+                        .with_children(|parent| {
+                            let icon = asset_server.load("textures/Game Icons/right.png");
+                            parent.spawn(ImageBundle {
+                                style: button_icon_style.clone(),
+                                image: UiImage::new(icon),
+                                ..default()
+                            });
+                            parent.spawn(TextBundle::from_section(
+                                "Play Ship",
+                                button_text_style.clone(),
+                            ));
+                        });
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                            MenuButtonAction::PlayHexton,
+                        ))
+                        .with_children(|parent| {
+                            let icon = asset_server.load("textures/Game Icons/right.png");
+                            parent.spawn(ImageBundle {
+                                style: button_icon_style.clone(),
+                                image: UiImage::new(icon),
+                                ..default()
+                            });
+                            parent.spawn(TextBundle::from_section(
+                                "Play Cmdr",
+                                button_text_style.clone(),
+                            ));
+                        });
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                            MenuButtonAction::DropGame,
+                        ))
+                        .with_children(|parent| {
+                            let icon = asset_server.load("textures/Game Icons/right.png");
+                            parent.spawn(ImageBundle {
+                                style: button_icon_style.clone(),
+                                image: UiImage::new(icon),
+                                ..default()
+                            });
+                            parent.spawn(TextBundle::from_section(
+                                "Drop game",
                                 button_text_style.clone(),
                             ));
                         });
@@ -187,14 +253,36 @@ fn menu_action(
     mut app_exit_events: EventWriter<AppExit>,
     mut menu_state: ResMut<NextState<MenuState>>,
     mut game_state: ResMut<NextState<GameState>>,
+    mut spawn_info: ResMut<GameSpawnInfo>,
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match menu_button_action {
                 MenuButtonAction::Quit => app_exit_events.send(AppExit),
-                MenuButtonAction::Play => {
+                MenuButtonAction::PlayDroid => {
                     game_state.set(GameState::Game);
                     menu_state.set(MenuState::Disabled);
+                    spawn_info.spawn_player_droid = true;
+                    spawn_info.spawn_player_ship = false;
+                    spawn_info.spawn_player_jnr = false;
+                }
+                MenuButtonAction::PlayShip => {
+                    game_state.set(GameState::Game);
+                    menu_state.set(MenuState::Disabled);
+                    spawn_info.spawn_player_droid = false;
+                    spawn_info.spawn_player_ship = true;
+                    spawn_info.spawn_player_jnr = false;
+                }
+                MenuButtonAction::PlayHexton => {
+                    game_state.set(GameState::Game);
+                    menu_state.set(MenuState::Disabled);
+                    spawn_info.spawn_player_droid = false;
+                    spawn_info.spawn_player_ship = false;
+                    spawn_info.spawn_player_jnr = true;
+                }
+                MenuButtonAction::DropGame => {
+                    game_state.set(GameState::None);
+                    menu_state.set(MenuState::Main);
                 } // MenuButtonAction::Settings => menu_state.set(MenuState::Settings),
                   // MenuButtonAction::SettingsDisplay => {
                   //     menu_state.set(MenuState::SettingsDisplay);
