@@ -35,7 +35,7 @@ impl KineticProjectileBundle {
             collider: Collider::ball(20.0),
             collision_groups: CollisionGroups::new(
                 collision_groups::PROJECTILES,
-                collision_groups::DROIDS,
+                collision_groups::DROIDS | collision_groups::LEVEL,
             ),
             rigid_body: RigidBody::Dynamic,
             velocity: Velocity::linear(direction * PROJECTILE_SPEED),

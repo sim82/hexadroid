@@ -1,6 +1,9 @@
 use bevy::{app::AppExit, prelude::*};
 
-use crate::{game::GameSpawnInfo, state::GameState};
+use crate::{
+    game::GameSpawnInfo,
+    state::{AutoStart, GameState},
+};
 // Tag component used to tag entities added on the main menu screen
 #[derive(Component)]
 struct OnMainMenuScreen;
@@ -251,34 +254,34 @@ fn menu_action(
         (Changed<Interaction>, With<Button>),
     >,
     mut app_exit_events: EventWriter<AppExit>,
+    cur_game_state: Res<State<GameState>>,
+    mut auto_start: ResMut<AutoStart>,
     mut menu_state: ResMut<NextState<MenuState>>,
     mut game_state: ResMut<NextState<GameState>>,
     mut spawn_info: ResMut<GameSpawnInfo>,
 ) {
+    let mut start = false;
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match menu_button_action {
                 MenuButtonAction::Quit => app_exit_events.send(AppExit),
                 MenuButtonAction::PlayDroid => {
-                    game_state.set(GameState::Game);
-                    menu_state.set(MenuState::Disabled);
                     spawn_info.spawn_player_droid = true;
                     spawn_info.spawn_player_ship = false;
                     spawn_info.spawn_player_jnr = false;
+                    start = true;
                 }
                 MenuButtonAction::PlayShip => {
-                    game_state.set(GameState::Game);
-                    menu_state.set(MenuState::Disabled);
                     spawn_info.spawn_player_droid = false;
                     spawn_info.spawn_player_ship = true;
                     spawn_info.spawn_player_jnr = false;
+                    start = true;
                 }
                 MenuButtonAction::PlayHexton => {
-                    game_state.set(GameState::Game);
-                    menu_state.set(MenuState::Disabled);
                     spawn_info.spawn_player_droid = false;
                     spawn_info.spawn_player_ship = false;
                     spawn_info.spawn_player_jnr = true;
+                    start = true;
                 }
                 MenuButtonAction::DropGame => {
                     game_state.set(GameState::None);
@@ -296,6 +299,15 @@ fn menu_action(
                   // }
             }
         }
+    }
+    if start {
+        if *cur_game_state.get() != GameState::None {
+            auto_start.0 = true;
+            game_state.set(GameState::None);
+        } else {
+            game_state.set(GameState::Game);
+        }
+        menu_state.set(MenuState::Disabled);
     }
 }
 // Generic system that takes a component as a parameter, and will despawn all entities with that component
