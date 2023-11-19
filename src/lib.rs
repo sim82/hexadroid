@@ -158,8 +158,6 @@ pub mod colors {
 pub enum Despawn {
     #[default]
     ThisFrame,
-    TimeToLive(f32),
-    FramesToLive(u32),
 }
 
 pub fn despawn_reaper_system(
@@ -170,18 +168,7 @@ pub fn despawn_reaper_system(
     for (entity, mut despawn) in query.iter_mut() {
         let despawn = match *despawn {
             Despawn::ThisFrame => true,
-            Despawn::TimeToLive(ref mut ttl) => {
-                *ttl -= time.delta_seconds();
-                *ttl <= 0.0
-            }
-            Despawn::FramesToLive(ref mut f) => {
-                if *f == 0 {
-                    true
-                } else {
-                    *f -= 1;
-                    false
-                }
-            }
+            _ => false,
         };
         if despawn {
             trace!("despawn {:?}", entity);
@@ -308,6 +295,7 @@ pub mod prelude {
     pub use crate::collision::CollisionFxType;
     pub use crate::colors::*;
     pub use crate::particle::{ParticleDirection, ParticleSource};
+    pub use crate::state::{GameDespawn, GameState};
     pub use crate::tiles::{TileCache, TilePos, TileType, TilesState};
     pub use crate::tunables::default_stroke;
     pub use crate::Despawn;

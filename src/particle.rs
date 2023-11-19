@@ -89,7 +89,7 @@ struct ParticleBundle {
     // pub rigid_body: RigidBody,
     // pub velocity: Velocity,
     pub velocity: ParticleVelocity,
-    pub despawn: Despawn,
+    pub despawn: GameDespawn,
 }
 
 fn init_particle_system(
@@ -143,7 +143,7 @@ fn spawn_particle_system(
                     velocity: ParticleVelocity {
                         linear: source.velocity_offset + direction_vec * speed,
                     },
-                    despawn: Despawn::TimeToLive(lifetime),
+                    despawn: GameDespawn::time_to_live(lifetime),
                     particle: Particle {
                         initial_lifetime: lifetime,
                         damping: source.damping,
@@ -165,20 +165,25 @@ fn spawn_particle_system(
 fn evolve_particle_system(
     time: Res<Time>,
     mut diagnostics: Diagnostics,
-    mut query: Query<(&Particle, &mut Transform, &Despawn, &mut ParticleVelocity)>,
+    mut query: Query<(
+        &Particle,
+        &mut Transform,
+        &GameDespawn,
+        &mut ParticleVelocity,
+    )>,
 ) {
     let mut num_particles = 0;
     for (particle, mut transform, despawn, mut velocity) in &mut query {
-        let f = match despawn {
-            Despawn::ThisFrame => continue,
-            Despawn::TimeToLive(ttl) => {
-                //
-                ttl / particle.initial_lifetime
-            }
-            Despawn::FramesToLive(_) => 1.0,
-        }
-        .clamp(0.0, 1.0);
+        // let f = match despawn {
+        //     GameDespawn::TimeToLive(ttl) => {
+        //         //
+        //         ttl / particle.initial_lifetime
+        //     }
+        //     GameDespawn::FramesToLive(_) => 1.0,
+        // }
+        // .clamp(0.0, 1.0);
 
+        let f = despawn.get_f();
         let new_velocity = particle.damping.apply(velocity.linear);
         let integ_vel = (velocity.linear + new_velocity) / 2.0;
         velocity.linear = new_velocity;

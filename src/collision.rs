@@ -39,7 +39,7 @@ fn projectile_collision_system(
                             color_generator: ColorGenerator::Static(7),
                             // color_generator: ColorGenerator::Random,
                         })
-                        .insert(Despawn::TimeToLive(0.1))
+                        .insert(GameDespawn::time_to_live(0.1))
                         // don't register more Projectile collisions in the next frames
                         .remove::<Projectile>();
                 }

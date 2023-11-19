@@ -23,7 +23,7 @@ pub struct KineticProjectileBundle {
     active_events: ActiveEvents,
     active_collision_types: ActiveCollisionTypes,
     projectile: Projectile,
-    despawn: Despawn,
+    despawn: GameDespawn,
     mass_properies: ColliderMassProperties,
 }
 
@@ -43,7 +43,7 @@ impl KineticProjectileBundle {
             active_collision_types: ActiveCollisionTypes::default()
                 | ActiveCollisionTypes::KINEMATIC_STATIC,
             projectile: Projectile { owner },
-            despawn: Despawn::TimeToLive(10.0),
+            despawn: GameDespawn::time_to_live(10.0),
             mass_properies: ColliderMassProperties::Density(0.3),
         }
     }
@@ -77,7 +77,7 @@ pub struct WaveAttack;
 pub struct WaveAttackBundle {
     pub spatial: SpatialBundle,
     pub particle_source: ParticleSource,
-    pub despawn: Despawn,
+    pub despawn: GameDespawn,
     pub wave_attack: WaveAttack,
 }
 
@@ -96,7 +96,7 @@ impl WaveAttackBundle {
                 // color_generator: ColorGenerator::Static(2),
                 color_generator: ColorGenerator::Random,
             },
-            despawn: Despawn::FramesToLive(1),
+            despawn: GameDespawn::frames_to_live(1),
             wave_attack: WaveAttack,
         }
     }
@@ -157,7 +157,7 @@ pub fn wave_attack_proxy_update(
                     initial_offset: 0.45,
                     color_generator: ColorGenerator::Static(7),
                 })
-                .insert(Despawn::FramesToLive(1));
+                .insert(GameDespawn::frames_to_live(1));
             commands.entity(proxy_entity).insert(Despawn::ThisFrame);
         }
     }
