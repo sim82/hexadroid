@@ -58,7 +58,10 @@ fn apply_input_system_portal_toggle(
                     y: transform.translation.y.into(),
                 },
             );
-            commands.spawn((TilePos(hex_pos.round()), PortalToggleRequest));
+            commands.spawn((
+                TilePos(hex_pos.round()),
+                PortalToggleRequest::boundary_only(),
+            ));
         }
     }
 }
