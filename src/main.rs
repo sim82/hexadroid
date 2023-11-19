@@ -26,7 +26,7 @@ fn main() {
     app.add_plugins(hexadroid::DefaultPlugins::new(args.clone())); //default().with_debug_draw(args.debug_draw));
 
     let gravity = if args.gravity {
-        Vec2::Y * -9.81 * 50.0
+        Vec2::Y * -9.81 * 10.0
     } else {
         Vec2::ZERO
     };
