@@ -79,7 +79,6 @@ impl Default for ParticleDamping {
 
 #[derive(Component, Default)]
 struct Particle {
-    pub initial_lifetime: f32,
     pub damping: ParticleDamping,
 }
 
@@ -145,7 +144,6 @@ fn spawn_particle_system(
                     },
                     despawn: GameDespawn::time_to_live(lifetime),
                     particle: Particle {
-                        initial_lifetime: lifetime,
                         damping: source.damping,
                     },
                 },

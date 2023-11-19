@@ -160,16 +160,9 @@ pub enum Despawn {
     ThisFrame,
 }
 
-pub fn despawn_reaper_system(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<(Entity, &mut Despawn)>,
-) {
-    for (entity, mut despawn) in query.iter_mut() {
-        let despawn = match *despawn {
-            Despawn::ThisFrame => true,
-            _ => false,
-        };
+pub fn despawn_reaper_system(mut commands: Commands, mut query: Query<(Entity, &mut Despawn)>) {
+    for (entity, despawn) in query.iter_mut() {
+        let despawn = matches!(*despawn, Despawn::ThisFrame);
         if despawn {
             trace!("despawn {:?}", entity);
             commands.entity(entity).despawn_recursive();

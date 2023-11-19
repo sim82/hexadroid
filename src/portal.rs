@@ -47,7 +47,6 @@ impl PortalToggleRequest {
         }
     }
 }
-
 pub fn portal_toggle_system_2(
     mut commands: Commands,
     tiles_state: Res<TilesState>,
@@ -56,6 +55,7 @@ pub fn portal_toggle_system_2(
 ) {
     for (portal_entity, portal_pos, toggle_request) in &query {
         let tile_exists = tile_cache.tiles.contains_key(portal_pos);
+        #[allow(clippy::collapsible_else_if)] // nope, bad clippy that looks like shit
         if tile_exists {
             if !toggle_request.boundary_only
                 || portal_pos
@@ -87,37 +87,6 @@ pub fn portal_toggle_system_2(
                 commands.entity(tiles_state.tile_root).add_child(entity);
             }
         }
-        // match tile_cache.tiles.entry(*portal_pos) {
-        //     bevy::utils::hashbrown::hash_map::Entry::Occupied(ent) => {
-        //         commands.entity(*ent.get()).insert(Despawn::ThisFrame);
-        //         ent.remove_entry();
-        //     }
-        //     bevy::utils::hashbrown::hash_map::Entry::Vacant(ent) => {
-        //         let entity = commands
-        //             .spawn(SpatialBundle::default())
-        //             .insert(TileType {
-        //                 wall: true,
-        //                 immediate_collider: true,
-        //             })
-        //             .insert(*portal_pos)
-        //             .id();
-        //         commands.entity(tiles_state.tile_root).add_child(entity);
-        //     }
-        // }
-        // if let Some(entity) = tile_cache.tiles.remove(portal_pos) {
-        //     // info!("delete");
-        //     commands.entity(entity).insert(Despawn::ThisFrame);
-        // } else {
-        //     let entity = commands
-        //         .spawn(SpatialBundle::default())
-        //         .insert(TileType {
-        //             wall: true,
-        //             immediate_collider: true,
-        //         })
-        //         .insert(*portal_pos)
-        //         .id();
-        //     commands.entity(tiles_state.tile_root).add_child(entity);
-        // }
         commands.entity(portal_entity).despawn();
     }
 }

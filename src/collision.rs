@@ -1,4 +1,4 @@
-use crate::{particle::ColorGenerator, prelude::*, weapon::Projectile, Despawn};
+use crate::{particle::ColorGenerator, prelude::*, weapon::Projectile};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand_distr::Normal;
