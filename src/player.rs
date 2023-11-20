@@ -15,6 +15,7 @@ pub enum PlayerState {
 #[derive(Component)]
 pub struct PlayerMarker;
 
+#[allow(clippy::type_complexity)]
 fn enter_droid(
     mut commands: Commands,
     query: Query<Entity, (With<PlayerMarker>, With<DroidMarker>)>,
@@ -26,6 +27,8 @@ fn enter_droid(
             .insert(CameraTarget);
     }
 }
+
+#[allow(clippy::type_complexity)]
 fn exit_droid(
     mut commands: Commands,
     query: Query<Entity, (With<PlayerMarker>, With<DroidMarker>, With<InputTarget>)>,
@@ -37,6 +40,8 @@ fn exit_droid(
             .remove::<CameraTarget>();
     }
 }
+
+#[allow(clippy::type_complexity)]
 fn enter_ship(
     mut commands: Commands,
     query: Query<Entity, (With<PlayerMarker>, With<ShipMarker>)>,
@@ -48,6 +53,8 @@ fn enter_ship(
             .insert(CameraTarget);
     }
 }
+
+#[allow(clippy::type_complexity)]
 fn exit_ship(
     mut commands: Commands,
     query: Query<Entity, (With<PlayerMarker>, With<ShipMarker>, With<InputTarget>)>,

@@ -1,5 +1,5 @@
 use crate::{
-    droid::{AttackRequest, PlayerDroidBundle, TargetDirection},
+    droid::{AttackRequest, TargetDirection},
     hexton::HextonInput,
     player::PlayerState,
     portal::PortalToggleRequest,

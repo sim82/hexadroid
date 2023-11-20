@@ -1,14 +1,9 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::{prelude::*, shapes};
 use hexagon_tiles::hexagon::Hex;
-use rand_distr::Normal;
 
 use crate::{
-    camera::CameraTarget,
-    droid::{ai::new_shooting_droid_ai, AiDroidBundle, DroidBundle, PlayerDroidBundle},
-    hexton::{HextonBundle, HEXTON_VERTICES},
-    input::InputTarget,
-    particle::ColorGenerator,
+    droid::{ai::new_shooting_droid_ai, AiDroidBundle, DroidBundle},
     player::{PlayerMarker, PlayerState},
     portal::Portal,
     prelude::*,
@@ -61,8 +56,7 @@ fn game_setup(
         // .insert(InputTarget)
         // .insert(CameraTarget)
         .insert(GameMarker)
-        .insert(PlayerMarker)
-        .id();
+        .insert(PlayerMarker);
 
     let my_shape_builder = GeometryBuilder::build_as(&shape);
 
