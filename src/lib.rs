@@ -18,8 +18,8 @@ use state::GameState;
 
 use crate::{
     debug_ui::DebugUiPlugin, game::GamePlugin, hexton::HextonPlugin, menu::MenuPlugin,
-    particle::ParticlePlugin, portal::PortalPlugin, ship::ShipPlugin, state::StatePlugin,
-    weapon::WeaponPlugin,
+    particle::ParticlePlugin, player::PlayerPlugin, portal::PortalPlugin, ship::ShipPlugin,
+    state::StatePlugin, weapon::WeaponPlugin,
 };
 
 pub mod collision;
@@ -75,6 +75,7 @@ pub mod collision_groups {
 pub mod debug_ui;
 pub mod game;
 pub mod menu;
+pub mod player;
 pub mod state;
 
 #[derive(Parser, Debug, Resource, Clone)]
@@ -219,6 +220,7 @@ impl PluginGroup for DefaultPlugins {
             .add(DebugUiPlugin)
             .add(MenuPlugin)
             .add(GamePlugin)
+            .add(PlayerPlugin)
             .add(StatePlugin);
 
         // egui plugins

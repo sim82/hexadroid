@@ -12,6 +12,9 @@ use rand_distr::Normal;
 use std::borrow::Cow;
 
 #[derive(Component, Default)]
+pub struct ShipMarker;
+
+#[derive(Component, Default)]
 pub struct ShipInput {
     pub rot: f32,
     pub thrust: f32,
@@ -67,6 +70,7 @@ pub struct ShipBundle {
     // pub mass_properties: ColliderMassProperties,
     // #[bundle]
     pub spatial_bundle: SpatialBundle,
+    pub ship_marker: ShipMarker,
 }
 
 pub const SHIP_VERTICES: [Vec2; 3] = [
@@ -100,6 +104,7 @@ impl ShipBundle {
             read_mass_properties: default(),
             // mass_properties: ColliderMassProperties::Density(1.0),
             spatial_bundle: default(),
+            ship_marker: default(),
         }
     }
 }

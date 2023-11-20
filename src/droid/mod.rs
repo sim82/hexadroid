@@ -17,6 +17,9 @@ pub mod ai;
 pub const IMPULSE_MULTIPLIER: f32 = 8.0;
 pub const RELOAD_TIMEOUT: f32 = 1.0;
 
+#[derive(Component, Default)]
+pub struct DroidMarker;
+
 #[derive(Component)]
 pub struct GroundFriction;
 
@@ -144,6 +147,7 @@ pub struct DroidBundle {
     pub active_events: ActiveEvents,
     pub active_collision_types: ActiveCollisionTypes,
     pub weapon_target: WeaponTarget,
+    pub droid_marker: DroidMarker,
 }
 
 impl DroidBundle {
@@ -189,6 +193,7 @@ impl DroidBundle {
             active_collision_types: ActiveCollisionTypes::default()
                 | ActiveCollisionTypes::KINEMATIC_STATIC,
             weapon_target: default(),
+            droid_marker: default(),
         }
     }
 }

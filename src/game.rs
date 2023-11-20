@@ -9,6 +9,7 @@ use crate::{
     hexton::{HextonBundle, HEXTON_VERTICES},
     input::InputTarget,
     particle::ColorGenerator,
+    player::{PlayerMarker, PlayerState},
     portal::Portal,
     prelude::*,
     ship::{ShipBundle, SHIP_VERTICES},
@@ -28,107 +29,162 @@ pub struct GameSpawnInfo {
 #[derive(Component)]
 pub struct GameMarker;
 
-fn game_setup(mut commands: Commands, spawn_info: Res<GameSpawnInfo>) {
+fn game_setup(
+    mut commands: Commands,
+    spawn_info: Res<GameSpawnInfo>,
+    mut player_state: ResMut<NextState<PlayerState>>,
+) {
     let shape = shapes::RegularPolygon {
         sides: 6,
         feature: shapes::RegularPolygonFeature::Radius(32.0),
         ..shapes::RegularPolygon::default()
     };
 
-    let player = if spawn_info.spawn_player_ship {
-        let ship_shape = shapes::Polygon {
-            points: SHIP_VERTICES.into(),
-            closed: true,
-        };
-
-        let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
-
-        commands
-            .spawn(ShipBundle::new("ship"))
-            .insert(ShapeBundle {
-                path: ship_shape_builder,
-                spatial: SpatialBundle {
-                    transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(default_stroke(YELLOW_HDR))
-            .insert(InputTarget)
-            .insert(CameraTarget)
-            .insert(GameMarker)
-            .id()
-    } else if spawn_info.spawn_player_jnr {
-        let hexton_shape = shapes::Polygon {
-            points: HEXTON_VERTICES.into(),
-            closed: true,
-        };
-
-        let hexton_shape_builder = GeometryBuilder::build_as(&hexton_shape);
-
-        commands
-            .spawn(HextonBundle::new("hexton"))
-            .insert(ShapeBundle {
-                path: hexton_shape_builder,
-                spatial: SpatialBundle {
-                    transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(default_stroke(BLUE_HDR))
-            .insert(InputTarget)
-            .insert(CameraTarget)
-            .insert(GameMarker)
-            .id()
-    } else if spawn_info.spawn_benchmark {
-        commands
-            .spawn(SpatialBundle {
-                transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
-                ..default()
-            })
-            .insert(ParticleSource {
-                rate: 50,
-                direction: ParticleDirection::Uniform,
-                speed_distr: Normal::new(200.0, 90.0).unwrap(),
-                lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
-                velocity_offset: Vec2::default(),
-                damping: default(),
-                initial_offset: 0.0,
-                color_generator: ColorGenerator::Static(7),
-            })
-            .insert(CameraTarget)
-            .insert(GameMarker)
-            .id()
-        //
-    } else if spawn_info.spawn_player_droid {
-        let my_shape_builder = GeometryBuilder::build_as(&shape);
-
-        commands
-            .spawn(DroidBundle::new("player", spawn_info.gravity))
-            .insert(PlayerDroidBundle::default())
-            .insert(ShapeBundle {
-                path: my_shape_builder,
-                spatial: SpatialBundle {
-                    transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(default_stroke(GREEN_HDR))
-            .insert(GameMarker)
-            // .insert(ParticleSource {
-            //     rate: 1000,
-            //     direction: ParticleDirection::Uniform,
-            //     speed: 100.0,
-            //     speed_spread: 50.0,
-            //     lifetime: 1.0,
-            //     lifetime_spread: 0.5,
-            // })
-            .id()
-    } else {
-        panic!("dont know what to spawn");
+    let ship_shape = shapes::Polygon {
+        points: SHIP_VERTICES.into(),
+        closed: true,
     };
+
+    let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
+
+    commands
+        .spawn(ShipBundle::new("ship"))
+        .insert(ShapeBundle {
+            path: ship_shape_builder,
+            spatial: SpatialBundle {
+                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(default_stroke(YELLOW_HDR))
+        // .insert(InputTarget)
+        // .insert(CameraTarget)
+        .insert(GameMarker)
+        .insert(PlayerMarker)
+        .id();
+
+    let my_shape_builder = GeometryBuilder::build_as(&shape);
+
+    let player = commands
+        .spawn(DroidBundle::new("player", spawn_info.gravity))
+        // .insert(PlayerDroidBundle::default())
+        .insert(ShapeBundle {
+            path: my_shape_builder,
+            spatial: SpatialBundle {
+                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(default_stroke(GREEN_HDR))
+        .insert(GameMarker)
+        .insert(PlayerMarker)
+        // .insert(ParticleSource {
+        //     rate: 1000,
+        //     direction: ParticleDirection::Uniform,
+        //     speed: 100.0,
+        //     speed_spread: 50.0,
+        //     lifetime: 1.0,
+        //     lifetime_spread: 0.5,
+        // })
+        .id();
+
+    player_state.set(PlayerState::Droid);
+    // let player = if spawn_info.spawn_player_ship {
+    //     let ship_shape = shapes::Polygon {
+    //         points: SHIP_VERTICES.into(),
+    //         closed: true,
+    //     };
+
+    //     let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
+
+    //     commands
+    //         .spawn(ShipBundle::new("ship"))
+    //         .insert(ShapeBundle {
+    //             path: ship_shape_builder,
+    //             spatial: SpatialBundle {
+    //                 transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+    //                 ..default()
+    //             },
+    //             ..default()
+    //         })
+    //         .insert(default_stroke(YELLOW_HDR))
+    //         .insert(InputTarget)
+    //         .insert(CameraTarget)
+    //         .insert(GameMarker)
+    //         .id()
+    // } else if spawn_info.spawn_player_jnr {
+    //     let hexton_shape = shapes::Polygon {
+    //         points: HEXTON_VERTICES.into(),
+    //         closed: true,
+    //     };
+
+    //     let hexton_shape_builder = GeometryBuilder::build_as(&hexton_shape);
+
+    //     commands
+    //         .spawn(HextonBundle::new("hexton"))
+    //         .insert(ShapeBundle {
+    //             path: hexton_shape_builder,
+    //             spatial: SpatialBundle {
+    //                 transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
+    //                 ..default()
+    //             },
+    //             ..default()
+    //         })
+    //         .insert(default_stroke(BLUE_HDR))
+    //         .insert(InputTarget)
+    //         .insert(CameraTarget)
+    //         .insert(GameMarker)
+    //         .id()
+    // } else if spawn_info.spawn_benchmark {
+    //     commands
+    //         .spawn(SpatialBundle {
+    //             transform: Transform::from_translation(Vec3::new(100.0, 142.0, 0.0)),
+    //             ..default()
+    //         })
+    //         .insert(ParticleSource {
+    //             rate: 50,
+    //             direction: ParticleDirection::Uniform,
+    //             speed_distr: Normal::new(200.0, 90.0).unwrap(),
+    //             lifetime_distr: Normal::new(0.8, 0.5).unwrap(),
+    //             velocity_offset: Vec2::default(),
+    //             damping: default(),
+    //             initial_offset: 0.0,
+    //             color_generator: ColorGenerator::Static(7),
+    //         })
+    //         .insert(CameraTarget)
+    //         .insert(GameMarker)
+    //         .id()
+    //     //
+    // } else if spawn_info.spawn_player_droid {
+    //     let my_shape_builder = GeometryBuilder::build_as(&shape);
+
+    //     commands
+    //         .spawn(DroidBundle::new("player", spawn_info.gravity))
+    //         .insert(PlayerDroidBundle::default())
+    //         .insert(ShapeBundle {
+    //             path: my_shape_builder,
+    //             spatial: SpatialBundle {
+    //                 transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+    //                 ..default()
+    //             },
+    //             ..default()
+    //         })
+    //         .insert(default_stroke(GREEN_HDR))
+    //         .insert(GameMarker)
+    //         // .insert(ParticleSource {
+    //         //     rate: 1000,
+    //         //     direction: ParticleDirection::Uniform,
+    //         //     speed: 100.0,
+    //         //     speed_spread: 50.0,
+    //         //     lifetime: 1.0,
+    //         //     lifetime_spread: 0.5,
+    //         // })
+    //         .id()
+    // } else {
+    //     panic!("dont know what to spawn");
+    // };
 
     let mut enemy_offset = Vec3::new(-100.0, 100.0, 0.0);
     for _ in 0..spawn_info.spawn_enemy_droids {
