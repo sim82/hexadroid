@@ -42,7 +42,7 @@ fn game_setup(
 
     let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
 
-    commands
+    let player = commands
         .spawn(ShipBundle::new("ship"))
         .insert(ShapeBundle {
             path: ship_shape_builder,
@@ -56,11 +56,12 @@ fn game_setup(
         // .insert(InputTarget)
         // .insert(CameraTarget)
         .insert(GameMarker)
-        .insert(PlayerMarker);
+        .insert(PlayerMarker)
+        .id();
 
     let my_shape_builder = GeometryBuilder::build_as(&shape);
 
-    let player = commands
+    commands
         .spawn(DroidBundle::new("player", spawn_info.gravity))
         // .insert(PlayerDroidBundle::default())
         .insert(ShapeBundle {
@@ -73,7 +74,9 @@ fn game_setup(
         })
         .insert(default_stroke(GREEN_HDR))
         .insert(GameMarker)
-        .insert(PlayerMarker)
+        // .insert(PlayerMarker)
+        .insert(AiDroidBundle::with_enemy(player))
+        .insert(new_shooting_droid_ai())
         // .insert(ParticleSource {
         //     rate: 1000,
         //     direction: ParticleDirection::Uniform,
@@ -82,9 +85,9 @@ fn game_setup(
         //     lifetime: 1.0,
         //     lifetime_spread: 0.5,
         // })
-        .id();
+        ;
 
-    player_state.set(PlayerState::Droid);
+    player_state.set(PlayerState::Ship);
     // let player = if spawn_info.spawn_player_ship {
     //     let ship_shape = shapes::Polygon {
     //         points: SHIP_VERTICES.into(),

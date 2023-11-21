@@ -26,6 +26,8 @@ const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 // const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 // All actions that can be triggered from a button click
+
+#[allow(dead_code)]
 #[derive(Component)]
 enum MenuButtonAction {
     PlayDroid,
@@ -141,48 +143,48 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 button_text_style.clone(),
                             ));
                         });
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: button_style.clone(),
-                                background_color: NORMAL_BUTTON.into(),
-                                ..default()
-                            },
-                            MenuButtonAction::PlayShip,
-                        ))
-                        .with_children(|parent| {
-                            let icon = asset_server.load("textures/Game Icons/right.png");
-                            parent.spawn(ImageBundle {
-                                style: button_icon_style.clone(),
-                                image: UiImage::new(icon),
-                                ..default()
-                            });
-                            parent.spawn(TextBundle::from_section(
-                                "Play Ship",
-                                button_text_style.clone(),
-                            ));
-                        });
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: button_style.clone(),
-                                background_color: NORMAL_BUTTON.into(),
-                                ..default()
-                            },
-                            MenuButtonAction::PlayHexton,
-                        ))
-                        .with_children(|parent| {
-                            let icon = asset_server.load("textures/Game Icons/right.png");
-                            parent.spawn(ImageBundle {
-                                style: button_icon_style.clone(),
-                                image: UiImage::new(icon),
-                                ..default()
-                            });
-                            parent.spawn(TextBundle::from_section(
-                                "Play Cmdr",
-                                button_text_style.clone(),
-                            ));
-                        });
+                    // parent
+                    //     .spawn((
+                    //         ButtonBundle {
+                    //             style: button_style.clone(),
+                    //             background_color: NORMAL_BUTTON.into(),
+                    //             ..default()
+                    //         },
+                    //         MenuButtonAction::PlayShip,
+                    //     ))
+                    //     .with_children(|parent| {
+                    //         let icon = asset_server.load("textures/Game Icons/right.png");
+                    //         parent.spawn(ImageBundle {
+                    //             style: button_icon_style.clone(),
+                    //             image: UiImage::new(icon),
+                    //             ..default()
+                    //         });
+                    //         parent.spawn(TextBundle::from_section(
+                    //             "Play Ship",
+                    //             button_text_style.clone(),
+                    //         ));
+                    //     });
+                    // parent
+                    //     .spawn((
+                    //         ButtonBundle {
+                    //             style: button_style.clone(),
+                    //             background_color: NORMAL_BUTTON.into(),
+                    //             ..default()
+                    //         },
+                    //         MenuButtonAction::PlayHexton,
+                    //     ))
+                    //     .with_children(|parent| {
+                    //         let icon = asset_server.load("textures/Game Icons/right.png");
+                    //         parent.spawn(ImageBundle {
+                    //             style: button_icon_style.clone(),
+                    //             image: UiImage::new(icon),
+                    //             ..default()
+                    //         });
+                    //         parent.spawn(TextBundle::from_section(
+                    //             "Play Cmdr",
+                    //             button_text_style.clone(),
+                    //         ));
+                    //     });
                     parent
                         .spawn((
                             ButtonBundle {

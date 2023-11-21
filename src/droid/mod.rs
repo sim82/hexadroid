@@ -1,6 +1,6 @@
 use self::ai::{EnemyEvaluation, PredictedHit, PrimaryEnemy};
+use crate::collision_groups;
 use crate::weapon::WeaponTarget;
-use crate::{camera::CameraTarget, collision_groups, input::InputTarget};
 use crate::{
     collision::CollisionFxType, prelude::*, weapon, weapon::kinetic_projectile_shape_bundle,
 };

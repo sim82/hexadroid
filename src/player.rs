@@ -1,7 +1,12 @@
 use crate::{
-    camera::CameraTarget, droid::DroidMarker, input::InputTarget, prelude::*, ship::ShipMarker,
+    camera::CameraTarget,
+    droid::{ai::new_shooting_droid_ai, DroidMarker},
+    input::InputTarget,
+    prelude::*,
+    ship::ShipMarker,
 };
 use bevy::prelude::*;
+use big_brain::thinker::ThinkerBuilder;
 
 #[derive(Bundle, Default)]
 pub struct PrimaryPlayerBundle {
@@ -24,12 +29,32 @@ pub struct PlayerMarker;
 #[allow(clippy::type_complexity)]
 fn enter_droid(
     mut commands: Commands,
-    query: Query<Entity, (With<PlayerMarker>, With<DroidMarker>)>,
+    query: Query<(Entity, &Transform), With<DroidMarker>>,
+    ship_query: Query<&Transform, (With<PlayerMarker>, With<ShipMarker>)>,
 ) {
-    for entity in &query {
+    let Ok(ship_transform) = ship_query.get_single() else {
+        return;
+    };
+    let mut min_dist = f32::MAX;
+    let mut enter_droid = None;
+    for (entity, transform) in &query {
+        let d = transform
+            .translation
+            .distance_squared(ship_transform.translation);
+        if d < min_dist {
+            enter_droid = Some(entity);
+            min_dist = d;
+        }
+        // commands
+        //     .entity(entity)
+        //     .insert(PrimaryPlayerBundle::default());
+    }
+    if let Some(entity) = enter_droid {
         commands
             .entity(entity)
-            .insert(PrimaryPlayerBundle::default());
+            .insert(PrimaryPlayerBundle::default())
+            .insert(PlayerMarker)
+            .remove::<ThinkerBuilder>();
     }
 }
 
@@ -39,7 +64,11 @@ fn exit_droid(
     query: Query<Entity, (With<PlayerMarker>, With<DroidMarker>, With<InputTarget>)>,
 ) {
     for entity in &query {
-        commands.entity(entity).remove::<PrimaryPlayerBundle>();
+        commands
+            .entity(entity)
+            .remove::<PrimaryPlayerBundle>()
+            .remove::<PlayerMarker>()
+            .insert(new_shooting_droid_ai());
     }
 }
 
