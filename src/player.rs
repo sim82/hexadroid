@@ -3,6 +3,12 @@ use crate::{
 };
 use bevy::prelude::*;
 
+#[derive(Bundle, Default)]
+pub struct PrimaryPlayerBundle {
+    input_target: InputTarget,
+    camera_target: CameraTarget,
+}
+
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum PlayerState {
     #[default]
@@ -23,8 +29,7 @@ fn enter_droid(
     for entity in &query {
         commands
             .entity(entity)
-            .insert(InputTarget)
-            .insert(CameraTarget);
+            .insert(PrimaryPlayerBundle::default());
     }
 }
 
@@ -34,10 +39,7 @@ fn exit_droid(
     query: Query<Entity, (With<PlayerMarker>, With<DroidMarker>, With<InputTarget>)>,
 ) {
     for entity in &query {
-        commands
-            .entity(entity)
-            .remove::<InputTarget>()
-            .remove::<CameraTarget>();
+        commands.entity(entity).remove::<PrimaryPlayerBundle>();
     }
 }
 
@@ -49,8 +51,7 @@ fn enter_ship(
     for entity in &query {
         commands
             .entity(entity)
-            .insert(InputTarget)
-            .insert(CameraTarget);
+            .insert(PrimaryPlayerBundle::default());
     }
 }
 
@@ -60,10 +61,7 @@ fn exit_ship(
     query: Query<Entity, (With<PlayerMarker>, With<ShipMarker>, With<InputTarget>)>,
 ) {
     for entity in &query {
-        commands
-            .entity(entity)
-            .remove::<InputTarget>()
-            .remove::<CameraTarget>();
+        commands.entity(entity).remove::<PrimaryPlayerBundle>();
     }
 }
 fn enter_hexton() {}

@@ -198,12 +198,6 @@ impl DroidBundle {
     }
 }
 
-#[derive(Bundle, Default)]
-pub struct PlayerDroidBundle {
-    input_target: InputTarget,
-    camera_target: CameraTarget,
-}
-
 #[derive(Bundle)]
 pub struct AiDroidBundle {
     predicted_hit: PredictedHit,
