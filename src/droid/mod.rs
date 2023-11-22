@@ -7,6 +7,7 @@ use crate::{
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::Stroke;
 use bevy_rapier2d::prelude::*;
+use rand::Rng;
 use std::{borrow::Cow, time::Duration};
 
 pub mod ai;
@@ -129,7 +130,10 @@ fn droid_attack_system(
 fn droid_overload_system(
     mut commands: Commands,
     query: Query<(Entity, &DroidHealth), Without<DroidOverloadMarker>>,
-    mut query_overload: Query<(Entity, &mut DroidHealth), With<DroidOverloadMarker>>,
+    mut query_overload: Query<
+        (Entity, &mut DroidHealth, &mut Transform),
+        With<DroidOverloadMarker>,
+    >,
 ) {
     //
     for (entity, health) in &query {
@@ -137,9 +141,13 @@ fn droid_overload_system(
             commands.entity(entity).insert(DroidOverloadMarker);
         }
     }
-    for (entity, mut health) in &mut query_overload {
-        if health.emp_load <= 0.0 {
+    for (entity, mut health, mut transform) in &mut query_overload {
+        if health.emp_load <= 0.5 {
             commands.entity(entity).remove::<DroidOverloadMarker>();
+            transform.scale = Vec3::ONE;
+        } else {
+            let mut rng = rand::thread_rng();
+            transform.scale = Vec3::splat(rng.gen_range(0.95..1.05));
         }
         health.emp_load = (health.emp_load - 0.005).max(0.0);
     }

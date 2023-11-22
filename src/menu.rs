@@ -76,7 +76,6 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         color: TEXT_COLOR,
         // color: colors::COLORS[1],
         font: font.clone(),
-        ..default()
     };
 
     commands
@@ -116,7 +115,6 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 font_size: 80.0,
                                 color: TEXT_COLOR,
                                 font,
-                                ..default()
                             },
                         )
                         .with_style(Style {

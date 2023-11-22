@@ -1,9 +1,9 @@
 use crate::{
     camera::CameraTarget,
-    droid::{ai::new_shooting_droid_ai, DroidMarker},
+    droid::{ai::new_shooting_droid_ai, DroidHealth, DroidMarker},
     input::InputTarget,
     prelude::*,
-    ship::ShipMarker,
+    ship::{ShipInput, ShipMarker},
 };
 use bevy::prelude::*;
 use big_brain::thinker::ThinkerBuilder;
@@ -54,6 +54,7 @@ fn enter_droid(
             .entity(entity)
             .insert(PrimaryPlayerBundle::default())
             .insert(PlayerMarker)
+            .insert(DroidHealth::default()) // crappy way to instantly heal the taken over droid. should clear emp load only
             .remove::<ThinkerBuilder>();
     }
 }
@@ -87,10 +88,14 @@ fn enter_ship(
 #[allow(clippy::type_complexity)]
 fn exit_ship(
     mut commands: Commands,
-    query: Query<Entity, (With<PlayerMarker>, With<ShipMarker>, With<InputTarget>)>,
+    mut query: Query<
+        (Entity, &mut ShipInput),
+        (With<PlayerMarker>, With<ShipMarker>, With<InputTarget>),
+    >,
 ) {
-    for entity in &query {
+    for (entity, mut ship_input) in &mut query {
         commands.entity(entity).remove::<PrimaryPlayerBundle>();
+        *ship_input = ShipInput::default();
     }
 }
 fn enter_hexton() {}
