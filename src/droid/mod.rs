@@ -62,12 +62,15 @@ pub struct MovementStats {
 
 fn droid_apply_direction_system(
     time: Res<Time>,
-    mut query: Query<(
-        &mut ExternalImpulse,
-        &TargetDirection,
-        &mut WeaponDirection,
-        &mut MovementStats,
-    )>,
+    mut query: Query<
+        (
+            &mut ExternalImpulse,
+            &TargetDirection,
+            &mut WeaponDirection,
+            &mut MovementStats,
+        ),
+        Without<DroidOverloadMarker>,
+    >,
 ) {
     for (mut external_impulse, target_direction, mut weapon_direction, mut movement_stats) in
         query.iter_mut()
@@ -85,13 +88,16 @@ fn droid_apply_direction_system(
 fn droid_attack_system(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(
-        Entity,
-        &Transform,
-        &AttackRequest,
-        &mut WeaponState,
-        &WeaponDirection,
-    )>,
+    mut query: Query<
+        (
+            Entity,
+            &Transform,
+            &AttackRequest,
+            &mut WeaponState,
+            &WeaponDirection,
+        ),
+        Without<DroidOverloadMarker>,
+    >,
 ) {
     for (
         entity,
@@ -117,6 +123,25 @@ fn droid_attack_system(
                 weapon_direction.direction,
             ))
             .insert(Stroke::new(GREEN_HDR, 10.0));
+    }
+}
+
+fn droid_overload_system(
+    mut commands: Commands,
+    query: Query<(Entity, &DroidHealth), Without<DroidOverloadMarker>>,
+    mut query_overload: Query<(Entity, &mut DroidHealth), With<DroidOverloadMarker>>,
+) {
+    //
+    for (entity, health) in &query {
+        if health.emp_load >= 1.0 {
+            commands.entity(entity).insert(DroidOverloadMarker);
+        }
+    }
+    for (entity, mut health) in &mut query_overload {
+        if health.emp_load <= 0.0 {
+            commands.entity(entity).remove::<DroidOverloadMarker>();
+        }
+        health.emp_load = (health.emp_load - 0.005).max(0.0);
     }
 }
 
@@ -198,11 +223,19 @@ impl DroidBundle {
     }
 }
 
+#[derive(Component, Default)]
+pub struct DroidHealth {
+    pub emp_load: f32,
+}
+#[derive(Component)]
+pub struct DroidOverloadMarker;
+
 #[derive(Bundle)]
 pub struct AiDroidBundle {
     predicted_hit: PredictedHit,
     enemy_evaluation: EnemyEvaluation,
     primary_enemy: PrimaryEnemy,
+    health: DroidHealth,
 }
 
 impl AiDroidBundle {
@@ -211,6 +244,7 @@ impl AiDroidBundle {
             predicted_hit: PredictedHit::default(),
             enemy_evaluation: EnemyEvaluation::default(),
             primary_enemy: PrimaryEnemy { enemy },
+            health: default(),
         }
     }
 }
@@ -222,6 +256,7 @@ impl Plugin for DroidPlugin {
         app
             // .add_system(droid_stop_system)
             .add_systems(Update, droid_apply_direction_system) //.after(droid_stop_system))
-            .add_systems(Update, droid_attack_system);
+            .add_systems(Update, droid_attack_system)
+            .add_systems(Update, droid_overload_system);
     }
 }

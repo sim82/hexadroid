@@ -1,4 +1,5 @@
 use crate::{
+    droid::DroidHealth,
     particle::{ColorGenerator, ParticleDamping},
     prelude::*,
 };
@@ -131,12 +132,13 @@ pub fn wave_attack_proxy_update(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &mut WaveAttackProxy)>,
-    target_query: Query<&Transform, With<WeaponTarget>>,
+    mut target_query: Query<(&Transform, &mut DroidHealth), With<WeaponTarget>>, // FIXME: assuming that only Droids are target
 ) {
     for (proxy_entity, mut proxy) in &mut query {
         proxy.timeout -= time.delta_seconds();
         if proxy.timeout <= 0.0 {
-            let Ok(target_transform) = target_query.get(proxy.target) else {
+            let Ok((target_transform, mut droid_health)) = target_query.get_mut(proxy.target)
+            else {
                 continue;
             };
             //
@@ -159,6 +161,7 @@ pub fn wave_attack_proxy_update(
                 })
                 .insert(GameDespawn::frames_to_live(1));
             commands.entity(proxy_entity).insert(Despawn::ThisFrame);
+            droid_health.emp_load += 0.5;
         }
     }
 }
