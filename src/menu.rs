@@ -70,9 +70,12 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         left: Val::Px(10.0),
         ..default()
     };
+    let font = asset_server.load("fonts/MonaspaceKrypton-Bold.otf");
     let button_text_style = TextStyle {
         font_size: 40.0,
         color: TEXT_COLOR,
+        // color: colors::COLORS[1],
+        font: font.clone(),
         ..default()
     };
 
@@ -96,19 +99,23 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     style: Style {
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
+                        border: UiRect::px(10., 10., 10., 10.),
                         ..default()
                     },
-                    background_color: Color::CRIMSON.into(),
+                    background_color: Color::BLACK.with_a(0.5).into(),
+                    // border_color: colors::COLORS[1].into(),
+                    border_color: Color::GREEN.into(),
                     ..default()
                 })
                 .with_children(|parent| {
                     // Display the game name
                     parent.spawn(
                         TextBundle::from_section(
-                            "Bevy Game Menu UI",
+                            "Hexxadroid",
                             TextStyle {
                                 font_size: 80.0,
                                 color: TEXT_COLOR,
+                                font,
                                 ..default()
                             },
                         )
