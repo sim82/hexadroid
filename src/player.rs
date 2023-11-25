@@ -30,7 +30,7 @@ pub struct PlayerMarker;
 fn enter_droid(
     mut commands: Commands,
     query: Query<(Entity, &Transform), With<DroidMarker>>,
-    ship_query: Query<&Transform, (With<PlayerMarker>, With<ShipMarker>)>,
+    ship_query: Query<&Transform, /*(With<PlayerMarker>,*/ With<ShipMarker>>,
 ) {
     let Ok(ship_transform) = ship_query.get_single() else {
         return;
@@ -76,12 +76,13 @@ fn exit_droid(
 #[allow(clippy::type_complexity)]
 fn enter_ship(
     mut commands: Commands,
-    query: Query<Entity, (With<PlayerMarker>, With<ShipMarker>)>,
+    query: Query<Entity, /*(With<PlayerMarker>, */ With<ShipMarker>>,
 ) {
     for entity in &query {
         commands
             .entity(entity)
-            .insert(PrimaryPlayerBundle::default());
+            .insert(PrimaryPlayerBundle::default())
+            .insert(PlayerMarker);
     }
 }
 
@@ -94,7 +95,10 @@ fn exit_ship(
     >,
 ) {
     for (entity, mut ship_input) in &mut query {
-        commands.entity(entity).remove::<PrimaryPlayerBundle>();
+        commands
+            .entity(entity)
+            .remove::<PrimaryPlayerBundle>()
+            .remove::<PlayerMarker>();
         *ship_input = ShipInput::default();
     }
 }

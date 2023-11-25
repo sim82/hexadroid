@@ -1,3 +1,4 @@
+use crate::player::PlayerMarker;
 use crate::weapon::PROJECTILE_SPEED;
 use crate::{droid::WeaponState, weapon::Projectile};
 use bevy::{
@@ -90,6 +91,18 @@ pub struct EnemyEvaluation {
     direction: Vec2,
 }
 
+fn enemy_select_system(
+    mut query: Query<&mut PrimaryEnemy>,
+
+    player_query: Query<Entity, With<PlayerMarker>>,
+) {
+    let Some(enemy) = player_query.iter().next() else {
+        return;
+    };
+    for mut primary_enemy in &mut query {
+        primary_enemy.enemy = enemy;
+    }
+}
 fn enemy_evaluation_system(
     mut query: Query<(&mut EnemyEvaluation, &PrimaryEnemy, &Transform)>,
     droid_query: Query<&Transform>,
@@ -327,6 +340,7 @@ impl Plugin for AiPlugin {
         //         .with_system(incomping_projectile_evaluation_system),
         // );
 
+        app.add_systems(PreUpdate, enemy_select_system);
         app.add_systems(
             Update,
             (
