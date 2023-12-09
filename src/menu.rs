@@ -1,9 +1,6 @@
 use bevy::{app::AppExit, prelude::*};
 
-use crate::{
-    game::GameSpawnInfo,
-    state::{AutoStart, GameState},
-};
+use crate::{game::GameSpawnInfo, prelude::*, state::AutoStart};
 // Tag component used to tag entities added on the main menu screen
 #[derive(Component)]
 struct OnMainMenuScreen;

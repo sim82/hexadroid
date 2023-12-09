@@ -1,10 +1,6 @@
 use crate::{
-    droid::DroidOverloadMarker,
-    particle::ColorGenerator,
-    player::{PlayerMarker, PlayerState},
-    prelude::*,
-    ship::ShipMarker,
-    weapon::Projectile,
+    droid::DroidOverloadMarker, particle::ColorGenerator, player::PlayerMarker, prelude::*,
+    ship::ShipMarker, weapon::Projectile,
 };
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;

@@ -1,6 +1,6 @@
 use std::f32::consts::TAU;
 
-use crate::{prelude::*, state::GameState};
+use crate::prelude::*;
 use bevy::{
     diagnostic::{Diagnostic, DiagnosticId, Diagnostics, RegisterDiagnostic},
     prelude::*,

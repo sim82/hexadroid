@@ -4,11 +4,10 @@ use hexagon_tiles::hexagon::Hex;
 
 use crate::{
     droid::{ai::new_shooting_droid_ai, AiDroidBundle, DroidBundle},
-    player::{PlayerMarker, PlayerState},
+    player::PlayerMarker,
     portal::Portal,
     prelude::*,
     ship::{ShipBundle, SHIP_VERTICES},
-    state::GameState,
 };
 
 #[derive(Resource)]

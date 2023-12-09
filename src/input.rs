@@ -1,7 +1,6 @@
 use crate::{
     droid::{AttackRequest, TargetDirection},
     hexton::HextonInput,
-    player::PlayerState,
     portal::PortalToggleRequest,
     prelude::*,
     ship::ShipInput,
