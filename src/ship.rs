@@ -409,8 +409,12 @@ impl Plugin for ShipPlugin {
                 ship_thruster_system.after(ship_brake_maneuver_system),
                 ship_attack_system,
                 ship_thruster_particle_system.after(ship_thruster_system),
-            ),
+            )
+                .run_if(in_state(GameState::Game)),
         )
-        .add_systems(PostUpdate, ship_attach_thruster_particle_spawner_system);
+        .add_systems(
+            PostUpdate,
+            ship_attach_thruster_particle_spawner_system.run_if(in_state(GameState::Game)),
+        );
     }
 }

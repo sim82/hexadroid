@@ -1,4 +1,5 @@
 use crate::player::PlayerMarker;
+use crate::prelude::*;
 use crate::weapon::PROJECTILE_SPEED;
 use crate::{droid::WeaponState, weapon::Projectile};
 use bevy::{
@@ -346,7 +347,8 @@ impl Plugin for AiPlugin {
             (
                 assault_predict_system,
                 incomping_projectile_evaluation_system,
-            ),
+            )
+                .run_if(in_state(GameState::Game)),
         );
         // app
         //     // .add_system(movement_update_system)
@@ -373,7 +375,8 @@ impl Plugin for AiPlugin {
                 actions::evade_enemy_action_system.in_set(BigBrainSet::Actions),
                 actions::evade_projectile_action_system.in_set(BigBrainSet::Actions),
                 actions::roam_action_system.in_set(BigBrainSet::Actions),
-            ),
+            )
+                .run_if(in_state(GameState::Game)),
         );
         app.add_systems(
             PreUpdate,
@@ -382,7 +385,8 @@ impl Plugin for AiPlugin {
                 scorers::projectile_incoming_score_system.in_set(BigBrainSet::Scorers),
                 scorers::enemy_close_system.in_set(BigBrainSet::Scorers),
                 scorers::idle_boredom_score_system.in_set(BigBrainSet::Scorers),
-            ),
+            )
+                .run_if(in_state(GameState::Game)),
         );
     }
 }

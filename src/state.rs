@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier2d::plugin::RapierConfiguration;
 
 // if true, GameState::None will automatically switch through to GameState::Game
 // can be used for restarting game.
@@ -79,6 +80,16 @@ fn auto_start_system(
         next_state.set(GameState::Game);
     }
 }
+fn startup_system(mut rapier_config: ResMut<RapierConfiguration>) {
+    rapier_config.physics_pipeline_active = false;
+}
+fn enter_game_state(mut rapier_config: ResMut<RapierConfiguration>) {
+    rapier_config.physics_pipeline_active = true;
+}
+
+fn exit_game_state(mut rapier_config: ResMut<RapierConfiguration>) {
+    rapier_config.physics_pipeline_active = false;
+}
 
 pub struct StatePlugin;
 
@@ -86,7 +97,10 @@ impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<GameState>()
             .insert_resource(AutoStart(false))
+            .add_systems(Startup, startup_system)
             .add_systems(PreUpdate, auto_start_system)
+            .add_systems(OnEnter(GameState::Game), enter_game_state)
+            .add_systems(OnExit(GameState::Game), exit_game_state)
             .add_systems(
                 Last,
                 game_despawn_reaper_system.run_if(in_state(GameState::Game)),
