@@ -127,7 +127,7 @@ pub struct IncomingProjectile {
     pub toi: f32,
 }
 
-fn incomping_projectile_evaluation_system(
+fn incoming_projectile_evaluation_system(
     mut commands: Commands,
     query: Query<(Entity, &Transform), With<PrimaryEnemy>>,
     projectile_query: Query<(&Transform, &Velocity), With<Projectile>>,
@@ -346,7 +346,7 @@ impl Plugin for AiPlugin {
             Update,
             (
                 assault_predict_system,
-                incomping_projectile_evaluation_system,
+                incoming_projectile_evaluation_system,
             )
                 .run_if(in_state(GameState::Game)),
         );

@@ -9,7 +9,8 @@ pub struct ShootAction;
 
 pub fn shoot_action_system(
     mut query: Query<(&Actor, &mut ActionState), With<ShootAction>>,
-    mut attack_query: Query<(&mut AttackRequest, &mut WeaponDirection, &PredictedHit)>,
+    ai_query: Query<(&PredictedHit, &Parent)>,
+    mut attack_query: Query<(&mut AttackRequest, &mut WeaponDirection)>,
 ) {
     for (Actor(actor), mut state) in &mut query {
         // info!("shoot action {:?}", state);
@@ -21,8 +22,11 @@ pub fn shoot_action_system(
             ActionState::Executing => {
                 info!("shoot!");
 
-                if let Ok((mut attack_request, mut weapon_direction, predicted)) =
-                    attack_query.get_mut(*actor)
+                let Ok((predicted, parent)) = ai_query.get(*actor) else {
+                    continue;
+                };
+                if let Ok((mut attack_request, mut weapon_direction)) =
+                    attack_query.get_mut(parent.get())
                 {
                     weapon_direction.direction = predicted.direction;
                     attack_request.primary_attack = true;
@@ -43,14 +47,18 @@ pub fn shoot_action_system(
 pub struct IdleAction;
 pub fn idle_action_system(
     mut query: Query<(&Actor, &mut ActionState), With<IdleAction>>,
+    ai_query: Query<&Parent>,
     mut attack_query: Query<(&mut AttackRequest, &mut WeaponDirection)>,
 ) {
     for (Actor(actor), mut state) in &mut query {
         // info!("idle action {:?}", state);
         match *state {
             ActionState::Requested => {
+                let Ok(parent) = ai_query.get(*actor) else {
+                    continue;
+                };
                 if let Ok((mut attack_request, mut _weapon_direction)) =
-                    attack_query.get_mut(*actor)
+                    attack_query.get_mut(parent.get())
                 {
                     // weapon_direction.direction = DIRECTIONS[0];
                     attack_request.primary_attack = false;
@@ -76,7 +84,8 @@ pub struct EvadeEnemyAction;
 
 pub fn evade_enemy_action_system(
     mut query: Query<(&Actor, &mut ActionState), With<EvadeEnemyAction>>,
-    mut direction_query: Query<(&mut TargetDirection, &EnemyEvaluation, &mut AttackRequest)>,
+    ai_query: Query<(&Parent, &EnemyEvaluation)>,
+    mut direction_query: Query<(&mut TargetDirection, &mut AttackRequest)>,
 ) {
     for (Actor(actor), mut state) in &mut query {
         debug!("evade action {:?}", state);
@@ -85,8 +94,11 @@ pub fn evade_enemy_action_system(
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {
-                if let Ok((mut target_direction, enemy_eval, mut attack_request)) =
-                    direction_query.get_mut(*actor)
+                let Ok((parent, enemy_eval)) = ai_query.get(*actor) else {
+                    continue;
+                };
+                if let Ok((mut target_direction, mut attack_request)) =
+                    direction_query.get_mut(parent.get())
                 {
                     attack_request.primary_attack = false;
                     if let Some(dir) = DIRECTIONS.iter().min_by_key(|dir| {
@@ -103,8 +115,11 @@ pub fn evade_enemy_action_system(
             }
             // All Actions should make sure to handle cancellations!
             ActionState::Cancelled => {
-                if let Ok((mut target_direction, _enemy_eval, mut _attack_request)) =
-                    direction_query.get_mut(*actor)
+                let Ok((parent, _)) = ai_query.get(*actor) else {
+                    continue;
+                };
+                if let Ok((mut target_direction, mut _attack_request)) =
+                    direction_query.get_mut(parent.get())
                 {
                     target_direction.direction = default();
                 }
@@ -123,49 +138,61 @@ pub struct EvadeProjectileAction {
 
 pub fn evade_projectile_action_system(
     mut query: Query<(&Actor, &mut ActionState, &mut EvadeProjectileAction)>,
+    ai_query: Query<(&Parent, &IncomingProjectile)>,
     mut direction_query: Query<&mut TargetDirection>,
-    incoming_query: Query<&IncomingProjectile>,
+    // incoming_query: Query<&IncomingProjectile>,
 ) {
     for (Actor(actor), mut state, mut evade) in &mut query {
         info!("evade projectile action {:?}", state);
         match *state {
             ActionState::Requested => {
-                if let Ok(_target_direction) = direction_query.get_mut(*actor) {
-                    if let Ok(incoming_projectile) = incoming_query.get(*actor) {
-                        let mut rng = thread_rng();
-                        if let Some(dir) = DIRECTIONS.iter().min_by_key(|dir| {
-                            // if move_sideways {
-                            //     1.0 - enemy_dir.dot(*dir).abs()
-                            // } else {
-                            FloatOrd(
-                                incoming_projectile.velocity.normalize().dot(**dir).abs()
-                                    + rng.gen_range(-0.1..0.1),
-                            )
-                            // }
-                        }) {
-                            evade.direction = *dir;
-                        }
-                    } else {
-                        *state = ActionState::Cancelled;
-                        continue;
+                let Ok((parent, incoming_projectile)) = ai_query.get(*actor) else {
+                    *state = ActionState::Cancelled;
+                    continue;
+                };
+                if let Ok(_target_direction) = direction_query.get_mut(parent.get()) {
+                    // if let Ok(incoming_projectile) = incoming_query.get(*actor) {
+                    let mut rng = thread_rng();
+                    if let Some(dir) = DIRECTIONS.iter().min_by_key(|dir| {
+                        // if move_sideways {
+                        //     1.0 - enemy_dir.dot(*dir).abs()
+                        // } else {
+                        FloatOrd(
+                            incoming_projectile.velocity.normalize().dot(**dir).abs()
+                                + rng.gen_range(-0.1..0.1),
+                        )
+                        // }
+                    }) {
+                        evade.direction = *dir;
                     }
+                    // } else {
+                    // *state = ActionState::Cancelled;
+                    // continue;
+                    // }
                 }
 
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {
-                if let Ok(mut target_direction) = direction_query.get_mut(*actor) {
-                    if incoming_query.contains(*actor) {
-                        target_direction.direction = evade.direction;
-                    } else {
-                        target_direction.direction = default();
-                        *state = ActionState::Success;
-                    }
+                let Ok((parent, _incoming_projectile)) = ai_query.get(*actor) else {
+                    *state = ActionState::Success;
+                    continue;
+                };
+                if let Ok(mut target_direction) = direction_query.get_mut(parent.get()) {
+                    // if incoming_query.contains(*actor) {
+                    target_direction.direction = evade.direction;
+                    // } else {
+                    // target_direction.direction = default();
+                    // *state = ActionState::Success;
+                    // }
                 }
             }
             // All Actions should make sure to handle cancellations!
             ActionState::Cancelled => {
-                if let Ok(mut target_direction) = direction_query.get_mut(*actor) {
+                let Ok((parent, _)) = ai_query.get(*actor) else {
+                    continue;
+                };
+                if let Ok(mut target_direction) = direction_query.get_mut(parent.get()) {
                     target_direction.direction = default();
                 }
                 debug!("Action was cancelled. Considering this a failure.");
@@ -185,6 +212,7 @@ pub struct RoamAction {
 pub fn roam_action_system(
     time: Res<Time>,
     mut query: Query<(&Actor, &mut ActionState, &mut RoamAction)>,
+    ai_query: Query<&Parent>,
     mut direction_query: Query<&mut TargetDirection>,
 ) {
     for (Actor(actor), mut state, mut roam) in &mut query {
@@ -199,7 +227,10 @@ pub fn roam_action_system(
             }
             ActionState::Executing | ActionState::Cancelled => {
                 roam.timer.tick(time.delta());
-                if let Ok(mut target_direction) = direction_query.get_mut(*actor) {
+                let Ok(parent) = ai_query.get(*actor) else {
+                    continue;
+                };
+                if let Ok(mut target_direction) = direction_query.get_mut(parent.get()) {
                     if roam.timer.finished() {
                         target_direction.direction = default();
                     } else {

@@ -58,33 +58,33 @@ fn game_setup(
         .insert(PlayerMarker)
         .id();
 
-    let my_shape_builder = GeometryBuilder::build_as(&shape);
+    // let my_shape_builder = GeometryBuilder::build_as(&shape);
 
-    commands
-        .spawn(DroidBundle::new("player", spawn_info.gravity))
-        // .insert(PlayerDroidBundle::default())
-        .insert(ShapeBundle {
-            path: my_shape_builder,
-            spatial: SpatialBundle {
-                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(default_stroke(GREEN_HDR))
-        .insert(GameMarker)
-        // .insert(PlayerMarker)
-        .insert(AiDroidBundle::with_enemy(player))
-        .insert(new_shooting_droid_ai())
-        // .insert(ParticleSource {
-        //     rate: 1000,
-        //     direction: ParticleDirection::Uniform,
-        //     speed: 100.0,
-        //     speed_spread: 50.0,
-        //     lifetime: 1.0,
-        //     lifetime_spread: 0.5,
-        // })
-        ;
+    // commands
+    //     .spawn(DroidBundle::new("player", spawn_info.gravity))
+    //     // .insert(PlayerDroidBundle::default())
+    //     .insert(ShapeBundle {
+    //         path: my_shape_builder,
+    //         spatial: SpatialBundle {
+    //             transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+    //             ..default()
+    //         },
+    //         ..default()
+    //     })
+    //     .insert(default_stroke(GREEN_HDR))
+    //     .insert(GameMarker)
+    //     // .insert(PlayerMarker)
+    //     .insert(AiDroidBundle::with_enemy(player))
+    //     .insert(new_shooting_droid_ai())
+    //     // .insert(ParticleSource {
+    //     //     rate: 1000,
+    //     //     direction: ParticleDirection::Uniform,
+    //     //     speed: 100.0,
+    //     //     speed_spread: 50.0,
+    //     //     lifetime: 1.0,
+    //     //     lifetime_spread: 0.5,
+    //     // })
+    //     ;
 
     player_state.set(PlayerState::Ship);
     // let player = if spawn_info.spawn_player_ship {
@@ -186,10 +186,13 @@ fn game_setup(
     for _ in 0..spawn_info.spawn_enemy_droids {
         let enemy_shape_builder = GeometryBuilder::build_as(&shape);
 
+        let droid_ai = commands
+            .spawn((AiDroidBundle::with_enemy(player), new_shooting_droid_ai()))
+            .id();
         commands
             .spawn(DroidBundle::new("r2d2", spawn_info.gravity))
             // .insert_bundle(AiDroidBundle::with_enemy(enemy))
-            .insert(AiDroidBundle::with_enemy(player))
+            // .insert(AiDroidBundle::with_enemy(player))
             .insert(ShapeBundle {
                 path: enemy_shape_builder,
                 spatial: SpatialBundle {
@@ -200,7 +203,9 @@ fn game_setup(
             })
             .insert(default_stroke(RED_HDR))
             .insert(GameMarker)
-            .insert(new_shooting_droid_ai());
+            .add_child(droid_ai);
+        // .insert(new_shooting_droid_ai())
+
         enemy_offset.x += 100.0;
         commands.spawn_empty().insert(Portal {
             tile_pos: TilePos(Hex::new(5, -1)),

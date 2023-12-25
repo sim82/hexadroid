@@ -244,6 +244,7 @@ pub struct AiDroidBundle {
     enemy_evaluation: EnemyEvaluation,
     primary_enemy: PrimaryEnemy,
     health: DroidHealth,
+    spatial_bundle: SpatialBundle,
 }
 
 impl AiDroidBundle {
@@ -253,6 +254,7 @@ impl AiDroidBundle {
             enemy_evaluation: EnemyEvaluation::default(),
             primary_enemy: PrimaryEnemy { enemy },
             health: default(),
+            spatial_bundle: default(),
         }
     }
 }
