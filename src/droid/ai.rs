@@ -129,11 +129,11 @@ pub struct IncomingProjectile {
 
 fn incoming_projectile_evaluation_system(
     mut commands: Commands,
-    query: Query<(Entity, &Transform), With<PrimaryEnemy>>,
+    query: Query<(Entity, &GlobalTransform), With<PrimaryEnemy>>,
     projectile_query: Query<(&Transform, &Velocity), With<Projectile>>,
 ) {
     for (entity, my_transform) in &query {
-        let my_pos = my_transform.translation.xy().into();
+        let my_pos = my_transform.translation().xy().into();
         let my_vel = default();
         let my_shape = Ball::new(28.0);
         let projectile_shape = Ball::new(10.0);
@@ -190,7 +190,7 @@ impl Default for PredictedHit {
 }
 
 fn assault_predict_system(
-    enemy_query: Query<(&Transform, &Velocity)>,
+    enemy_query: Query<(&GlobalTransform, &Velocity)>,
     // mut debug_lines: Option<ResMut<DebugLines>>,
     mut assault_query: Query<(&Parent, &GlobalTransform, &PrimaryEnemy, &mut PredictedHit)>,
     droid_query: Query<&WeaponState>,
@@ -208,10 +208,7 @@ fn assault_predict_system(
             continue;
         };
         if let Ok((
-            Transform {
-                translation: enemy_translation,
-                ..
-            },
+            enemy_transform,
             Velocity {
                 linvel: enemy_velocity,
                 ..
@@ -226,7 +223,7 @@ fn assault_predict_system(
 
             let mut lowest_toi = f32::INFINITY;
             let enemy_shape = Ball::new(28.0);
-            let enemy_start_pos = enemy_translation.xy().into();
+            let enemy_start_pos = enemy_transform.translation().xy().into();
             let enemy_vel = enemy_velocity.xy().into();
 
             let projectile_shape = Ball::new(10.0);

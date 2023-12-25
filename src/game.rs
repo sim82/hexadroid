@@ -4,6 +4,7 @@ use hexagon_tiles::hexagon::Hex;
 
 use crate::{
     droid::{ai::new_shooting_droid_ai, AiDroidBundle, DroidBundle},
+    input::InputTarget,
     player::PlayerMarker,
     portal::Portal,
     prelude::*,
@@ -41,21 +42,29 @@ fn game_setup(
 
     let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
 
+    // let player = commands
+    //     .spawn(ShipBundle::new("ship"))
+    //     .insert(ShapeBundle {
+    //         path: ship_shape_builder,
+    //         spatial: SpatialBundle {
+    //             transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+    //             ..default()
+    //         },
+    //         ..default()
+    //     })
+    //     .insert(default_stroke(YELLOW_HDR))
+    //     // .insert(InputTarget)
+    //     // .insert(CameraTarget)
+    //     .insert(GameMarker)
+    //     .insert(PlayerMarker)
+    //     .id();
     let player = commands
-        .spawn(ShipBundle::new("ship"))
-        .insert(ShapeBundle {
-            path: ship_shape_builder,
-            spatial: SpatialBundle {
-                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(default_stroke(YELLOW_HDR))
-        // .insert(InputTarget)
-        // .insert(CameraTarget)
-        .insert(GameMarker)
-        .insert(PlayerMarker)
+        .spawn((
+            SpatialBundle::default(),
+            PlayerMarker,
+            GameMarker,
+            InputTarget,
+        ))
         .id();
 
     // let my_shape_builder = GeometryBuilder::build_as(&shape);

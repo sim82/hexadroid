@@ -181,6 +181,7 @@ pub struct DroidBundle {
     pub active_collision_types: ActiveCollisionTypes,
     pub weapon_target: WeaponTarget,
     pub droid_marker: DroidMarker,
+    pub health: DroidHealth,
 }
 
 impl DroidBundle {
@@ -227,6 +228,7 @@ impl DroidBundle {
                 | ActiveCollisionTypes::KINEMATIC_STATIC,
             weapon_target: default(),
             droid_marker: default(),
+            health: default(),
         }
     }
 }
@@ -243,7 +245,6 @@ pub struct AiDroidBundle {
     predicted_hit: PredictedHit,
     enemy_evaluation: EnemyEvaluation,
     primary_enemy: PrimaryEnemy,
-    health: DroidHealth,
     spatial_bundle: SpatialBundle,
 }
 
@@ -253,7 +254,6 @@ impl AiDroidBundle {
             predicted_hit: PredictedHit::default(),
             enemy_evaluation: EnemyEvaluation::default(),
             primary_enemy: PrimaryEnemy { enemy },
-            health: default(),
             spatial_bundle: default(),
         }
     }
