@@ -30,10 +30,15 @@ fn switch_player_system(
     }
 }
 fn apply_input_system_8dir(
-    mut query: Query<(&mut TargetDirection, &Transform, &mut AttackRequest), With<InputTarget>>,
+    player_query: Query<&Parent, With<InputTarget>>,
+    mut query: Query<(&mut TargetDirection, &Transform, &mut AttackRequest)>,
     keyboard_input: Res<Input<KeyCode>>,
 ) {
-    for (mut input_target, _transform, mut attack_request) in query.iter_mut() {
+    for parent in &player_query {
+        let Ok((mut input_target, _transform, mut attack_request)) = query.get_mut(parent.get())
+        else {
+            continue;
+        };
         let w = keyboard_input.pressed(KeyCode::W);
         let a = keyboard_input.pressed(KeyCode::A);
         let s = keyboard_input.pressed(KeyCode::S);

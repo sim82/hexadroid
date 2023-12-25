@@ -106,11 +106,11 @@ fn enemy_select_system(
 }
 fn enemy_evaluation_system(
     mut query: Query<(&mut EnemyEvaluation, &PrimaryEnemy, &Transform)>,
-    droid_query: Query<&Transform>,
+    droid_query: Query<&GlobalTransform>,
 ) {
     for (mut eval, enemy, my_transform) in &mut query {
         if let Ok(enemy_transform) = droid_query.get(enemy.enemy) {
-            eval.direction = (enemy_transform.translation - my_transform.translation).xy();
+            eval.direction = (enemy_transform.translation() - my_transform.translation).xy();
             eval.distance = eval.direction.length();
             eval.valid = true;
         } else {
@@ -190,6 +190,7 @@ impl Default for PredictedHit {
 }
 
 fn assault_predict_system(
+    player_query: Query<&Parent>,
     enemy_query: Query<(&GlobalTransform, &Velocity)>,
     // mut debug_lines: Option<ResMut<DebugLines>>,
     mut assault_query: Query<(&Parent, &GlobalTransform, &PrimaryEnemy, &mut PredictedHit)>,
@@ -207,13 +208,16 @@ fn assault_predict_system(
         let Ok(weapon_state) = droid_query.get(parent.get()) else {
             continue;
         };
+        let Ok(enemy_parent) = player_query.get(*enemy) else {
+            continue;
+        };
         if let Ok((
             enemy_transform,
             Velocity {
                 linvel: enemy_velocity,
                 ..
             },
-        )) = enemy_query.get(*enemy)
+        )) = enemy_query.get(enemy_parent.get())
         {
             if weapon_state.reload_timeout > f32::EPSILON {
                 // enemy not moving

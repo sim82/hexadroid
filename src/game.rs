@@ -3,6 +3,7 @@ use bevy_prototype_lyon::{prelude::*, shapes};
 use hexagon_tiles::hexagon::Hex;
 
 use crate::{
+    camera::CameraTarget,
     droid::{ai::new_shooting_droid_ai, AiDroidBundle, DroidBundle},
     input::InputTarget,
     player::PlayerMarker,
@@ -64,9 +65,27 @@ fn game_setup(
             PlayerMarker,
             GameMarker,
             InputTarget,
+            CameraTarget,
         ))
         .id();
 
+    let enemy_shape_builder = GeometryBuilder::build_as(&shape);
+
+    commands
+        .spawn(DroidBundle::new("player", spawn_info.gravity))
+        // .insert_bundle(AiDroidBundle::with_enemy(enemy))
+        // .insert(AiDroidBundle::with_enemy(player))
+        .insert(ShapeBundle {
+            path: enemy_shape_builder,
+            spatial: SpatialBundle {
+                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(default_stroke(GREEN_HDR))
+        .insert(GameMarker)
+        .add_child(player);
     // let my_shape_builder = GeometryBuilder::build_as(&shape);
 
     // commands

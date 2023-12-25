@@ -27,12 +27,12 @@ fn setup_camera_system(mut commands: Commands) {
 
 fn track_camera_system(
     mut camera_query: Query<&mut Transform, (With<Camera2d>, Without<CameraTarget>)>,
-    target_query: Query<&Transform, With<CameraTarget>>,
+    target_query: Query<&GlobalTransform, With<CameraTarget>>,
 ) {
     if let (Ok(mut camera_transform), Ok(target_transform)) =
         (camera_query.get_single_mut(), target_query.get_single())
     {
-        let dist = target_transform.translation - camera_transform.translation;
+        let dist = target_transform.translation() - camera_transform.translation;
         let l = dist.length();
         const DEADZONE: f32 = 100.0;
         const OUTER: f32 = 200.0;
