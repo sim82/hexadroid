@@ -54,22 +54,28 @@ fn projectile_collision_system(
 
 fn collision_droid_takeover_system(
     mut collision_events: EventReader<CollisionEvent>,
-    mut player_state: ResMut<NextState<PlayerState>>,
-    ship_query: Query<Entity, (With<ShipMarker>, With<PlayerMarker>)>,
+    player_query: Query<&Parent, With<PlayerMarker>>,
+    ship_query: Query<(Entity, &Children), With<ShipMarker>>,
     droid_query: Query<Entity, With<DroidOverloadMarker>>,
 ) {
     for collision_event in collision_events.read() {
         if let CollisionEvent::Started(a, b, _) = collision_event {
             //
-            let Ok(_ship) = ship_query.get(*a).or_else(|_| ship_query.get(*b)) else {
+            let Ok((ship, children)) = ship_query.get(*a).or_else(|_| ship_query.get(*b)) else {
                 continue;
             };
-            let Ok(_droid) = droid_query.get(*a).or_else(|_| droid_query.get(*b)) else {
+            // let Ok(ship) = ship_query.get(parent.get()) else {
+            //     continue;
+            // };
+            if !children.iter().any(|child| player_query.contains(*child)) {
+                continue;
+            }
+            let Ok(droid) = droid_query.get(*a).or_else(|_| droid_query.get(*b)) else {
                 continue;
             };
 
-            info!("take over droid");
-            player_state.set(PlayerState::Droid);
+            info!("take over droid {:?} {:?}", ship, droid);
+            // TODO
         }
     }
 }
@@ -101,7 +107,7 @@ impl Plugin for CollisionPlugin {
                 Update,
                 (
                     projectile_collision_system,
-                    collision_droid_takeover_system.run_if(in_state(PlayerState::Ship)), /*collision_fx_system*/
+                    collision_droid_takeover_system, /*collision_fx_system*/
                 ),
             );
     }

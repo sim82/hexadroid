@@ -289,7 +289,6 @@ pub mod prelude {
     pub use crate::collision::CollisionFxType;
     pub use crate::colors::*;
     pub use crate::particle::{ParticleDirection, ParticleSource};
-    pub use crate::player::PlayerState;
     pub use crate::state::{GameDespawn, GameState};
     pub use crate::tiles::{TileCache, TilePos, TileType, TilesState};
     pub use crate::tunables::default_stroke;

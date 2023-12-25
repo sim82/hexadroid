@@ -25,11 +25,7 @@ pub struct GameSpawnInfo {
 #[derive(Component)]
 pub struct GameMarker;
 
-fn game_setup(
-    mut commands: Commands,
-    spawn_info: Res<GameSpawnInfo>,
-    mut player_state: ResMut<NextState<PlayerState>>,
-) {
+fn game_setup(mut commands: Commands, spawn_info: Res<GameSpawnInfo>) {
     let shape = shapes::RegularPolygon {
         sides: 6,
         feature: shapes::RegularPolygonFeature::Radius(32.0),
@@ -81,7 +77,6 @@ fn game_setup(
             .insert(GameMarker)
             .add_child(player);
     }
-    player_state.set(PlayerState::Ship);
     // let player = if spawn_info.spawn_player_ship {
     //     let ship_shape = shapes::Polygon {
     //         points: SHIP_VERTICES.into(),

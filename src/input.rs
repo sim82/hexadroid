@@ -16,19 +16,6 @@ use hexagon_tiles::{hexagon::HexRound, layout::LayoutTool, point::Point};
 #[derive(Component, Default)]
 pub struct InputTarget;
 
-fn switch_player_system(
-    player_state: Res<State<PlayerState>>,
-    mut new_player_state: ResMut<NextState<PlayerState>>,
-    keyboard_input: Res<Input<KeyCode>>,
-) {
-    if keyboard_input.just_pressed(KeyCode::R) {
-        match player_state.get() {
-            PlayerState::Droid => new_player_state.set(PlayerState::Ship),
-            PlayerState::Ship => new_player_state.set(PlayerState::Droid),
-            _ => (),
-        }
-    }
-}
 fn apply_input_system_8dir(
     player_query: Query<&Parent, With<InputTarget>>,
     mut query: Query<(&mut TargetDirection, &Transform, &mut AttackRequest)>,
@@ -282,7 +269,6 @@ impl Plugin for InputPlugin {
                 camera_zoom_system,
                 camera_rotate_system,
                 apply_input_system_portal_toggle,
-                switch_player_system
             ),
         )
         // .add_plugins(MousePosPlugin)
