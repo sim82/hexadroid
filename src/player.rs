@@ -112,13 +112,13 @@ fn enter_none(mut player_state: ResMut<NextState<PlayerState>>) {
 pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<PlayerState>()
-            .add_systems(OnEnter(PlayerState::Droid), enter_droid)
-            .add_systems(OnExit(PlayerState::Droid), exit_droid)
-            .add_systems(OnEnter(PlayerState::Ship), enter_ship)
-            .add_systems(OnExit(PlayerState::Ship), exit_ship)
-            .add_systems(OnEnter(PlayerState::Hexton), enter_hexton)
-            .add_systems(OnExit(PlayerState::Hexton), exit_hexton)
-            .add_systems(OnEnter(GameState::None), enter_none);
+        app.add_state::<PlayerState>();
+        // .add_systems(OnEnter(PlayerState::Droid), enter_droid)
+        // .add_systems(OnExit(PlayerState::Droid), exit_droid)
+        // .add_systems(OnEnter(PlayerState::Ship), enter_ship)
+        // .add_systems(OnExit(PlayerState::Ship), exit_ship)
+        // .add_systems(OnEnter(PlayerState::Hexton), enter_hexton)
+        // .add_systems(OnExit(PlayerState::Hexton), exit_hexton)
+        // .add_systems(OnEnter(GameState::None), enter_none);
     }
 }

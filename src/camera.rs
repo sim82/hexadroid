@@ -32,6 +32,11 @@ fn track_camera_system(
     if let (Ok(mut camera_transform), Ok(target_transform)) =
         (camera_query.get_single_mut(), target_query.get_single())
     {
+        debug!(
+            "camera track: {:?} {:?}",
+            target_transform.translation(),
+            camera_transform.translation
+        );
         let dist = target_transform.translation() - camera_transform.translation;
         let l = dist.length();
         const DEADZONE: f32 = 100.0;

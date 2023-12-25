@@ -41,24 +41,6 @@ fn game_setup(
         closed: true,
     };
 
-    let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
-
-    // let player = commands
-    //     .spawn(ShipBundle::new("ship"))
-    //     .insert(ShapeBundle {
-    //         path: ship_shape_builder,
-    //         spatial: SpatialBundle {
-    //             transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-    //             ..default()
-    //         },
-    //         ..default()
-    //     })
-    //     .insert(default_stroke(YELLOW_HDR))
-    //     // .insert(InputTarget)
-    //     // .insert(CameraTarget)
-    //     .insert(GameMarker)
-    //     .insert(PlayerMarker)
-    //     .id();
     let player = commands
         .spawn((
             SpatialBundle::default(),
@@ -68,52 +50,37 @@ fn game_setup(
             CameraTarget,
         ))
         .id();
-
-    let enemy_shape_builder = GeometryBuilder::build_as(&shape);
-
-    commands
-        .spawn(DroidBundle::new("player", spawn_info.gravity))
-        // .insert_bundle(AiDroidBundle::with_enemy(enemy))
-        // .insert(AiDroidBundle::with_enemy(player))
-        .insert(ShapeBundle {
-            path: enemy_shape_builder,
-            spatial: SpatialBundle {
-                transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+    if !false {
+        let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
+        commands
+            .spawn(ShipBundle::new("ship"))
+            .insert(ShapeBundle {
+                path: ship_shape_builder,
+                spatial: SpatialBundle {
+                    transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                    ..default()
+                },
                 ..default()
-            },
-            ..default()
-        })
-        .insert(default_stroke(GREEN_HDR))
-        .insert(GameMarker)
-        .add_child(player);
-    // let my_shape_builder = GeometryBuilder::build_as(&shape);
-
-    // commands
-    //     .spawn(DroidBundle::new("player", spawn_info.gravity))
-    //     // .insert(PlayerDroidBundle::default())
-    //     .insert(ShapeBundle {
-    //         path: my_shape_builder,
-    //         spatial: SpatialBundle {
-    //             transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
-    //             ..default()
-    //         },
-    //         ..default()
-    //     })
-    //     .insert(default_stroke(GREEN_HDR))
-    //     .insert(GameMarker)
-    //     // .insert(PlayerMarker)
-    //     .insert(AiDroidBundle::with_enemy(player))
-    //     .insert(new_shooting_droid_ai())
-    //     // .insert(ParticleSource {
-    //     //     rate: 1000,
-    //     //     direction: ParticleDirection::Uniform,
-    //     //     speed: 100.0,
-    //     //     speed_spread: 50.0,
-    //     //     lifetime: 1.0,
-    //     //     lifetime_spread: 0.5,
-    //     // })
-    //     ;
-
+            })
+            .insert(default_stroke(YELLOW_HDR))
+            .insert(GameMarker)
+            .add_child(player);
+    } else {
+        let enemy_shape_builder = GeometryBuilder::build_as(&shape);
+        commands
+            .spawn(DroidBundle::new("player", spawn_info.gravity))
+            .insert(ShapeBundle {
+                path: enemy_shape_builder,
+                spatial: SpatialBundle {
+                    transform: Transform::from_translation(Vec3::new(100.0, 100.0, 0.0)),
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(default_stroke(GREEN_HDR))
+            .insert(GameMarker)
+            .add_child(player);
+    }
     player_state.set(PlayerState::Ship);
     // let player = if spawn_info.spawn_player_ship {
     //     let ship_shape = shapes::Polygon {
