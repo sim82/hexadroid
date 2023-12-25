@@ -192,18 +192,21 @@ impl Default for PredictedHit {
 fn assault_predict_system(
     enemy_query: Query<(&Transform, &Velocity)>,
     // mut debug_lines: Option<ResMut<DebugLines>>,
-    mut assault_query: Query<(&Transform, &PrimaryEnemy, &mut PredictedHit, &WeaponState)>,
+    mut assault_query: Query<(&Parent, &GlobalTransform, &PrimaryEnemy, &mut PredictedHit)>,
+    droid_query: Query<&WeaponState>,
 ) {
     for (
-        Transform {
-            translation: my_translation,
-            ..
-        },
+        parent,
+        global_transform,
         PrimaryEnemy { enemy },
         mut predicted_hit,
-        weapon_state,
+        // weapon_state,
     ) in assault_query.iter_mut()
     {
+        let my_translation = global_transform.translation();
+        let Ok(weapon_state) = droid_query.get(parent.get()) else {
+            continue;
+        };
         if let Ok((
             Transform {
                 translation: enemy_translation,

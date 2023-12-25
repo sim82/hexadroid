@@ -32,10 +32,10 @@ pub fn enemy_hit_score_system(
 pub struct EnemyCloseScore;
 pub fn enemy_close_system(
     mut scorer_query: Query<(&Actor, &mut Score), With<EnemyCloseScore>>,
-    eval_query: Query<&EnemyEvaluation>,
+    eval_query: Query<(&Parent, &EnemyEvaluation)>,
 ) {
     for (Actor(actor), mut score) in &mut scorer_query {
-        if let Ok(eval) = eval_query.get(*actor) {
+        if let Ok((_parent, eval)) = eval_query.get(*actor) {
             if eval.valid {
                 let value = LinearEvaluator::new_ranged(300.0, 100.0).evaluate(eval.distance);
                 debug!("score: {} {}", eval.distance, value);
@@ -67,10 +67,15 @@ pub fn projectile_incoming_score_system(
 pub struct IdleBoredomScore;
 pub fn idle_boredom_score_system(
     mut scorer_query: Query<(&Actor, &mut Score), With<IdleBoredomScore>>,
+
+    ai_query: Query<&Parent>,
     movement_stats_query: Query<&MovementStats>,
 ) {
     for (Actor(actor), mut score) in &mut scorer_query {
-        let Ok(movement_stats) = movement_stats_query.get(*actor) else {
+        let Ok(parent) = ai_query.get(*actor) else {
+            continue;
+        };
+        let Ok(movement_stats) = movement_stats_query.get(parent.get()) else {
             continue;
         };
         score.set(
