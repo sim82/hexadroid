@@ -1,6 +1,10 @@
 use crate::{
-    droid::DroidOverloadMarker, particle::ColorGenerator, player::PlayerMarker, prelude::*,
-    ship::ShipMarker, weapon::Projectile,
+    droid::DroidOverloadMarker,
+    particle::ColorGenerator,
+    player::{PlayerMarker, PlayerTakeover},
+    prelude::*,
+    ship::ShipMarker,
+    weapon::Projectile,
 };
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -57,6 +61,7 @@ fn collision_droid_takeover_system(
     player_query: Query<&Parent, With<PlayerMarker>>,
     ship_query: Query<(Entity, &Children), With<ShipMarker>>,
     droid_query: Query<Entity, With<DroidOverloadMarker>>,
+    mut event_writer: EventWriter<PlayerTakeover>,
 ) {
     for collision_event in collision_events.read() {
         if let CollisionEvent::Started(a, b, _) = collision_event {
@@ -70,11 +75,23 @@ fn collision_droid_takeover_system(
             if !children.iter().any(|child| player_query.contains(*child)) {
                 continue;
             }
+            // let Ok(player) = player_query.get()
+            let Some(player) = children
+                .iter()
+                .cloned()
+                .find(|child| player_query.contains(*child))
+            else {
+                continue;
+            };
             let Ok(droid) = droid_query.get(*a).or_else(|_| droid_query.get(*b)) else {
                 continue;
             };
 
             info!("take over droid {:?} {:?}", ship, droid);
+            event_writer.send(PlayerTakeover {
+                player,
+                target: droid,
+            })
             // TODO
         }
     }

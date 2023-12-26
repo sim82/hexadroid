@@ -288,7 +288,10 @@ pub fn toggle_on_esc_system(
 pub mod prelude {
     pub use crate::collision::CollisionFxType;
     pub use crate::colors::*;
+    pub use crate::droid::AiMarker;
+    pub use crate::droid::AttackRequest;
     pub use crate::particle::{ParticleDirection, ParticleSource};
+    pub use crate::ship::ShipInput;
     pub use crate::state::{GameDespawn, GameState};
     pub use crate::tiles::{TileCache, TilePos, TileType, TilesState};
     pub use crate::tunables::default_stroke;

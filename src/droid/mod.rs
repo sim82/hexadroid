@@ -17,6 +17,8 @@ pub mod ai;
 // const FORCE_MULTIPLIER: f32 = 4000.0;
 pub const IMPULSE_MULTIPLIER: f32 = 8.0;
 pub const RELOAD_TIMEOUT: f32 = 1.0;
+#[derive(Component, Default)]
+pub struct AiMarker;
 
 #[derive(Component, Default)]
 pub struct DroidMarker;
@@ -246,6 +248,7 @@ pub struct AiDroidBundle {
     enemy_evaluation: EnemyEvaluation,
     primary_enemy: PrimaryEnemy,
     spatial_bundle: SpatialBundle,
+    ai_marker: AiMarker,
 }
 
 impl AiDroidBundle {
@@ -255,6 +258,7 @@ impl AiDroidBundle {
             enemy_evaluation: EnemyEvaluation::default(),
             primary_enemy: PrimaryEnemy { enemy },
             spatial_bundle: default(),
+            ai_marker: default(),
         }
     }
 }
