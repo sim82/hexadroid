@@ -6,6 +6,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_egui::EguiPlugin;
+use bevy_mouse_tracking_plugin::mouse_pos::MousePosPlugin;
 // use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
 use clap::Parser;
@@ -16,9 +17,9 @@ use hexagon_tiles::{
 use menu::MenuState;
 
 use crate::{
-    debug_ui::DebugUiPlugin, game::GamePlugin, hexton::HextonPlugin, menu::MenuPlugin,
-    particle::ParticlePlugin, player::PlayerPlugin, portal::PortalPlugin, prelude::*,
-    ship::ShipPlugin, state::StatePlugin, weapon::WeaponPlugin,
+    debug_ui::DebugUiPlugin, edit::EditPlugin, game::GamePlugin, hexton::HextonPlugin,
+    menu::MenuPlugin, particle::ParticlePlugin, player::PlayerPlugin, portal::PortalPlugin,
+    prelude::*, ship::ShipPlugin, state::StatePlugin, weapon::WeaponPlugin,
 };
 
 pub mod collision;
@@ -72,6 +73,7 @@ pub mod collision_groups {
     pub const LEVEL: Group = Group::GROUP_3;
 }
 pub mod debug_ui;
+pub mod edit;
 pub mod game;
 pub mod menu;
 pub mod player;
@@ -203,6 +205,7 @@ impl PluginGroup for DefaultPlugins {
             .add(DefaultPlugin)
             // bevy_rapier plugins
             .add(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+            .add(MousePosPlugin)
             .add(input::InputPlugin)
             .add(droid::DroidPlugin)
             .add(droid::ai::AiPlugin)
@@ -220,7 +223,8 @@ impl PluginGroup for DefaultPlugins {
             .add(MenuPlugin)
             .add(GamePlugin)
             .add(PlayerPlugin)
-            .add(StatePlugin);
+            .add(StatePlugin)
+            .add(EditPlugin);
 
         // egui plugins
         #[cfg(feature = "inspector")]

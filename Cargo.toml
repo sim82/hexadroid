@@ -14,7 +14,7 @@ bevy = { version = "0.12"}
 bevy_rapier2d = { version = "0.23", features = ["serde-serialize"] }
 bevy-inspector-egui = { version = "0.21", optional = true }
 # bevy_prototype_debug_lines = "0.12"
-# bevy_mouse_tracking_plugin = "0.6"
+bevy_mouse_tracking_plugin = "0.7"
 bevy_egui = "0.23"
 hexagon_tiles = "0.1"
 bevy_prototype_lyon = "0.10"
