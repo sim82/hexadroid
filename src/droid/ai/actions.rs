@@ -16,7 +16,7 @@ pub fn shoot_action_system(
         // info!("shoot action {:?}", state);
         match *state {
             ActionState::Requested => {
-                info!("shoot requested!");
+                debug!("shoot requested!");
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {

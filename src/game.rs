@@ -46,7 +46,7 @@ fn game_setup(mut commands: Commands, spawn_info: Res<GameSpawnInfo>) {
             CameraTarget,
         ))
         .id();
-    if !false {
+    if true {
         let ship_shape_builder = GeometryBuilder::build_as(&ship_shape);
         commands
             .spawn(ShipBundle::new("ship"))
