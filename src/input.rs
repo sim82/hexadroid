@@ -51,7 +51,7 @@ fn apply_input_system_8dir(
 }
 fn apply_input_system_portal_toggle(
     mut commands: Commands,
-    query: Query<&Transform, With<InputTarget>>,
+    query: Query<&GlobalTransform, With<InputTarget>>,
     keyboard_input: Res<Input<KeyCode>>,
 ) {
     for transform in &query {
@@ -59,13 +59,14 @@ fn apply_input_system_portal_toggle(
             let hex_pos = LayoutTool::pixel_to_hex(
                 HEX_LAYOUT,
                 Point {
-                    x: transform.translation.x.into(),
-                    y: transform.translation.y.into(),
+                    x: transform.translation().x.into(),
+                    y: transform.translation().y.into(),
                 },
             );
             commands.spawn((
                 TilePos(hex_pos.round()),
-                PortalToggleRequest::boundary_only(),
+                // PortalToggleRequest::boundary_only(),
+                PortalToggleRequest::default(),
             ));
         }
     }

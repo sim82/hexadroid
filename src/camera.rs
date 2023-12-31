@@ -2,7 +2,10 @@ use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     prelude::*,
 };
-use bevy_mouse_tracking_plugin::{mouse_pos::InitMouseTracking, MainCamera};
+use bevy_mouse_tracking_plugin::{
+    mouse_pos::{InitMouseTracking, InitWorldTracking},
+    MainCamera,
+};
 // use bevy_mouse_tracking_plugin::prelude::*;
 
 #[derive(Component, Default)]
@@ -22,7 +25,7 @@ fn setup_camera_system(mut commands: Commands) {
             // BloomSettings::SCREEN_BLUR,
             BloomSettings::default(),
         ))
-        .add(InitMouseTracking)
+        .add(InitWorldTracking)
         .insert(MainCamera);
 }
 
